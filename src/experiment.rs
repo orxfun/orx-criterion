@@ -29,11 +29,32 @@ pub trait Experiment<const T: usize, const V: usize> {
         treatments: &[Self::Treatment],
         variants: &[Self::Variant],
     ) {
-        let mut group = c.benchmark_group(name);
+        let num_runs = treatments.len() * variants.len();
+        println!(
+            "\n\n    # {name} benchmarks with {} treatments and {} variants, {} executions\n",
+            treatments.len(),
+            variants.len(),
+            num_runs
+        );
 
-        for treatment in treatments {
+        let mut group = c.benchmark_group(name);
+        for (t, treatment) in treatments.iter().enumerate() {
+            println!(
+                "\n\n    ## Treatment [{} / {}]: {}",
+                t + 1,
+                treatments.len(),
+                treatment.to_string()
+            );
+
             let input = Self::input(treatment);
-            for variant in variants {
+            for (v, variant) in variants.iter().enumerate() {
+                println!(
+                    "    ### Variant [{} / {}]: {}",
+                    v + 1,
+                    variants.len(),
+                    variant.to_string()
+                );
+
                 let execution_name = Self::execution_to_string(treatment, variant);
 
                 group.bench_with_input(&execution_name, &input, |b, input| {
