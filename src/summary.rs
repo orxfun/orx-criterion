@@ -7,43 +7,18 @@ pub fn print_summary_table<const T: usize, const V: usize, E: Experiment<T, V>>(
     treatments: &[E::Treatment],
     variants: &[E::Variant],
 ) {
-    let estimates = collect_point_estimates::<_, _, E>(name, treatments, variants);
     let cmp = |a: &f64, b: &f64| match a < b {
         true => Ordering::Less,
         false => Ordering::Greater,
     };
-    let values = || {
-        estimates
-            .iter()
-            .flat_map(|x| x.iter())
-            .map(|x| x.unwrap_or(f64::MAX))
-    };
-    let min = values().min_by(cmp).unwrap_or(f64::MAX);
-    let max = values().max_by(cmp).unwrap_or(f64::MIN);
     enum Rank {
         Best,
         Worst,
         Intermediate,
         Missing,
     }
-    let rank_of = |estimate: &Option<f64>| match estimate {
-        Some(x) => {
-            if (min - x).abs() < 1e-5 {
-                return Rank::Best;
-            } else if (max - x).abs() < 1e-5 {
-                return Rank::Worst;
-            } else {
-                return Rank::Intermediate;
-            }
-        }
-        None => Rank::Missing,
-    };
-    let cell_of = |rank: &Rank, cell: CellStruct| match rank {
-        Rank::Best => cell.bold(true).foreground_color(Some(Color::Green)),
-        Rank::Worst => cell.bold(true).foreground_color(Some(Color::Red)),
-        Rank::Intermediate => cell,
-        Rank::Missing => cell.foreground_color(Some(Color::Rgb(50, 50, 50))),
-    };
+
+    let estimates = collect_point_estimates::<_, _, E>(name, treatments, variants);
 
     // title
     let mut title = vec![];
@@ -58,6 +33,28 @@ pub fn print_summary_table<const T: usize, const V: usize, E: Experiment<T, V>>(
     // cells
     let mut rows = vec![];
     for (treatment, treatment_estimates) in treatments.iter().zip(&estimates) {
+        let values = || treatment_estimates.iter().map(|x| x.unwrap_or(f64::MAX));
+        let min = values().min_by(cmp).unwrap_or(f64::MAX);
+        let max = values().max_by(cmp).unwrap_or(f64::MIN);
+        let rank_of = |estimate: &Option<f64>| match estimate {
+            Some(x) => {
+                if (min - x).abs() < 1e-5 {
+                    return Rank::Best;
+                } else if (max - x).abs() < 1e-5 {
+                    return Rank::Worst;
+                } else {
+                    return Rank::Intermediate;
+                }
+            }
+            None => Rank::Missing,
+        };
+        let cell_of = |rank: &Rank, cell: CellStruct| match rank {
+            Rank::Best => cell.bold(true).foreground_color(Some(Color::Green)),
+            Rank::Worst => cell.bold(true).foreground_color(Some(Color::Red)),
+            Rank::Intermediate => cell,
+            Rank::Missing => cell.foreground_color(Some(Color::Rgb(50, 50, 50))),
+        };
+
         let factor_values = treatment.factor_values();
         for (variant, estimate) in variants.iter().zip(treatment_estimates) {
             let mut columns = vec![];
