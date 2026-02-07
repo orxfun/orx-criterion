@@ -15,6 +15,7 @@ impl Treatment<2> for Treat {
 
 enum SearchMethod {
     Linear,
+    LinearBackwards,
     Binary,
 }
 
@@ -26,6 +27,7 @@ impl Variant<1> for SearchMethod {
     fn param_values(&self) -> [String; 1] {
         [match self {
             Self::Linear => "lin",
+            Self::LinearBackwards => "lin-bwd",
             Self::Binary => "bin",
         }
         .to_string()]
@@ -44,8 +46,8 @@ impl Experiment<2, 1> for SearchExperiment {
     type Output = Option<usize>;
 
     fn input(treatment: &Self::Treatment) -> Self::Input {
-        let vec: Vec<_> = (0..treatment.0).collect();
-        let value = *vec.get(treatment.1).unwrap_or(&usize::MAX);
+        let vec: Vec<_> = (0..(100 * treatment.0)).collect();
+        let value = *vec.get(100 * treatment.1).unwrap_or(&usize::MAX);
         (vec, value)
     }
 
@@ -58,6 +60,11 @@ impl Experiment<2, 1> for SearchExperiment {
         let (vec, value) = input;
         match variant {
             SearchMethod::Linear => vec.iter().position(|x| x == value),
+            SearchMethod::LinearBackwards => vec
+                .iter()
+                .rev()
+                .position(|x| x == value)
+                .map(|x| vec.len() - x - 1),
             SearchMethod::Binary => vec.as_slice().binary_search(value).ok(),
         }
     }
@@ -69,7 +76,11 @@ fn run(c: &mut Criterion) {
         Treat(1 << 20, 1 << 19),
         Treat(1 << 20, 1 << 21),
     ];
-    let variants = [SearchMethod::Linear, SearchMethod::Binary];
+    let variants = [
+        SearchMethod::Linear,
+        SearchMethod::LinearBackwards,
+        SearchMethod::Binary,
+    ];
 
     SearchExperiment::bench(c, "my_test_bench", &treatments, &variants);
 }

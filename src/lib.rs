@@ -15,6 +15,7 @@
 mod tests;
 
 mod experiment;
+mod summary;
 mod treatment;
 mod variant;
 

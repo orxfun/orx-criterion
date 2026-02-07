@@ -1,8 +1,10 @@
+use crate::summary::print_summary_table;
 use crate::{Treatment, Variant};
 use criterion::Criterion;
 use std::fmt::Debug;
+use std::path::PathBuf;
 
-pub trait Experiment<const T: usize, const V: usize> {
+pub trait Experiment<const T: usize, const V: usize>: Sized {
     type Treatment: Treatment<T>;
 
     type Variant: Variant<V>;
@@ -12,7 +14,27 @@ pub trait Experiment<const T: usize, const V: usize> {
     type Output: PartialEq + Debug;
 
     fn execution_to_string(treatment: &Self::Treatment, variant: &Self::Variant) -> String {
-        format!("{}__{}", treatment.to_string(), variant.to_string())
+        format!("{}/{}", treatment.to_string(), variant.to_string())
+    }
+
+    fn execution_estimates_path(
+        bench_name: &str,
+        treatment: &Self::Treatment,
+        variant: &Self::Variant,
+    ) -> PathBuf {
+        let execution_path = Self::execution_to_string(treatment, variant)
+            .replace("/", "_")
+            .replace(":", "_");
+        [
+            "target",
+            "criterion",
+            bench_name,
+            &execution_path,
+            "new",
+            "estimates.json",
+        ]
+        .iter()
+        .collect()
     }
 
     fn input(treatment: &Self::Treatment) -> Self::Input;
@@ -31,7 +53,7 @@ pub trait Experiment<const T: usize, const V: usize> {
     ) {
         let num_runs = treatments.len() * variants.len();
         println!(
-            "\n\n    # {name} benchmarks with {} treatments and {} variants, {} executions\n",
+            "\n\n    # {name} benchmarks with {} treatments and {} variants => {} executions\n",
             treatments.len(),
             variants.len(),
             num_runs
@@ -47,14 +69,7 @@ pub trait Experiment<const T: usize, const V: usize> {
             );
 
             let input = Self::input(treatment);
-            for (v, variant) in variants.iter().enumerate() {
-                println!(
-                    "    ### Variant [{} / {}]: {}",
-                    v + 1,
-                    variants.len(),
-                    variant.to_string()
-                );
-
+            for variant in variants {
                 let execution_name = Self::execution_to_string(treatment, variant);
 
                 group.bench_with_input(&execution_name, &input, |b, input| {
@@ -72,5 +87,7 @@ pub trait Experiment<const T: usize, const V: usize> {
         }
 
         group.finish();
+
+        print_summary_table::<_, _, Self>(name, treatments, variants);
     }
 }
