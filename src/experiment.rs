@@ -61,7 +61,6 @@ pub trait Experiment<const T: usize, const V: usize> {
         );
 
         let mut group = c.benchmark_group(name);
-        let mut names_paths = vec![];
         for (t, treatment) in treatments.iter().enumerate() {
             println!(
                 "\n\n    ## Treatment [{} / {}]: {}",
@@ -73,8 +72,6 @@ pub trait Experiment<const T: usize, const V: usize> {
             let input = Self::input(treatment);
             for variant in variants {
                 let execution_name = Self::execution_to_string(treatment, variant);
-                let execution_path = Self::execution_estimates_path(name, treatment, variant);
-                names_paths.push((execution_name.clone(), execution_path));
 
                 group.bench_with_input(&execution_name, &input, |b, input| {
                     if let Some(expected_output) = Self::expected_output(input) {
@@ -92,18 +89,17 @@ pub trait Experiment<const T: usize, const V: usize> {
 
         group.finish();
 
-        for (name, path) in &names_paths {
-            let x = get_slope_point_estimate(path);
-            println!("xxxxxxxxxxxxxxxxxxx => {x:?}");
-            // println!("path = {path:?}");
-            // let mut file = File::open(path).unwrap();
-            // let mut contents = String::new();
-            // file.read_to_string(&mut contents).unwrap();
+        Self::create_report(name, treatments, variants);
+    }
 
-            // let x = contents.find("\"slope\"");
-            // println!("xxxxxxxxxxxxx = {x:?}");
-
-            // println!("\n\n\n{name}\n{contents}\n\n\n");
+    fn create_report(name: &str, treatments: &[Self::Treatment], variants: &[Self::Variant]) {
+        for treatment in treatments {
+            for variant in variants {
+                let execution_name = Self::execution_to_string(treatment, variant);
+                let execution_path = Self::execution_estimates_path(name, treatment, variant);
+                let x = get_slope_point_estimate(&execution_path);
+                println!("xxxxxxxxxxxxxxxxxxx => {x:?}");
+            }
         }
     }
 }
