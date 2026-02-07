@@ -15,5 +15,7 @@
 mod tests;
 
 mod treatment;
+mod variant;
 
 pub use treatment::Treatment;
+pub use variant::Variant;
