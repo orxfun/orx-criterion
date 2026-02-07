@@ -16,6 +16,10 @@ pub trait Experiment<const T: usize, const V: usize> {
 
     fn input(treatment: &Self::Treatment) -> Self::Input;
 
+    fn expected_output(_: &Self::Input) -> Option<Self::Output> {
+        None
+    }
+
     fn execute(variant: &Self::Variant, input: &Self::Input) -> Self::Output;
 
     fn bench(

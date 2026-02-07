@@ -57,8 +57,8 @@ impl Experiment<1, 2> for MyExperiment {
 
 #[test]
 fn basic_experiment() {
-    let treatments = vec![MyTreat1(2), MyTreat1(5)];
-    let variants = vec![
+    let treatments = [MyTreat1(2), MyTreat1(5)];
+    let variants = [
         MyVariant2 {
             len: 1001,
             sort: false,
@@ -81,7 +81,7 @@ fn basic_experiment() {
 
     assert_eq!(
         outputs,
-        vec![
+        [
             vec![0, 1],
             vec![1, 0],
             vec![0, 1, 2, 3, 4],
@@ -91,7 +91,7 @@ fn basic_experiment() {
 
     assert_eq!(
         names,
-        vec![
+        [
             "width:2__len:1001_sort:false",
             "width:2__len:1001_sort:true",
             "width:5__len:1001_sort:false",
@@ -102,8 +102,8 @@ fn basic_experiment() {
 
 #[test]
 fn experiment_bench() {
-    let treatments = vec![MyTreat1(2), MyTreat1(5)];
-    let variants = vec![
+    let treatments = [MyTreat1(2), MyTreat1(5)];
+    let variants = [
         MyVariant2 {
             len: 1001,
             sort: false,
@@ -126,7 +126,7 @@ fn experiment_bench() {
 
     assert_eq!(
         outputs,
-        vec![
+        [
             vec![0, 1],
             vec![1, 0],
             vec![0, 1, 2, 3, 4],
@@ -136,7 +136,7 @@ fn experiment_bench() {
 
     assert_eq!(
         names,
-        vec![
+        [
             "width:2__len:1001_sort:false",
             "width:2__len:1001_sort:true",
             "width:5__len:1001_sort:false",
