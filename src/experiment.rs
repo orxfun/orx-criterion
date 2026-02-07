@@ -1,9 +1,10 @@
+use crate::summary::print_summary_table;
 use crate::{Treatment, Variant};
 use criterion::Criterion;
 use std::fmt::Debug;
 use std::path::PathBuf;
 
-pub trait Experiment<const T: usize, const V: usize> {
+pub trait Experiment<const T: usize, const V: usize>: Sized {
     type Treatment: Treatment<T>;
 
     type Variant: Variant<V>;
@@ -87,6 +88,6 @@ pub trait Experiment<const T: usize, const V: usize> {
 
         group.finish();
 
-        // Self::create_report(name, treatments, variants);
+        print_summary_table::<_, _, Self>(name, treatments, variants);
     }
 }
