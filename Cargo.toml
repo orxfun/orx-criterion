@@ -6,3 +6,7 @@ publish = ["artifactory"]
 
 [dependencies]
 criterion = { version = "0.8.2", registry = "artifactory" }
+
+[[bench]]
+name = "my_test_bench"
+harness = false
