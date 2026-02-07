@@ -1,8 +1,6 @@
 use crate::{Treatment, Variant};
 use criterion::Criterion;
 use std::fmt::Debug;
-use std::fs::File;
-use std::io::prelude::*;
 use std::path::PathBuf;
 
 pub trait Experiment<const T: usize, const V: usize> {
@@ -89,39 +87,6 @@ pub trait Experiment<const T: usize, const V: usize> {
 
         group.finish();
 
-        Self::create_report(name, treatments, variants);
+        // Self::create_report(name, treatments, variants);
     }
-
-    fn create_report(name: &str, treatments: &[Self::Treatment], variants: &[Self::Variant]) {
-        for treatment in treatments {
-            for variant in variants {
-                let execution_name = Self::execution_to_string(treatment, variant);
-                let execution_path = Self::execution_estimates_path(name, treatment, variant);
-                let x = get_slope_point_estimate(&execution_path);
-                println!("xxxxxxxxxxxxxxxxxxx => {x:?}");
-            }
-        }
-    }
-}
-
-fn get_slope_point_estimate(path: &PathBuf) -> Option<f64> {
-    let mut file = File::open(path).ok()?;
-    let mut contents = String::new();
-    file.read_to_string(&mut contents).ok()?;
-
-    let field_slope = "\"slope\"";
-    let position = contents.find(field_slope)?;
-    let begin = position + field_slope.len();
-    let slice = &contents[begin..];
-
-    let field_estimate = "\"point_estimate\":";
-    let position = slice.find(field_estimate)?;
-    let begin = position + field_estimate.len();
-    let slice = &slice[begin..];
-
-    let comma = ",";
-    let position = slice.find(comma)?;
-    let slice = &slice[0..position];
-
-    slice.parse().ok()
 }
