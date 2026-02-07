@@ -1,6 +1,6 @@
 #![doc = include_str!("../README.md")]
 #![warn(
-    missing_docs,
+    // missing_docs,
     clippy::unwrap_in_result,
     clippy::unwrap_used,
     clippy::panic,
@@ -10,9 +10,10 @@
     clippy::missing_panics_doc,
     clippy::todo
 )]
-#![no_std]
-
-extern crate alloc;
 
 #[cfg(test)]
-extern crate std;
+mod tests;
+
+mod treatment;
+
+pub use treatment::Treatment;
