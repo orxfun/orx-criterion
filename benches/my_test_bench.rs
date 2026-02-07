@@ -44,8 +44,8 @@ impl Experiment<2, 1> for SearchExperiment {
     type Output = Option<usize>;
 
     fn input(treatment: &Self::Treatment) -> Self::Input {
-        let vec: Vec<_> = (0..treatment.0).collect();
-        let value = *vec.get(treatment.1).unwrap_or(&usize::MAX);
+        let vec: Vec<_> = (0..(100 * treatment.0)).collect();
+        let value = *vec.get(100 * treatment.1).unwrap_or(&usize::MAX);
         (vec, value)
     }
 
@@ -66,8 +66,8 @@ impl Experiment<2, 1> for SearchExperiment {
 fn run(c: &mut Criterion) {
     let treatments = [
         Treat(1 << 10, 1 << 9),
-        Treat(1 << 20, 1 << 19),
-        Treat(1 << 20, 1 << 21),
+        // Treat(1 << 20, 1 << 19),
+        // Treat(1 << 20, 1 << 21),
     ];
     let variants = [SearchMethod::Linear, SearchMethod::Binary];
 
