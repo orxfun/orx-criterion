@@ -14,8 +14,10 @@
 #[cfg(test)]
 mod tests;
 
+mod experiment;
 mod treatment;
 mod variant;
 
+pub use experiment::Experiment;
 pub use treatment::Treatment;
 pub use variant::Variant;

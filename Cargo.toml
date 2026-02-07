@@ -5,3 +5,4 @@ edition = "2024"
 publish = ["artifactory"]
 
 [dependencies]
+criterion = { version = "0.8.2", registry = "artifactory" }

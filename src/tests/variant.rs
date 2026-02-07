@@ -1,7 +1,7 @@
 use crate::Variant;
 
 #[test]
-fn treatment_0() {
+fn variant_0() {
     pub struct MyVariant;
 
     impl Variant<0> for MyVariant {
@@ -20,7 +20,7 @@ fn treatment_0() {
 }
 
 #[test]
-fn treatment_1() {
+fn variant_1() {
     pub struct MyVariant(usize);
 
     impl Variant<1> for MyVariant {
@@ -39,7 +39,7 @@ fn treatment_1() {
 }
 
 #[test]
-fn treatment_3() {
+fn variant_3() {
     pub struct MyVariant {
         len: usize,
         sort: bool,
