@@ -72,8 +72,8 @@ impl Experiment<2, 1> for SearchExperiment {
 
 fn run(c: &mut Criterion) {
     let treatments = [
+        Treat(1 << 5, 1 << 10),
         Treat(1 << 10, 1 << 9),
-        Treat(1 << 20, 1 << 19),
         Treat(1 << 20, 1 << 21),
     ];
     let variants = [

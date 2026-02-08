@@ -1,11 +1,66 @@
 use crate::{Experiment, Treatment, Variant};
 use cli_table::{Cell, CellStruct, Color, Style, Table, format::Justify, print_stdout};
-use std::{cmp::Ordering, fs::File, io::Read, path::PathBuf};
+use std::fs::File;
+use std::io::{Read, Write};
+use std::{cmp::Ordering, path::PathBuf};
 
-pub fn print_summary_table<const T: usize, const V: usize, E: Experiment<T, V>>(
+pub fn summarize<const T: usize, const V: usize, E: Experiment<T, V>>(
     name: &str,
     treatments: &[E::Treatment],
     variants: &[E::Variant],
+) {
+    let estimates = collect_point_estimates::<_, _, E>(name, treatments, variants);
+    create_summary_csv::<_, _, E>(name, treatments, variants, &estimates)
+        .expect("Failed to create csv summary");
+    println!(
+        "\nSummary table created at:\n{}\n",
+        E::summary_csv_path(name).to_str().unwrap()
+    );
+
+    print_summary_table::<_, _, E>(name, treatments, variants, &estimates);
+}
+
+fn create_summary_csv<const T: usize, const V: usize, E: Experiment<T, V>>(
+    name: &str,
+    treatments: &[E::Treatment],
+    variants: &[E::Variant],
+    estimates: &[Vec<Option<f64>>],
+) -> std::io::Result<()> {
+    let path = E::summary_csv_path(name);
+    let mut file = File::create(path)?;
+
+    // title
+    let mut row = vec![];
+    row.extend_from_slice(&<E::Treatment as Treatment<_>>::factor_names());
+    row.extend_from_slice(&<E::Variant as Variant<_>>::param_names());
+    row.push("Time (ns)");
+    file.write(row.join(",").as_bytes())?;
+    file.write(b"\n")?;
+
+    // rows
+    for (treatment, treatment_estimates) in treatments.iter().zip(estimates) {
+        let factor_values = treatment.factor_values();
+        for (variant, estimate) in variants.iter().zip(treatment_estimates) {
+            let param_values = variant.param_values();
+            let mut row = vec![];
+            row.extend(factor_values.iter().map(|x| x.to_string()));
+            row.extend_from_slice(&param_values);
+            let estimate = estimate
+                .map(|x| format!("{x:.0}"))
+                .unwrap_or("NA".to_string());
+            row.push(estimate);
+            file.write(row.join(",").as_bytes())?;
+            file.write(b"\n")?;
+        }
+    }
+    Ok(())
+}
+
+fn print_summary_table<const T: usize, const V: usize, E: Experiment<T, V>>(
+    name: &str,
+    treatments: &[E::Treatment],
+    variants: &[E::Variant],
+    estimates: &[Vec<Option<f64>>],
 ) {
     let cmp = |a: &f64, b: &f64| match a < b {
         true => Ordering::Less,
@@ -17,8 +72,6 @@ pub fn print_summary_table<const T: usize, const V: usize, E: Experiment<T, V>>(
         Intermediate,
         Missing,
     }
-
-    let estimates = collect_point_estimates::<_, _, E>(name, treatments, variants);
 
     // title
     let mut title = vec![];
@@ -32,7 +85,7 @@ pub fn print_summary_table<const T: usize, const V: usize, E: Experiment<T, V>>(
 
     // cells
     let mut rows = vec![];
-    for (treatment, treatment_estimates) in treatments.iter().zip(&estimates) {
+    for (treatment, treatment_estimates) in treatments.iter().zip(estimates) {
         let values = || treatment_estimates.iter().map(|x| x.unwrap_or(f64::MAX));
         let min = values().min_by(cmp).unwrap_or(f64::MAX);
         let max = values().max_by(cmp).unwrap_or(f64::MIN);
@@ -74,6 +127,7 @@ pub fn print_summary_table<const T: usize, const V: usize, E: Experiment<T, V>>(
     }
 
     let table = rows.table().title(title);
+    println!("# {name}");
     print_stdout(table).expect("Failed to print the summary table");
 }
 
