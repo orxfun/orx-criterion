@@ -155,9 +155,15 @@ fn get_slope_point_estimate(path: &PathBuf) -> Option<f64> {
     let mut contents = String::new();
     file.read_to_string(&mut contents).ok()?;
 
-    let field_slope = "\"slope\"";
-    let position = contents.find(field_slope)?;
-    let begin = position + field_slope.len();
+    let field_slope_null = "\"slope\":null";
+    let is_slope_null = contents.find(field_slope_null).is_some();
+
+    let field = match is_slope_null {
+        true => "\"mean\"",
+        false => "\"slope\"",
+    };
+    let position = contents.find(field)?;
+    let begin = position + field.len();
     let slice = &contents[begin..];
 
     let field_estimate = "\"point_estimate\":";
