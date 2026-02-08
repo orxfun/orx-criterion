@@ -57,35 +57,35 @@ pub trait Experiment: Sized {
     fn execute(variant: &Self::Variant, input: &Self::Input) -> Self::Output;
 
     fn bench(c: &mut Criterion, name: &str, data: &[Self::Data], variants: &[Self::Variant]) {
-        let num_runs = data.len() * variants.len();
+        let num_d = data.len();
+        let num_v = variants.len();
+        let num_t = data.len() * variants.len();
+
         println!(
-            "\n\n    # {name} benchmarks with {} data points and {} variants => {} treatments\n",
-            data.len(),
-            variants.len(),
-            num_runs
+            "\n\n\n# {name} benchmarks with {num_d} data points and {num_v} variants => {num_t} treatments",
         );
 
         let mut group = c.benchmark_group(name);
-        for (t, datum) in data.iter().enumerate() {
-            println!(
-                "\n\n    ## Data [{} / {}]: {}",
-                t + 1,
-                data.len(),
-                datum.to_str_long()
-            );
+        for (d, datum) in data.iter().enumerate() {
+            let datum_str = datum.to_str_long();
+            let d = d + 1;
+            println!("\n\n\n\n\n## Data [{d}/{num_d}]: {datum_str}");
 
             let input = Self::input(datum);
-            for variant in variants {
+            for (v, variant) in variants.iter().enumerate() {
+                let v = v + 1;
+                let idx = (d - 1) * num_v + v;
+                let run_str = Self::run_key_long(datum, variant);
+                println!("\n### [{idx}/{num_t} || {v}/{num_v}]: {run_str}");
+
                 let execution_name = Self::run_key_short(datum, variant);
 
                 group.bench_with_input(&execution_name, &input, |b, input| {
                     if let Some(expected_output) = Self::expected_output(input) {
                         let output = Self::execute(variant, input);
                         assert_eq!(
-                            output,
-                            expected_output,
-                            "Output of run is not equal to expected output. Run: {}",
-                            Self::run_key_long(datum, variant)
+                            output, expected_output,
+                            "Output of run is not equal to expected output. Run: {run_str}",
                         );
                     }
 
