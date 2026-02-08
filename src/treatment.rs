@@ -12,11 +12,11 @@ pub trait Treatment {
     }
 
     fn to_string(&self) -> String {
-        to_string(&Self::factor_names(), &self.factor_values())
+        join(&Self::factor_names(), &self.factor_values())
     }
 }
 
-pub(super) fn to_string(names: &[&'static str], values: &[String]) -> String {
+pub(super) fn join(names: &[&'static str], values: &[String]) -> String {
     debug_assert_eq!(names.len(), values.len());
     match names.len() {
         0 => Default::default(),

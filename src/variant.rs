@@ -1,4 +1,4 @@
-use crate::treatment::to_string;
+use crate::treatment::join;
 
 pub trait Variant {
     fn param_names() -> Vec<&'static str>;
@@ -14,6 +14,6 @@ pub trait Variant {
     }
 
     fn to_string(&self) -> String {
-        to_string(&Self::param_names(), &self.param_values())
+        join(&Self::param_names(), &self.param_values())
     }
 }
