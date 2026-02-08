@@ -2,13 +2,13 @@ use crate::{Experiment, Treatment, Variant};
 
 pub struct MyTreat1(usize);
 
-impl Treatment<1> for MyTreat1 {
-    fn factor_names() -> [&'static str; 1] {
-        ["width"]
+impl Treatment for MyTreat1 {
+    fn factor_names() -> Vec<&'static str> {
+        vec!["width"]
     }
 
-    fn factor_values(&self) -> [String; 1] {
-        [self.0.to_string()]
+    fn factor_values(&self) -> Vec<String> {
+        vec![self.0.to_string()]
     }
 }
 
@@ -17,19 +17,19 @@ pub struct MyVariant2 {
     sort: bool,
 }
 
-impl Variant<2> for MyVariant2 {
-    fn param_names() -> [&'static str; 2] {
-        ["len", "sort"]
+impl Variant for MyVariant2 {
+    fn param_names() -> Vec<&'static str> {
+        vec!["len", "sort"]
     }
 
-    fn param_values(&self) -> [String; 2] {
-        [self.len.to_string(), self.sort.to_string()]
+    fn param_values(&self) -> Vec<String> {
+        vec![self.len.to_string(), self.sort.to_string()]
     }
 }
 
 pub struct MyExperiment;
 
-impl Experiment<1, 2> for MyExperiment {
+impl Experiment for MyExperiment {
     type Treatment = MyTreat1;
 
     type Variant = MyVariant2;

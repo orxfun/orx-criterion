@@ -4,13 +4,13 @@ use crate::Variant;
 fn variant_0() {
     pub struct MyVariant;
 
-    impl Variant<0> for MyVariant {
-        fn param_names() -> [&'static str; 0] {
-            []
+    impl Variant for MyVariant {
+        fn param_names() -> Vec<&'static str> {
+            vec![]
         }
 
-        fn param_values(&self) -> [String; 0] {
-            []
+        fn param_values(&self) -> Vec<String> {
+            vec![]
         }
     }
 
@@ -23,13 +23,13 @@ fn variant_0() {
 fn variant_1() {
     pub struct MyVariant(usize);
 
-    impl Variant<1> for MyVariant {
-        fn param_names() -> [&'static str; 1] {
-            ["width"]
+    impl Variant for MyVariant {
+        fn param_names() -> Vec<&'static str> {
+            vec!["width"]
         }
 
-        fn param_values(&self) -> [String; 1] {
-            [self.0.to_string()]
+        fn param_values(&self) -> Vec<String> {
+            vec![self.0.to_string()]
         }
     }
 
@@ -46,13 +46,13 @@ fn variant_3() {
         split: char,
     }
 
-    impl Variant<3> for MyVariant {
-        fn param_names() -> [&'static str; 3] {
-            ["len", "sort", "split"]
+    impl Variant for MyVariant {
+        fn param_names() -> Vec<&'static str> {
+            vec!["len", "sort", "split"]
         }
 
-        fn param_values(&self) -> [String; 3] {
-            [
+        fn param_values(&self) -> Vec<String> {
+            vec![
                 self.len.to_string(),
                 self.sort.to_string(),
                 self.split.to_string(),
