@@ -14,6 +14,10 @@ pub trait Treatment {
     fn to_str_long(&self) -> String {
         join(&Self::factor_names(), &self.factor_values())
     }
+
+    fn to_str_short(&self) -> String {
+        join(&Self::factor_names_short(), &self.factor_values_short())
+    }
 }
 
 pub(super) fn join(names: &[&'static str], values: &[String]) -> String {

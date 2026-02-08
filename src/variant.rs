@@ -16,4 +16,8 @@ pub trait Variant {
     fn to_str_long(&self) -> String {
         join(&Self::param_names(), &self.param_values())
     }
+
+    fn to_str_short(&self) -> String {
+        join(&Self::param_names_short(), &self.param_values_short())
+    }
 }
