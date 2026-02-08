@@ -30,7 +30,7 @@ fn create_summary_csv<E: Experiment>(
     let mut file = File::create(path)?;
 
     // title
-    let mut row = vec![];
+    let mut row = vec!["t", "d", "v"];
     row.extend_from_slice(&<E::Data as Data>::factor_names());
     row.extend_from_slice(&<E::Variant as Variant>::param_names());
     row.push("Time (ns)");
@@ -38,11 +38,16 @@ fn create_summary_csv<E: Experiment>(
     file.write(b"\n")?;
 
     // rows
-    for (datum, datum_estimates) in data.iter().zip(estimates) {
+    for (d, (datum, datum_estimates)) in data.iter().zip(estimates).enumerate() {
         let factor_values = datum.factor_values();
-        for (variant, estimate) in variants.iter().zip(datum_estimates) {
+        for (v, (variant, estimate)) in variants.iter().zip(datum_estimates).enumerate() {
+            let t = d * variants.len() + v;
             let param_values = variant.param_values();
-            let mut row = vec![];
+            let mut row = vec![
+                (t + 1).to_string(),
+                (d + 1).to_string(),
+                (v + 1).to_string(),
+            ];
             row.extend(factor_values.iter().map(|x| x.to_string()));
             row.extend_from_slice(&param_values);
             let estimate = estimate
@@ -74,7 +79,11 @@ fn print_summary_table<E: Experiment>(
     }
 
     // title
-    let mut title = vec![];
+    let mut title = vec![
+        "t".cell().bold(true),
+        "d".cell().bold(true),
+        "v".cell().bold(true),
+    ];
     for factor in <E::Data as Data>::factor_names() {
         title.push(factor.cell().bold(true));
     }
@@ -85,7 +94,7 @@ fn print_summary_table<E: Experiment>(
 
     // cells
     let mut rows = vec![];
-    for (datum, datum_estimates) in data.iter().zip(estimates) {
+    for (d, (datum, datum_estimates)) in data.iter().zip(estimates).enumerate() {
         let values = || datum_estimates.iter().map(|x| x.unwrap_or(f64::MAX));
         let min = values().min_by(cmp).unwrap_or(f64::MAX);
         let max = values().max_by(cmp).unwrap_or(f64::MIN);
@@ -109,13 +118,18 @@ fn print_summary_table<E: Experiment>(
         };
 
         let factor_values = datum.factor_values();
-        for (variant, estimate) in variants.iter().zip(datum_estimates) {
-            let mut columns = vec![];
+        for (v, (variant, estimate)) in variants.iter().zip(datum_estimates).enumerate() {
+            let t = d * variants.len() + v;
             let param_values = variant.param_values();
             let rank = rank_of(estimate);
             let estimate = estimate
                 .map(|x| format!("{x:.0}"))
                 .unwrap_or("NA".to_string());
+            let mut columns = vec![
+                cell_of(&rank, (t + 1).cell()),
+                cell_of(&rank, (d + 1).cell()),
+                cell_of(&rank, (v + 1).cell()),
+            ];
 
             for x in factor_values.iter().chain(&param_values) {
                 columns.push(cell_of(&rank, x.cell()));
