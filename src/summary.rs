@@ -4,23 +4,19 @@ use std::fs::File;
 use std::io::{Read, Write};
 use std::{cmp::Ordering, path::PathBuf};
 
-pub fn summarize<const T: usize, const V: usize, E: Experiment<T, V>>(
-    name: &str,
-    treatments: &[E::Treatment],
-    variants: &[E::Variant],
-) {
-    let estimates = collect_point_estimates::<_, _, E>(name, treatments, variants);
-    create_summary_csv::<_, _, E>(name, treatments, variants, &estimates)
+pub fn summarize<E: Experiment>(name: &str, treatments: &[E::Treatment], variants: &[E::Variant]) {
+    let estimates = collect_point_estimates::<E>(name, treatments, variants);
+    create_summary_csv::<E>(name, treatments, variants, &estimates)
         .expect("Failed to create csv summary");
     println!(
         "\nSummary table created at:\n{}\n",
         E::summary_csv_path(name).to_str().unwrap()
     );
 
-    print_summary_table::<_, _, E>(name, treatments, variants, &estimates);
+    print_summary_table::<E>(name, treatments, variants, &estimates);
 }
 
-fn create_summary_csv<const T: usize, const V: usize, E: Experiment<T, V>>(
+fn create_summary_csv<E: Experiment>(
     name: &str,
     treatments: &[E::Treatment],
     variants: &[E::Variant],
@@ -31,8 +27,8 @@ fn create_summary_csv<const T: usize, const V: usize, E: Experiment<T, V>>(
 
     // title
     let mut row = vec![];
-    row.extend_from_slice(&<E::Treatment as Treatment<_>>::factor_names());
-    row.extend_from_slice(&<E::Variant as Variant<_>>::param_names());
+    row.extend_from_slice(&<E::Treatment as Treatment>::factor_names());
+    row.extend_from_slice(&<E::Variant as Variant>::param_names());
     row.push("Time (ns)");
     file.write(row.join(",").as_bytes())?;
     file.write(b"\n")?;
@@ -56,7 +52,7 @@ fn create_summary_csv<const T: usize, const V: usize, E: Experiment<T, V>>(
     Ok(())
 }
 
-fn print_summary_table<const T: usize, const V: usize, E: Experiment<T, V>>(
+fn print_summary_table<E: Experiment>(
     name: &str,
     treatments: &[E::Treatment],
     variants: &[E::Variant],
@@ -75,10 +71,10 @@ fn print_summary_table<const T: usize, const V: usize, E: Experiment<T, V>>(
 
     // title
     let mut title = vec![];
-    for factor in <E::Treatment as Treatment<_>>::factor_names() {
+    for factor in <E::Treatment as Treatment>::factor_names() {
         title.push(factor.cell().bold(true));
     }
-    for param in <E::Variant as Variant<_>>::param_names() {
+    for param in <E::Variant as Variant>::param_names() {
         title.push(param.cell().bold(true));
     }
     title.push("Time (ns)".cell().bold(true).justify(Justify::Right));
@@ -131,7 +127,7 @@ fn print_summary_table<const T: usize, const V: usize, E: Experiment<T, V>>(
     print_stdout(table).expect("Failed to print the summary table");
 }
 
-fn collect_point_estimates<const T: usize, const V: usize, E: Experiment<T, V>>(
+fn collect_point_estimates<E: Experiment>(
     name: &str,
     treatments: &[E::Treatment],
     variants: &[E::Variant],
