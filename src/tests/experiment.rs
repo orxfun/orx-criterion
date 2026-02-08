@@ -74,7 +74,7 @@ fn basic_experiment() {
     for treatment in &treatments {
         let input = MyExperiment::input(treatment);
         for variant in &variants {
-            names.push(MyExperiment::run_key(treatment, variant));
+            names.push(MyExperiment::run_key_long(treatment, variant));
             outputs.push(MyExperiment::execute(variant, &input));
         }
     }
@@ -119,7 +119,7 @@ fn experiment_bench() {
     for treatment in &treatments {
         let input = MyExperiment::input(treatment);
         for variant in &variants {
-            names.push(MyExperiment::run_key(treatment, variant));
+            names.push(MyExperiment::run_key_long(treatment, variant));
             outputs.push(MyExperiment::execute(variant, &input));
         }
     }

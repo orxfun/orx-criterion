@@ -74,7 +74,7 @@ fn basic_experiment_with_expected_output() {
     for treatment in &treatments {
         let input = SearchExperiment::input(treatment);
         for variant in &variants {
-            names.push(SearchExperiment::run_key(treatment, variant));
+            names.push(SearchExperiment::run_key_long(treatment, variant));
             let output = SearchExperiment::execute(variant, &input);
             if let Some(expected_output) = SearchExperiment::expected_output(&input) {
                 assert_eq!(output, expected_output);

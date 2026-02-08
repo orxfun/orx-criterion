@@ -13,8 +13,12 @@ pub trait Experiment: Sized {
 
     type Output: PartialEq + Debug;
 
-    fn run_key(treatment: &Self::Treatment, variant: &Self::Variant) -> String {
+    fn run_key_long(treatment: &Self::Treatment, variant: &Self::Variant) -> String {
         format!("{}/{}", treatment.to_str_long(), variant.to_str_long())
+    }
+
+    fn run_key_short(treatment: &Self::Treatment, variant: &Self::Variant) -> String {
+        format!("{}/{}", treatment.to_str_short(), variant.to_str_short())
     }
 
     fn run_estimates_path(
@@ -22,7 +26,7 @@ pub trait Experiment: Sized {
         treatment: &Self::Treatment,
         variant: &Self::Variant,
     ) -> PathBuf {
-        let execution_path = Self::run_key(treatment, variant)
+        let execution_path = Self::run_key_short(treatment, variant)
             .replace("/", "_")
             .replace(":", "_");
         [
@@ -81,14 +85,16 @@ pub trait Experiment: Sized {
 
             let input = Self::input(treatment);
             for variant in variants {
-                let execution_name = Self::run_key(treatment, variant);
+                let execution_name = Self::run_key_short(treatment, variant);
 
                 group.bench_with_input(&execution_name, &input, |b, input| {
                     if let Some(expected_output) = Self::expected_output(input) {
                         let output = Self::execute(variant, input);
                         assert_eq!(
-                            output, expected_output,
-                            "Output of execution '{execution_name}' is not equal to expected output."
+                            output,
+                            expected_output,
+                            "Output of run is not equal to expected output. Run: {}",
+                            Self::run_key_long(treatment, variant)
                         );
                     }
 
