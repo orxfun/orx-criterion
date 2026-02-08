@@ -71,7 +71,7 @@ pub trait Experiment: Sized {
         for (d, datum) in data.iter().enumerate() {
             let datum_str = datum.to_str_long();
             let d = d + 1;
-            let log = format!("\n\n\n\n\n## Data [{d}/{num_d}]: {datum_str}");
+            let log = format!("\n\n\n\n\n## Data point [{d}/{num_d}]: {datum_str}");
             println!("{}", log.yellow().bold());
 
             let input = Self::input(datum);
