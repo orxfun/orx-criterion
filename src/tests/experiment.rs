@@ -92,10 +92,10 @@ fn basic_experiment() {
     assert_eq!(
         names,
         [
-            "width:2__len:1001_sort:false",
-            "width:2__len:1001_sort:true",
-            "width:5__len:1001_sort:false",
-            "width:5__len:1001_sort:true"
+            "width:2/len:1001_sort:false",
+            "width:2/len:1001_sort:true",
+            "width:5/len:1001_sort:false",
+            "width:5/len:1001_sort:true"
         ]
     );
 }
@@ -137,10 +137,10 @@ fn experiment_bench() {
     assert_eq!(
         names,
         [
-            "width:2__len:1001_sort:false",
-            "width:2__len:1001_sort:true",
-            "width:5__len:1001_sort:false",
-            "width:5__len:1001_sort:true"
+            "width:2/len:1001_sort:false",
+            "width:2/len:1001_sort:true",
+            "width:5/len:1001_sort:false",
+            "width:5/len:1001_sort:true"
         ]
     );
 }

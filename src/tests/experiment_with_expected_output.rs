@@ -88,10 +88,10 @@ fn basic_experiment_with_expected_output() {
     assert_eq!(
         names,
         [
-            "len:4_position:2__search:lin",
-            "len:4_position:2__search:bin",
-            "len:4_position:5__search:lin",
-            "len:4_position:5__search:bin"
+            "len:4_position:2/search:lin",
+            "len:4_position:2/search:bin",
+            "len:4_position:5/search:lin",
+            "len:4_position:5/search:bin"
         ]
     );
 }
