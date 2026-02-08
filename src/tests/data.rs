@@ -1,10 +1,10 @@
-use crate::Treatment;
+use crate::Data;
 
 #[test]
 fn treatment_0() {
-    pub struct MyTreat;
+    pub struct MyData;
 
-    impl Treatment for MyTreat {
+    impl Data for MyData {
         fn factor_names() -> Vec<&'static str> {
             vec![]
         }
@@ -14,16 +14,16 @@ fn treatment_0() {
         }
     }
 
-    let t = MyTreat;
+    let t = MyData;
 
-    assert_eq!(t.to_string(), "");
+    assert_eq!(t.to_str_long(), "");
 }
 
 #[test]
 fn treatment_1() {
-    pub struct MyTreat(usize);
+    pub struct MyData(usize);
 
-    impl Treatment for MyTreat {
+    impl Data for MyData {
         fn factor_names() -> Vec<&'static str> {
             vec!["width"]
         }
@@ -33,22 +33,26 @@ fn treatment_1() {
         }
     }
 
-    let t = MyTreat(42);
+    let t = MyData(42);
 
-    assert_eq!(t.to_string(), "width:42");
+    assert_eq!(t.to_str_long(), "width:42");
 }
 
 #[test]
 fn treatment_3() {
-    pub struct MyTreat {
+    pub struct MyData {
         len: usize,
         sort: bool,
         split: char,
     }
 
-    impl Treatment for MyTreat {
+    impl Data for MyData {
         fn factor_names() -> Vec<&'static str> {
             vec!["len", "sort", "split"]
+        }
+
+        fn factor_names_short() -> Vec<&'static str> {
+            vec!["l", "srt", "sp"]
         }
 
         fn factor_values(&self) -> Vec<String> {
@@ -58,13 +62,25 @@ fn treatment_3() {
                 self.split.to_string(),
             ]
         }
+
+        fn factor_values_short(&self) -> Vec<String> {
+            vec![
+                self.len.to_string(),
+                match self.sort {
+                    true => "T".to_string(),
+                    false => "F".to_string(),
+                },
+                self.split.to_string(),
+            ]
+        }
     }
 
-    let t = MyTreat {
+    let t = MyData {
         len: 9876543210,
         sort: true,
         split: '7',
     };
 
-    assert_eq!(t.to_string(), "len:9876543210_sort:true_split:7");
+    assert_eq!(t.to_str_long(), "len:9876543210_sort:true_split:7");
+    assert_eq!(t.to_str_short(), "l:9876543210_srt:T_sp:7");
 }

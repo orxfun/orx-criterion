@@ -1,8 +1,8 @@
-use crate::{Experiment, Treatment, Variant};
+use crate::{Data, Experiment, Variant};
 
-struct Treat(usize, usize);
+struct MyData(usize, usize);
 
-impl Treatment for Treat {
+impl Data for MyData {
     fn factor_names() -> Vec<&'static str> {
         vec!["len", "position"]
     }
@@ -36,7 +36,7 @@ impl Variant for SearchMethod {
 struct SearchExperiment;
 
 impl Experiment for SearchExperiment {
-    type Treatment = Treat;
+    type Data = MyData;
 
     type Variant = SearchMethod;
 
@@ -44,9 +44,9 @@ impl Experiment for SearchExperiment {
 
     type Output = Option<usize>;
 
-    fn input(treatment: &Self::Treatment) -> Self::Input {
-        let vec: Vec<_> = (0..treatment.0).collect();
-        let value = *vec.get(treatment.1).unwrap_or(&usize::MAX);
+    fn input(datum: &Self::Data) -> Self::Input {
+        let vec: Vec<_> = (0..datum.0).collect();
+        let value = *vec.get(datum.1).unwrap_or(&usize::MAX);
         (vec, value)
     }
 
@@ -66,15 +66,15 @@ impl Experiment for SearchExperiment {
 
 #[test]
 fn basic_experiment_with_expected_output() {
-    let treatments = [Treat(4, 2), Treat(4, 5)];
+    let data = [MyData(4, 2), MyData(4, 5)];
     let variants = [SearchMethod::Linear, SearchMethod::Binary];
 
     let mut outputs = vec![];
     let mut names = vec![];
-    for treatment in &treatments {
-        let input = SearchExperiment::input(treatment);
+    for datum in &data {
+        let input = SearchExperiment::input(datum);
         for variant in &variants {
-            names.push(SearchExperiment::execution_to_string(treatment, variant));
+            names.push(SearchExperiment::run_key_long(datum, variant));
             let output = SearchExperiment::execute(variant, &input);
             if let Some(expected_output) = SearchExperiment::expected_output(&input) {
                 assert_eq!(output, expected_output);
@@ -88,10 +88,10 @@ fn basic_experiment_with_expected_output() {
     assert_eq!(
         names,
         [
-            "len:4_position:2__search:lin",
-            "len:4_position:2__search:bin",
-            "len:4_position:5__search:lin",
-            "len:4_position:5__search:bin"
+            "len:4_position:2/search:lin",
+            "len:4_position:2/search:bin",
+            "len:4_position:5/search:lin",
+            "len:4_position:5/search:bin"
         ]
     );
 }

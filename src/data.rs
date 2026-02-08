@@ -1,14 +1,26 @@
-pub trait Treatment {
+pub trait Data {
     fn factor_names() -> Vec<&'static str>;
 
     fn factor_values(&self) -> Vec<String>;
 
-    fn to_string(&self) -> String {
-        to_string(&Self::factor_names(), &self.factor_values())
+    fn factor_names_short() -> Vec<&'static str> {
+        Self::factor_names()
+    }
+
+    fn factor_values_short(&self) -> Vec<String> {
+        self.factor_values()
+    }
+
+    fn to_str_long(&self) -> String {
+        join(&Self::factor_names(), &self.factor_values())
+    }
+
+    fn to_str_short(&self) -> String {
+        join(&Self::factor_names_short(), &self.factor_values_short())
     }
 }
 
-pub(super) fn to_string(names: &[&'static str], values: &[String]) -> String {
+pub(super) fn join(names: &[&'static str], values: &[String]) -> String {
     debug_assert_eq!(names.len(), values.len());
     match names.len() {
         0 => Default::default(),

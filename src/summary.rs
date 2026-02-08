@@ -1,24 +1,25 @@
-use crate::{Experiment, Treatment, Variant};
+use crate::{Data, Experiment, Variant};
 use cli_table::{Cell, CellStruct, Color, Style, Table, format::Justify, print_stdout};
 use std::fs::File;
 use std::io::{Read, Write};
 use std::{cmp::Ordering, path::PathBuf};
 
-pub fn summarize<E: Experiment>(name: &str, treatments: &[E::Treatment], variants: &[E::Variant]) {
-    let estimates = collect_point_estimates::<E>(name, treatments, variants);
-    create_summary_csv::<E>(name, treatments, variants, &estimates)
+pub fn summarize<E: Experiment>(name: &str, data: &[E::Data], variants: &[E::Variant]) {
+    let estimates = collect_point_estimates::<E>(name, data, variants);
+
+    create_summary_csv::<E>(name, data, variants, &estimates)
         .expect("Failed to create csv summary");
     println!(
         "\nSummary table created at:\n{}\n",
         E::summary_csv_path(name).to_str().unwrap()
     );
 
-    print_summary_table::<E>(name, treatments, variants, &estimates);
+    print_summary_table::<E>(name, data, variants, &estimates);
 }
 
 fn create_summary_csv<E: Experiment>(
     name: &str,
-    treatments: &[E::Treatment],
+    data: &[E::Data],
     variants: &[E::Variant],
     estimates: &[Vec<Option<f64>>],
 ) -> std::io::Result<()> {
@@ -27,16 +28,16 @@ fn create_summary_csv<E: Experiment>(
 
     // title
     let mut row = vec![];
-    row.extend_from_slice(&<E::Treatment as Treatment>::factor_names());
+    row.extend_from_slice(&<E::Data as Data>::factor_names());
     row.extend_from_slice(&<E::Variant as Variant>::param_names());
     row.push("Time (ns)");
     file.write(row.join(",").as_bytes())?;
     file.write(b"\n")?;
 
     // rows
-    for (treatment, treatment_estimates) in treatments.iter().zip(estimates) {
-        let factor_values = treatment.factor_values();
-        for (variant, estimate) in variants.iter().zip(treatment_estimates) {
+    for (datum, datum_estimates) in data.iter().zip(estimates) {
+        let factor_values = datum.factor_values();
+        for (variant, estimate) in variants.iter().zip(datum_estimates) {
             let param_values = variant.param_values();
             let mut row = vec![];
             row.extend(factor_values.iter().map(|x| x.to_string()));
@@ -54,7 +55,7 @@ fn create_summary_csv<E: Experiment>(
 
 fn print_summary_table<E: Experiment>(
     name: &str,
-    treatments: &[E::Treatment],
+    data: &[E::Data],
     variants: &[E::Variant],
     estimates: &[Vec<Option<f64>>],
 ) {
@@ -71,7 +72,7 @@ fn print_summary_table<E: Experiment>(
 
     // title
     let mut title = vec![];
-    for factor in <E::Treatment as Treatment>::factor_names() {
+    for factor in <E::Data as Data>::factor_names() {
         title.push(factor.cell().bold(true));
     }
     for param in <E::Variant as Variant>::param_names() {
@@ -81,8 +82,8 @@ fn print_summary_table<E: Experiment>(
 
     // cells
     let mut rows = vec![];
-    for (treatment, treatment_estimates) in treatments.iter().zip(estimates) {
-        let values = || treatment_estimates.iter().map(|x| x.unwrap_or(f64::MAX));
+    for (datum, datum_estimates) in data.iter().zip(estimates) {
+        let values = || datum_estimates.iter().map(|x| x.unwrap_or(f64::MAX));
         let min = values().min_by(cmp).unwrap_or(f64::MAX);
         let max = values().max_by(cmp).unwrap_or(f64::MIN);
         let rank_of = |estimate: &Option<f64>| match estimate {
@@ -104,8 +105,8 @@ fn print_summary_table<E: Experiment>(
             Rank::Missing => cell.foreground_color(Some(Color::Rgb(50, 50, 50))),
         };
 
-        let factor_values = treatment.factor_values();
-        for (variant, estimate) in variants.iter().zip(treatment_estimates) {
+        let factor_values = datum.factor_values();
+        for (variant, estimate) in variants.iter().zip(datum_estimates) {
             let mut columns = vec![];
             let param_values = variant.param_values();
             let rank = rank_of(estimate);
@@ -129,16 +130,15 @@ fn print_summary_table<E: Experiment>(
 
 fn collect_point_estimates<E: Experiment>(
     name: &str,
-    treatments: &[E::Treatment],
+    data: &[E::Data],
     variants: &[E::Variant],
 ) -> Vec<Vec<Option<f64>>> {
-    treatments
-        .iter()
-        .map(|treatment| {
+    data.iter()
+        .map(|datum| {
             variants
                 .iter()
                 .map(|variant| {
-                    let execution_path = E::execution_estimates_path(name, treatment, variant);
+                    let execution_path = E::run_estimates_path(name, datum, variant);
                     get_slope_point_estimate(&execution_path)
                 })
                 .collect()
