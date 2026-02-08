@@ -13,7 +13,7 @@ pub trait Variant {
         self.param_values()
     }
 
-    fn to_string(&self) -> String {
+    fn to_str_long(&self) -> String {
         join(&Self::param_names(), &self.param_values())
     }
 }

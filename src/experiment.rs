@@ -14,7 +14,7 @@ pub trait Experiment: Sized {
     type Output: PartialEq + Debug;
 
     fn run_key(treatment: &Self::Treatment, variant: &Self::Variant) -> String {
-        format!("{}/{}", treatment.to_string(), variant.to_string())
+        format!("{}/{}", treatment.to_str_long(), variant.to_str_long())
     }
 
     fn run_estimates_path(
@@ -76,7 +76,7 @@ pub trait Experiment: Sized {
                 "\n\n    ## Treatment [{} / {}]: {}",
                 t + 1,
                 treatments.len(),
-                treatment.to_string()
+                treatment.to_str_long()
             );
 
             let input = Self::input(treatment);

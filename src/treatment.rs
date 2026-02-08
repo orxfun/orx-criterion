@@ -11,7 +11,7 @@ pub trait Treatment {
         self.factor_values()
     }
 
-    fn to_string(&self) -> String {
+    fn to_str_long(&self) -> String {
         join(&Self::factor_names(), &self.factor_values())
     }
 }

@@ -16,7 +16,7 @@ fn variant_0() {
 
     let t = MyVariant;
 
-    assert_eq!(t.to_string(), "");
+    assert_eq!(t.to_str_long(), "");
 }
 
 #[test]
@@ -35,7 +35,7 @@ fn variant_1() {
 
     let t = MyVariant(42);
 
-    assert_eq!(t.to_string(), "width:42");
+    assert_eq!(t.to_str_long(), "width:42");
 }
 
 #[test]
@@ -66,5 +66,5 @@ fn variant_3() {
         split: '7',
     };
 
-    assert_eq!(t.to_string(), "len:9876543210_sort:true_split:7");
+    assert_eq!(t.to_str_long(), "len:9876543210_sort:true_split:7");
 }
