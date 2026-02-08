@@ -1,4 +1,4 @@
-use crate::summary::print_summary_table;
+use crate::summary::summarize;
 use crate::{Treatment, Variant};
 use criterion::Criterion;
 use std::fmt::Debug;
@@ -88,6 +88,6 @@ pub trait Experiment<const T: usize, const V: usize>: Sized {
 
         group.finish();
 
-        print_summary_table::<_, _, Self>(name, treatments, variants);
+        summarize::<_, _, Self>(name, treatments, variants);
     }
 }

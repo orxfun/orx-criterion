@@ -2,10 +2,20 @@ use crate::{Experiment, Treatment, Variant};
 use cli_table::{Cell, CellStruct, Color, Style, Table, format::Justify, print_stdout};
 use std::{cmp::Ordering, fs::File, io::Read, path::PathBuf};
 
-pub fn print_summary_table<const T: usize, const V: usize, E: Experiment<T, V>>(
+pub fn summarize<const T: usize, const V: usize, E: Experiment<T, V>>(
     name: &str,
     treatments: &[E::Treatment],
     variants: &[E::Variant],
+) {
+    let estimates = collect_point_estimates::<_, _, E>(name, treatments, variants);
+    print_summary_table::<_, _, E>(name, treatments, variants, &estimates);
+}
+
+fn print_summary_table<const T: usize, const V: usize, E: Experiment<T, V>>(
+    name: &str,
+    treatments: &[E::Treatment],
+    variants: &[E::Variant],
+    estimates: &[Vec<Option<f64>>],
 ) {
     let cmp = |a: &f64, b: &f64| match a < b {
         true => Ordering::Less,
@@ -17,8 +27,6 @@ pub fn print_summary_table<const T: usize, const V: usize, E: Experiment<T, V>>(
         Intermediate,
         Missing,
     }
-
-    let estimates = collect_point_estimates::<_, _, E>(name, treatments, variants);
 
     // title
     let mut title = vec![];
@@ -32,7 +40,7 @@ pub fn print_summary_table<const T: usize, const V: usize, E: Experiment<T, V>>(
 
     // cells
     let mut rows = vec![];
-    for (treatment, treatment_estimates) in treatments.iter().zip(&estimates) {
+    for (treatment, treatment_estimates) in treatments.iter().zip(estimates) {
         let values = || treatment_estimates.iter().map(|x| x.unwrap_or(f64::MAX));
         let min = values().min_by(cmp).unwrap_or(f64::MAX);
         let max = values().max_by(cmp).unwrap_or(f64::MIN);
@@ -74,6 +82,7 @@ pub fn print_summary_table<const T: usize, const V: usize, E: Experiment<T, V>>(
     }
 
     let table = rows.table().title(title);
+    println!("# {name}");
     print_stdout(table).expect("Failed to print the summary table");
 }
 
