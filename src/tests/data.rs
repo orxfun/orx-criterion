@@ -2,9 +2,9 @@ use crate::Data;
 
 #[test]
 fn treatment_0() {
-    pub struct MyTreat;
+    pub struct MyData;
 
-    impl Data for MyTreat {
+    impl Data for MyData {
         fn factor_names() -> Vec<&'static str> {
             vec![]
         }
@@ -14,16 +14,16 @@ fn treatment_0() {
         }
     }
 
-    let t = MyTreat;
+    let t = MyData;
 
     assert_eq!(t.to_str_long(), "");
 }
 
 #[test]
 fn treatment_1() {
-    pub struct MyTreat(usize);
+    pub struct MyData(usize);
 
-    impl Data for MyTreat {
+    impl Data for MyData {
         fn factor_names() -> Vec<&'static str> {
             vec!["width"]
         }
@@ -33,20 +33,20 @@ fn treatment_1() {
         }
     }
 
-    let t = MyTreat(42);
+    let t = MyData(42);
 
     assert_eq!(t.to_str_long(), "width:42");
 }
 
 #[test]
 fn treatment_3() {
-    pub struct MyTreat {
+    pub struct MyData {
         len: usize,
         sort: bool,
         split: char,
     }
 
-    impl Data for MyTreat {
+    impl Data for MyData {
         fn factor_names() -> Vec<&'static str> {
             vec!["len", "sort", "split"]
         }
@@ -75,7 +75,7 @@ fn treatment_3() {
         }
     }
 
-    let t = MyTreat {
+    let t = MyData {
         len: 9876543210,
         sort: true,
         split: '7',

@@ -1,8 +1,8 @@
 use crate::{Data, Experiment, Variant};
 
-pub struct MyTreat1(usize);
+pub struct MyData(usize);
 
-impl Data for MyTreat1 {
+impl Data for MyData {
     fn factor_names() -> Vec<&'static str> {
         vec!["width"]
     }
@@ -16,12 +16,12 @@ impl Data for MyTreat1 {
     }
 }
 
-pub struct MyVariant2 {
+pub struct MyVariant {
     len: usize,
     sort: bool,
 }
 
-impl Variant for MyVariant2 {
+impl Variant for MyVariant {
     fn param_names() -> Vec<&'static str> {
         vec!["len", "sort"]
     }
@@ -49,16 +49,16 @@ impl Variant for MyVariant2 {
 pub struct MyExperiment;
 
 impl Experiment for MyExperiment {
-    type Data = MyTreat1;
+    type Data = MyData;
 
-    type Variant = MyVariant2;
+    type Variant = MyVariant;
 
     type Input = Vec<usize>;
 
     type Output = Vec<usize>;
 
-    fn input(treatment: &Self::Data) -> Self::Input {
-        (0..treatment.0).collect()
+    fn input(data: &Self::Data) -> Self::Input {
+        (0..data.0).collect()
     }
 
     fn execute(variant: &Self::Variant, input: &Self::Input) -> Self::Output {
@@ -76,13 +76,13 @@ impl Experiment for MyExperiment {
 
 #[test]
 fn basic_experiment() {
-    let treatments = [MyTreat1(2), MyTreat1(5)];
+    let data = [MyData(2), MyData(5)];
     let variants = [
-        MyVariant2 {
+        MyVariant {
             len: 1001,
             sort: false,
         },
-        MyVariant2 {
+        MyVariant {
             len: 1001,
             sort: true,
         },
@@ -91,11 +91,11 @@ fn basic_experiment() {
     let mut outputs = vec![];
     let mut names = vec![];
     let mut names_short = vec![];
-    for treatment in &treatments {
-        let input = MyExperiment::input(treatment);
+    for datum in &data {
+        let input = MyExperiment::input(datum);
         for variant in &variants {
-            names.push(MyExperiment::run_key_long(treatment, variant));
-            names_short.push(MyExperiment::run_key_short(treatment, variant));
+            names.push(MyExperiment::run_key_long(datum, variant));
+            names_short.push(MyExperiment::run_key_short(datum, variant));
             outputs.push(MyExperiment::execute(variant, &input));
         }
     }
