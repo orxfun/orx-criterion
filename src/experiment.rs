@@ -37,6 +37,17 @@ pub trait Experiment<const T: usize, const V: usize>: Sized {
         .collect()
     }
 
+    fn summary_csv_path(bench_name: &str) -> PathBuf {
+        [
+            "target",
+            "criterion",
+            bench_name,
+            &format!("summary_{bench_name}.csv"),
+        ]
+        .iter()
+        .collect()
+    }
+
     fn input(treatment: &Self::Treatment) -> Self::Input;
 
     fn expected_output(_: &Self::Input) -> Option<Self::Output> {

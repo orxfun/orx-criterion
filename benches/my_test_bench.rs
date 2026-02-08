@@ -1,6 +1,5 @@
 use criterion::{Criterion, criterion_group, criterion_main};
 use orx_criterion::{Experiment, Treatment, Variant};
-use orx_parallel::{IterIntoParIter, ParIter};
 
 struct Treat(usize, usize);
 
@@ -18,7 +17,6 @@ enum SearchMethod {
     Linear,
     LinearBackwards,
     Binary,
-    Parallel,
 }
 
 impl Variant<1> for SearchMethod {
@@ -31,7 +29,6 @@ impl Variant<1> for SearchMethod {
             Self::Linear => "lin",
             Self::LinearBackwards => "lin-bwd",
             Self::Binary => "bin",
-            Self::Parallel => "par",
         }
         .to_string()]
     }
@@ -69,12 +66,6 @@ impl Experiment<2, 1> for SearchExperiment {
                 .position(|x| x == value)
                 .map(|x| vec.len() - x - 1),
             SearchMethod::Binary => vec.as_slice().binary_search(value).ok(),
-            SearchMethod::Parallel => vec
-                .iter()
-                .enumerate()
-                .iter_into_par()
-                .find(|(_, x)| *x == value)
-                .map(|(idx, _)| idx),
         }
     }
 }
@@ -89,7 +80,6 @@ fn run(c: &mut Criterion) {
         SearchMethod::Linear,
         SearchMethod::LinearBackwards,
         SearchMethod::Binary,
-        SearchMethod::Parallel,
     ];
 
     SearchExperiment::bench(c, "my_test_bench", &treatments, &variants);
