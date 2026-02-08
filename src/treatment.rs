@@ -1,7 +1,7 @@
-pub trait Treatment<const N: usize> {
-    fn factor_names() -> [&'static str; N];
+pub trait Treatment {
+    fn factor_names() -> Vec<&'static str>;
 
-    fn factor_values(&self) -> [String; N];
+    fn factor_values(&self) -> Vec<String>;
 
     fn to_string(&self) -> String {
         to_string(&Self::factor_names(), &self.factor_values())

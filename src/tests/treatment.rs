@@ -4,13 +4,13 @@ use crate::Treatment;
 fn treatment_0() {
     pub struct MyTreat;
 
-    impl Treatment<0> for MyTreat {
-        fn factor_names() -> [&'static str; 0] {
-            []
+    impl Treatment for MyTreat {
+        fn factor_names() -> Vec<&'static str> {
+            vec![]
         }
 
-        fn factor_values(&self) -> [String; 0] {
-            []
+        fn factor_values(&self) -> Vec<String> {
+            vec![]
         }
     }
 
@@ -23,13 +23,13 @@ fn treatment_0() {
 fn treatment_1() {
     pub struct MyTreat(usize);
 
-    impl Treatment<1> for MyTreat {
-        fn factor_names() -> [&'static str; 1] {
-            ["width"]
+    impl Treatment for MyTreat {
+        fn factor_names() -> Vec<&'static str> {
+            vec!["width"]
         }
 
-        fn factor_values(&self) -> [String; 1] {
-            [self.0.to_string()]
+        fn factor_values(&self) -> Vec<String> {
+            vec![self.0.to_string()]
         }
     }
 
@@ -46,13 +46,13 @@ fn treatment_3() {
         split: char,
     }
 
-    impl Treatment<3> for MyTreat {
-        fn factor_names() -> [&'static str; 3] {
-            ["len", "sort", "split"]
+    impl Treatment for MyTreat {
+        fn factor_names() -> Vec<&'static str> {
+            vec!["len", "sort", "split"]
         }
 
-        fn factor_values(&self) -> [String; 3] {
-            [
+        fn factor_values(&self) -> Vec<String> {
+            vec![
                 self.len.to_string(),
                 self.sort.to_string(),
                 self.split.to_string(),

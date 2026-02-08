@@ -4,10 +4,10 @@ use criterion::Criterion;
 use std::fmt::Debug;
 use std::path::PathBuf;
 
-pub trait Experiment<const T: usize, const V: usize>: Sized {
-    type Treatment: Treatment<T>;
+pub trait Experiment: Sized {
+    type Treatment: Treatment;
 
-    type Variant: Variant<V>;
+    type Variant: Variant;
 
     type Input;
 
@@ -99,6 +99,6 @@ pub trait Experiment<const T: usize, const V: usize>: Sized {
 
         group.finish();
 
-        summarize::<_, _, Self>(name, treatments, variants);
+        summarize::<Self>(name, treatments, variants);
     }
 }

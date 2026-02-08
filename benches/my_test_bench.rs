@@ -3,13 +3,13 @@ use orx_criterion::{Experiment, Treatment, Variant};
 
 struct Treat(usize, usize);
 
-impl Treatment<2> for Treat {
-    fn factor_names() -> [&'static str; 2] {
-        ["len", "position"]
+impl Treatment for Treat {
+    fn factor_names() -> Vec<&'static str> {
+        vec!["len", "position"]
     }
 
-    fn factor_values(&self) -> [String; 2] {
-        [self.0.to_string(), self.1.to_string()]
+    fn factor_values(&self) -> Vec<String> {
+        vec![self.0.to_string(), self.1.to_string()]
     }
 }
 
@@ -19,24 +19,26 @@ enum SearchMethod {
     Binary,
 }
 
-impl Variant<1> for SearchMethod {
-    fn param_names() -> [&'static str; 1] {
-        ["search"]
+impl Variant for SearchMethod {
+    fn param_names() -> Vec<&'static str> {
+        vec!["search"]
     }
 
-    fn param_values(&self) -> [String; 1] {
-        [match self {
-            Self::Linear => "lin",
-            Self::LinearBackwards => "lin-bwd",
-            Self::Binary => "bin",
-        }
-        .to_string()]
+    fn param_values(&self) -> Vec<String> {
+        vec![
+            match self {
+                Self::Linear => "lin",
+                Self::LinearBackwards => "lin-bwd",
+                Self::Binary => "bin",
+            }
+            .to_string(),
+        ]
     }
 }
 
 struct SearchExperiment;
 
-impl Experiment<2, 1> for SearchExperiment {
+impl Experiment for SearchExperiment {
     type Treatment = Treat;
 
     type Variant = SearchMethod;
