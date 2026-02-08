@@ -51,10 +51,25 @@ fn variant_3() {
             vec!["len", "sort", "split"]
         }
 
+        fn param_names_short() -> Vec<&'static str> {
+            vec!["l", "srt", "sp"]
+        }
+
         fn param_values(&self) -> Vec<String> {
             vec![
                 self.len.to_string(),
                 self.sort.to_string(),
+                self.split.to_string(),
+            ]
+        }
+
+        fn param_values_short(&self) -> Vec<String> {
+            vec![
+                self.len.to_string(),
+                match self.sort {
+                    true => "T".to_string(),
+                    false => "F".to_string(),
+                },
                 self.split.to_string(),
             ]
         }
@@ -67,4 +82,5 @@ fn variant_3() {
     };
 
     assert_eq!(t.to_str_long(), "len:9876543210_sort:true_split:7");
+    assert_eq!(t.to_str_short(), "l:9876543210_srt:T_sp:7");
 }

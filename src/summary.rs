@@ -6,6 +6,7 @@ use std::{cmp::Ordering, path::PathBuf};
 
 pub fn summarize<E: Experiment>(name: &str, treatments: &[E::Treatment], variants: &[E::Variant]) {
     let estimates = collect_point_estimates::<E>(name, treatments, variants);
+
     create_summary_csv::<E>(name, treatments, variants, &estimates)
         .expect("Failed to create csv summary");
     println!(
