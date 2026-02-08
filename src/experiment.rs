@@ -1,5 +1,6 @@
 use crate::summary::summarize;
 use crate::{Data, Variant};
+use colorize::AnsiColor;
 use criterion::Criterion;
 use std::fmt::Debug;
 use std::path::PathBuf;
@@ -61,22 +62,25 @@ pub trait Experiment: Sized {
         let num_v = variants.len();
         let num_t = data.len() * variants.len();
 
-        println!(
-            "\n\n\n# {name} benchmarks with {num_d} data points and {num_v} variants => {num_t} treatments",
+        let log = format!(
+            "\n\n\n# {name} benchmarks with {num_d} data points and {num_v} variants => {num_t} treatments"
         );
+        println!("{}", log.bold().underlined());
 
         let mut group = c.benchmark_group(name);
         for (d, datum) in data.iter().enumerate() {
             let datum_str = datum.to_str_long();
             let d = d + 1;
-            println!("\n\n\n\n\n## Data [{d}/{num_d}]: {datum_str}");
+            let log = format!("\n\n\n\n\n## Data [{d}/{num_d}]: {datum_str}");
+            println!("{}", log.yellow().bold());
 
             let input = Self::input(datum);
             for (v, variant) in variants.iter().enumerate() {
                 let v = v + 1;
                 let idx = (d - 1) * num_v + v;
                 let run_str = Self::run_key_long(datum, variant);
-                println!("\n### [{idx}/{num_t} || {v}/{num_v}]: {run_str}");
+                let log = format!("\n### [{idx}/{num_t} || {v}/{num_v}]: {run_str}");
+                println!("{}", log.green());
 
                 let execution_name = Self::run_key_short(datum, variant);
 

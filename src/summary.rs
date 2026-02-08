@@ -1,5 +1,6 @@
 use crate::{Data, Experiment, Variant};
 use cli_table::{Cell, CellStruct, Color, Style, Table, format::Justify, print_stdout};
+use colorize::AnsiColor;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::{cmp::Ordering, path::PathBuf};
@@ -9,10 +10,12 @@ pub fn summarize<E: Experiment>(name: &str, data: &[E::Data], variants: &[E::Var
 
     create_summary_csv::<E>(name, data, variants, &estimates)
         .expect("Failed to create csv summary");
-    println!(
+
+    let log = format!(
         "\nSummary table created at:\n{}\n",
         E::summary_csv_path(name).to_str().unwrap()
     );
+    println!("{}", log.italic());
 
     print_summary_table::<E>(name, data, variants, &estimates);
 }
@@ -124,7 +127,8 @@ fn print_summary_table<E: Experiment>(
     }
 
     let table = rows.table().title(title);
-    println!("# {name}");
+    let log = format!("\n# {name}");
+    println!("{}", log.bold().yellow());
     print_stdout(table).expect("Failed to print the summary table");
 }
 
