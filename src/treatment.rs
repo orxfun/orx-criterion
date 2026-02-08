@@ -3,6 +3,14 @@ pub trait Treatment {
 
     fn factor_values(&self) -> Vec<String>;
 
+    fn factor_names_short() -> Vec<&'static str> {
+        Self::factor_names()
+    }
+
+    fn factor_values_short(&self) -> Vec<String> {
+        self.factor_values()
+    }
+
     fn to_string(&self) -> String {
         to_string(&Self::factor_names(), &self.factor_values())
     }
