@@ -13,16 +13,16 @@ pub trait Experiment: Sized {
 
     type Output: PartialEq + Debug;
 
-    fn execution_to_string(treatment: &Self::Treatment, variant: &Self::Variant) -> String {
+    fn run_key(treatment: &Self::Treatment, variant: &Self::Variant) -> String {
         format!("{}/{}", treatment.to_string(), variant.to_string())
     }
 
-    fn execution_estimates_path(
+    fn run_estimates_path(
         bench_name: &str,
         treatment: &Self::Treatment,
         variant: &Self::Variant,
     ) -> PathBuf {
-        let execution_path = Self::execution_to_string(treatment, variant)
+        let execution_path = Self::run_key(treatment, variant)
             .replace("/", "_")
             .replace(":", "_");
         [
@@ -81,7 +81,7 @@ pub trait Experiment: Sized {
 
             let input = Self::input(treatment);
             for variant in variants {
-                let execution_name = Self::execution_to_string(treatment, variant);
+                let execution_name = Self::run_key(treatment, variant);
 
                 group.bench_with_input(&execution_name, &input, |b, input| {
                     if let Some(expected_output) = Self::expected_output(input) {

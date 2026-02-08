@@ -138,7 +138,7 @@ fn collect_point_estimates<E: Experiment>(
             variants
                 .iter()
                 .map(|variant| {
-                    let execution_path = E::execution_estimates_path(name, treatment, variant);
+                    let execution_path = E::run_estimates_path(name, treatment, variant);
                     get_slope_point_estimate(&execution_path)
                 })
                 .collect()
