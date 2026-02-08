@@ -1,8 +1,8 @@
-use crate::{Experiment, Input, Variant};
+use crate::{Experiment, Data, Variant};
 
 struct Treat(usize, usize);
 
-impl Input for Treat {
+impl Data for Treat {
     fn factor_names() -> Vec<&'static str> {
         vec!["len", "position"]
     }
@@ -36,7 +36,7 @@ impl Variant for SearchMethod {
 struct SearchExperiment;
 
 impl Experiment for SearchExperiment {
-    type Treatment = Treat;
+    type Data = Treat;
 
     type Variant = SearchMethod;
 
@@ -44,7 +44,7 @@ impl Experiment for SearchExperiment {
 
     type Output = Option<usize>;
 
-    fn input(treatment: &Self::Treatment) -> Self::Input {
+    fn input(treatment: &Self::Data) -> Self::Input {
         let vec: Vec<_> = (0..treatment.0).collect();
         let value = *vec.get(treatment.1).unwrap_or(&usize::MAX);
         (vec, value)

@@ -1,8 +1,8 @@
-use crate::{Experiment, Input, Variant};
+use crate::{Data, Experiment, Variant};
 
 pub struct MyTreat1(usize);
 
-impl Input for MyTreat1 {
+impl Data for MyTreat1 {
     fn factor_names() -> Vec<&'static str> {
         vec!["width"]
     }
@@ -49,7 +49,7 @@ impl Variant for MyVariant2 {
 pub struct MyExperiment;
 
 impl Experiment for MyExperiment {
-    type Treatment = MyTreat1;
+    type Data = MyTreat1;
 
     type Variant = MyVariant2;
 
@@ -57,7 +57,7 @@ impl Experiment for MyExperiment {
 
     type Output = Vec<usize>;
 
-    fn input(treatment: &Self::Treatment) -> Self::Input {
+    fn input(treatment: &Self::Data) -> Self::Input {
         (0..treatment.0).collect()
     }
 

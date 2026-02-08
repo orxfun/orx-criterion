@@ -1,9 +1,9 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use orx_criterion::{Experiment, Input, Variant};
+use orx_criterion::{Data, Experiment, Variant};
 
 struct Treat(usize, usize);
 
-impl Input for Treat {
+impl Data for Treat {
     fn factor_names() -> Vec<&'static str> {
         vec!["len", "position"]
     }
@@ -52,7 +52,7 @@ impl Variant for SearchMethod {
 struct SearchExperiment;
 
 impl Experiment for SearchExperiment {
-    type Treatment = Treat;
+    type Data = Treat;
 
     type Variant = SearchMethod;
 
@@ -60,7 +60,7 @@ impl Experiment for SearchExperiment {
 
     type Output = Option<usize>;
 
-    fn input(treatment: &Self::Treatment) -> Self::Input {
+    fn input(treatment: &Self::Data) -> Self::Input {
         let vec: Vec<_> = (0..(100 * treatment.0)).collect();
         let value = *vec.get(100 * treatment.1).unwrap_or(&usize::MAX);
         (vec, value)

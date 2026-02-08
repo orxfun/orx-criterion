@@ -14,11 +14,11 @@
 #[cfg(test)]
 mod tests;
 
+mod data;
 mod experiment;
-mod input;
 mod summary;
 mod variant;
 
+pub use data::Data;
 pub use experiment::Experiment;
-pub use input::Input;
 pub use variant::Variant;

@@ -1,10 +1,10 @@
-use crate::{Experiment, Input, Variant};
+use crate::{Data, Experiment, Variant};
 use cli_table::{Cell, CellStruct, Color, Style, Table, format::Justify, print_stdout};
 use std::fs::File;
 use std::io::{Read, Write};
 use std::{cmp::Ordering, path::PathBuf};
 
-pub fn summarize<E: Experiment>(name: &str, treatments: &[E::Treatment], variants: &[E::Variant]) {
+pub fn summarize<E: Experiment>(name: &str, treatments: &[E::Data], variants: &[E::Variant]) {
     let estimates = collect_point_estimates::<E>(name, treatments, variants);
 
     create_summary_csv::<E>(name, treatments, variants, &estimates)
@@ -19,7 +19,7 @@ pub fn summarize<E: Experiment>(name: &str, treatments: &[E::Treatment], variant
 
 fn create_summary_csv<E: Experiment>(
     name: &str,
-    treatments: &[E::Treatment],
+    treatments: &[E::Data],
     variants: &[E::Variant],
     estimates: &[Vec<Option<f64>>],
 ) -> std::io::Result<()> {
@@ -28,7 +28,7 @@ fn create_summary_csv<E: Experiment>(
 
     // title
     let mut row = vec![];
-    row.extend_from_slice(&<E::Treatment as Input>::factor_names());
+    row.extend_from_slice(&<E::Data as Data>::factor_names());
     row.extend_from_slice(&<E::Variant as Variant>::param_names());
     row.push("Time (ns)");
     file.write(row.join(",").as_bytes())?;
@@ -55,7 +55,7 @@ fn create_summary_csv<E: Experiment>(
 
 fn print_summary_table<E: Experiment>(
     name: &str,
-    treatments: &[E::Treatment],
+    treatments: &[E::Data],
     variants: &[E::Variant],
     estimates: &[Vec<Option<f64>>],
 ) {
@@ -72,7 +72,7 @@ fn print_summary_table<E: Experiment>(
 
     // title
     let mut title = vec![];
-    for factor in <E::Treatment as Input>::factor_names() {
+    for factor in <E::Data as Data>::factor_names() {
         title.push(factor.cell().bold(true));
     }
     for param in <E::Variant as Variant>::param_names() {
@@ -130,7 +130,7 @@ fn print_summary_table<E: Experiment>(
 
 fn collect_point_estimates<E: Experiment>(
     name: &str,
-    treatments: &[E::Treatment],
+    treatments: &[E::Data],
     variants: &[E::Variant],
 ) -> Vec<Vec<Option<f64>>> {
     treatments

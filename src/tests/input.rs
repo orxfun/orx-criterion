@@ -1,10 +1,10 @@
-use crate::Input;
+use crate::Data;
 
 #[test]
 fn treatment_0() {
     pub struct MyTreat;
 
-    impl Input for MyTreat {
+    impl Data for MyTreat {
         fn factor_names() -> Vec<&'static str> {
             vec![]
         }
@@ -23,7 +23,7 @@ fn treatment_0() {
 fn treatment_1() {
     pub struct MyTreat(usize);
 
-    impl Input for MyTreat {
+    impl Data for MyTreat {
         fn factor_names() -> Vec<&'static str> {
             vec!["width"]
         }
@@ -46,7 +46,7 @@ fn treatment_3() {
         split: char,
     }
 
-    impl Input for MyTreat {
+    impl Data for MyTreat {
         fn factor_names() -> Vec<&'static str> {
             vec!["len", "sort", "split"]
         }

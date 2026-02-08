@@ -1,4 +1,4 @@
-pub trait Input {
+pub trait Data {
     fn factor_names() -> Vec<&'static str>;
 
     fn factor_values(&self) -> Vec<String>;
