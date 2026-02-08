@@ -1,4 +1,4 @@
-use crate::{Experiment, Treatment, Variant};
+use crate::{Experiment, Input, Variant};
 use cli_table::{Cell, CellStruct, Color, Style, Table, format::Justify, print_stdout};
 use std::fs::File;
 use std::io::{Read, Write};
@@ -28,7 +28,7 @@ fn create_summary_csv<E: Experiment>(
 
     // title
     let mut row = vec![];
-    row.extend_from_slice(&<E::Treatment as Treatment>::factor_names());
+    row.extend_from_slice(&<E::Treatment as Input>::factor_names());
     row.extend_from_slice(&<E::Variant as Variant>::param_names());
     row.push("Time (ns)");
     file.write(row.join(",").as_bytes())?;
@@ -72,7 +72,7 @@ fn print_summary_table<E: Experiment>(
 
     // title
     let mut title = vec![];
-    for factor in <E::Treatment as Treatment>::factor_names() {
+    for factor in <E::Treatment as Input>::factor_names() {
         title.push(factor.cell().bold(true));
     }
     for param in <E::Variant as Variant>::param_names() {

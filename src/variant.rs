@@ -1,4 +1,4 @@
-use crate::treatment::join;
+use crate::input::join;
 
 pub trait Variant {
     fn param_names() -> Vec<&'static str>;

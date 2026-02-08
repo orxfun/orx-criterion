@@ -1,9 +1,9 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use orx_criterion::{Experiment, Treatment, Variant};
+use orx_criterion::{Experiment, Input, Variant};
 
 struct Treat(usize, usize);
 
-impl Treatment for Treat {
+impl Input for Treat {
     fn factor_names() -> Vec<&'static str> {
         vec!["len", "position"]
     }

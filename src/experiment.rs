@@ -1,11 +1,11 @@
 use crate::summary::summarize;
-use crate::{Treatment, Variant};
+use crate::{Input, Variant};
 use criterion::Criterion;
 use std::fmt::Debug;
 use std::path::PathBuf;
 
 pub trait Experiment: Sized {
-    type Treatment: Treatment;
+    type Treatment: Input;
 
     type Variant: Variant;
 

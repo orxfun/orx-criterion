@@ -1,8 +1,8 @@
-use crate::{Experiment, Treatment, Variant};
+use crate::{Experiment, Input, Variant};
 
 struct Treat(usize, usize);
 
-impl Treatment for Treat {
+impl Input for Treat {
     fn factor_names() -> Vec<&'static str> {
         vec!["len", "position"]
     }

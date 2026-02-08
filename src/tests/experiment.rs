@@ -1,8 +1,8 @@
-use crate::{Experiment, Treatment, Variant};
+use crate::{Experiment, Input, Variant};
 
 pub struct MyTreat1(usize);
 
-impl Treatment for MyTreat1 {
+impl Input for MyTreat1 {
     fn factor_names() -> Vec<&'static str> {
         vec!["width"]
     }

@@ -1,4 +1,4 @@
 mod experiment;
 mod experiment_with_expected_output;
-mod treatment;
+mod input;
 mod variant;

@@ -15,10 +15,10 @@
 mod tests;
 
 mod experiment;
+mod input;
 mod summary;
-mod treatment;
 mod variant;
 
 pub use experiment::Experiment;
-pub use treatment::Treatment;
+pub use input::Input;
 pub use variant::Variant;
