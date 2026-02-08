@@ -8,11 +8,16 @@ impl Treatment for Treat {
         vec!["len", "position"]
     }
 
+    fn factor_names_short() -> Vec<&'static str> {
+        vec!["l", "p"]
+    }
+
     fn factor_values(&self) -> Vec<String> {
         vec![self.0.to_string(), self.1.to_string()]
     }
 }
 
+#[derive(Debug)]
 enum SearchMethod {
     Linear,
     LinearBackwards,
@@ -24,7 +29,15 @@ impl Variant for SearchMethod {
         vec!["search"]
     }
 
+    fn param_names_short() -> Vec<&'static str> {
+        vec!["s"]
+    }
+
     fn param_values(&self) -> Vec<String> {
+        vec![format!("{self:?}")]
+    }
+
+    fn param_values_short(&self) -> Vec<String> {
         vec![
             match self {
                 Self::Linear => "lin",
