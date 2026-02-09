@@ -49,6 +49,17 @@ pub trait Experiment: Sized {
         .collect()
     }
 
+    fn ai_prompt_path(bench_name: &str) -> PathBuf {
+        [
+            "target",
+            "criterion",
+            bench_name,
+            &format!("prompt_{bench_name}.md"),
+        ]
+        .iter()
+        .collect()
+    }
+
     fn input(data: &Self::Data) -> Self::Input;
 
     fn expected_output(_: &Self::Data, _: &Self::Input) -> Option<Self::Output> {
