@@ -66,6 +66,8 @@ pub trait Experiment: Sized {
         None
     }
 
+    fn validate_output(_: &Self::Data, _: &Self::Input, _: &Self::Output) {}
+
     fn execute(variant: &Self::Variant, input: &Self::Input) -> Self::Output;
 
     fn bench(c: &mut Criterion, name: &str, data: &[Self::Data], variants: &[Self::Variant]) {
@@ -96,8 +98,9 @@ pub trait Experiment: Sized {
                 let execution_name = Self::run_key_short(datum, variant);
 
                 group.bench_with_input(&execution_name, &input, |b, input| {
+                    let output = Self::execute(variant, input);
+                    Self::validate_output(datum, input, &output);
                     if let Some(expected_output) = Self::expected_output(datum, input) {
-                        let output = Self::execute(variant, input);
                         assert_eq!(
                             output, expected_output,
                             "Output of run is not equal to expected output. Run: {run_str}",
