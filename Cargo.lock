@@ -394,6 +394,7 @@ dependencies = [
  "colorize",
  "criterion",
  "orx-parallel",
+ "orx-priority-queue",
  "rand",
  "rand_chacha",
  "rayon",

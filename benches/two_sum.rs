@@ -138,8 +138,8 @@ impl Experiment for TwoSumExp {
     type Output = Option<[usize; 2]>;
 
     fn input(data: &Self::Data) -> Self::Input {
-        let n = data.0;
         let mut rng = ChaCha8Rng::seed_from_u64(42);
+        let n = data.0;
         let mut array: Vec<_> = (0..data.0).map(|_| rng.random_range(3..n as i64)).collect();
         let i = array[n / 2] as usize;
         let j = array[3 * n / 4] as usize;
@@ -160,8 +160,11 @@ impl Experiment for TwoSumExp {
     }
 
     fn validate_output(_: &Self::Data, input: &Self::Input, output: &Self::Output) {
-        let [i, j] = output.expect("input data has exactly two elements adding up to 3");
-        assert_eq!(input.array[i] + input.array[j], 3, "two-sum must be 3");
+        assert_eq!(input.indices, *output);
+        assert_eq!(
+            output.map(|[i, j]| input.array[i] + input.array[j]),
+            Some(3)
+        );
     }
 }
 
