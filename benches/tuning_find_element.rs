@@ -1,7 +1,7 @@
 use criterion::{Criterion, criterion_group, criterion_main};
 use orx_criterion::{Data, Experiment, Variant};
 use orx_parallel::{ParIter, Parallelizable};
-use rayon::iter::{IndexedParallelIterator, IntoParallelRefIterator, ParallelIterator};
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
 // data
 
@@ -28,10 +28,10 @@ enum ParLib {
     OrxParallel,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 enum Approach {
-    MapFind,
-    MapAny,
+    Find,
+    Any,
 }
 
 struct SearchAlg {
@@ -85,13 +85,13 @@ impl Experiment for TuneFindElements {
     fn execute(variant: &Self::Variant, input: &Self::Input) -> Self::Output {
         match variant.par_lib {
             ParLib::OrxParallel => match variant.approach {
-                Approach::MapFind => input
+                Approach::Find => input
                     .par()
                     .num_threads(variant.num_threads)
                     .map(|x| &x[2..])
                     .find(|x| *x == "rust")
                     .is_some(),
-                Approach::MapAny => input
+                Approach::Any => input
                     .par()
                     .num_threads(variant.num_threads)
                     .map(|x| &x[2..])
@@ -103,12 +103,12 @@ impl Experiment for TuneFindElements {
                     .build_global()
                     .unwrap();
                 match variant.approach {
-                    Approach::MapFind => input
+                    Approach::Find => input
                         .par_iter()
                         .map(|x| &x[2..])
                         .find_any(|x| *x == "rust")
                         .is_some(),
-                    Approach::MapAny => input.par_iter().map(|x| &x[2..]).any(|x| x == "rust"),
+                    Approach::Any => input.par_iter().map(|x| &x[2..]).any(|x| x == "rust"),
                 }
             }
         }
@@ -116,18 +116,48 @@ impl Experiment for TuneFindElements {
 }
 
 fn run(c: &mut Criterion) {
-    // let data = [
-    //     SortData(1 << 5, 1 << 10),
-    //     SortData(1 << 10, 1 << 9),
-    //     SortData(1 << 20, 1 << 21),
-    // ];
-    // let variants = [
-    //     SearchMethod::Linear,
-    //     SearchMethod::LinearBackwards,
-    //     SearchMethod::Binary,
-    // ];
+    // data
+    let new_data = |len, position| DataSettings { len, position };
+    let data = [
+        new_data(1 << 10, 1 << 9),
+        new_data(1 << 10, 1 << 10),
+        new_data(1 << 15, 1 << 14),
+        new_data(1 << 15, 1 << 15),
+        new_data(1 << 20, 1 << 16),
+        new_data(1 << 20, 1 << 20),
+    ];
 
-    // SearchExperiment::bench(c, "tuning_find_element", &data, &variants);
+    // variants
+
+    let num_threads = || [1, 2, 4, 8, 16];
+    let chunk_size = || [1, 1 << 6, 1 << 10];
+    let approach = || [Approach::Find, Approach::Any];
+
+    let orx_variants = num_threads().into_iter().flat_map(|num_threads| {
+        chunk_size().into_iter().flat_map(move |chunk_size| {
+            approach().into_iter().map(move |approach| SearchAlg {
+                par_lib: ParLib::OrxParallel,
+                num_threads,
+                chunk_size,
+                approach,
+            })
+        })
+    });
+
+    let rayon_variants = num_threads().into_iter().flat_map(|num_threads| {
+        approach().into_iter().map(move |approach| SearchAlg {
+            par_lib: ParLib::Rayon,
+            num_threads,
+            chunk_size: 1,
+            approach,
+        })
+    });
+
+    let variants: Vec<_> = orx_variants.chain(rayon_variants).collect();
+
+    // experiment
+
+    TuneFindElements::bench(c, "tuning_find_element", &data, &variants);
 }
 
 criterion_group!(benches, run);
