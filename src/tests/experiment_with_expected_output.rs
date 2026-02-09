@@ -50,7 +50,7 @@ impl Experiment for SearchExperiment {
         (vec, value)
     }
 
-    fn expected_output(input: &Self::Input) -> Option<Self::Output> {
+    fn expected_output(_: &Self::Data, input: &Self::Input) -> Option<Self::Output> {
         let (vec, value) = input;
         Some(vec.iter().position(|x| x == value))
     }
@@ -76,7 +76,7 @@ fn basic_experiment_with_expected_output() {
         for variant in &variants {
             names.push(SearchExperiment::run_key_long(datum, variant));
             let output = SearchExperiment::execute(variant, &input);
-            if let Some(expected_output) = SearchExperiment::expected_output(&input) {
+            if let Some(expected_output) = SearchExperiment::expected_output(datum, &input) {
                 assert_eq!(output, expected_output);
             }
             outputs.push(output);

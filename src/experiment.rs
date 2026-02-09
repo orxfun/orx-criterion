@@ -51,7 +51,7 @@ pub trait Experiment: Sized {
 
     fn input(data: &Self::Data) -> Self::Input;
 
-    fn expected_output(_: &Self::Input) -> Option<Self::Output> {
+    fn expected_output(_: &Self::Data, _: &Self::Input) -> Option<Self::Output> {
         None
     }
 
@@ -85,7 +85,7 @@ pub trait Experiment: Sized {
                 let execution_name = Self::run_key_short(datum, variant);
 
                 group.bench_with_input(&execution_name, &input, |b, input| {
-                    if let Some(expected_output) = Self::expected_output(input) {
+                    if let Some(expected_output) = Self::expected_output(datum, input) {
                         let output = Self::execute(variant, input);
                         assert_eq!(
                             output, expected_output,
