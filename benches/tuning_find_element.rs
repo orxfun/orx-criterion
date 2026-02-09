@@ -78,9 +78,9 @@ impl Experiment for TuneFindElements {
             .collect()
     }
 
-    // fn expected_output(data: &Self::Data, _: &Self::Input) -> Option<Self::Output> {
-    //     // input.
-    // }
+    fn expected_output(data: &Self::Data, _: &Self::Input) -> Option<Self::Output> {
+        Some(data.position < data.len)
+    }
 
     fn execute(variant: &Self::Variant, input: &Self::Input) -> Self::Output {
         match variant.par_lib {
