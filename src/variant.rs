@@ -1,5 +1,13 @@
 use crate::data::join;
 
+/// A variant to execute a common task.
+///
+/// Each variant can be uniquely determined by the combination of its parameter values.
+/// 
+/// These parameters might have categorical or ordinal values.
+/// Consider for instance Dijkstra's algorithm to solve the single-source shortest path problem.
+/// 
+/// * we may solve 
 pub trait Variant {
     fn param_names() -> Vec<&'static str>;
 
