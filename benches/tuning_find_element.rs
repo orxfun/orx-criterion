@@ -5,6 +5,8 @@ use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
 // data
 
+const SEARCH_PHRASE: &str = "rust";
+
 struct DataSettings {
     len: usize,
     position: usize,
@@ -97,7 +99,7 @@ impl Experiment for TuneFindElements {
     fn input(data: &Self::Data) -> Self::Input {
         (0..data.len)
             .map(|i| match i == data.position {
-                true => "__rust".to_string(),
+                true => format!("__{SEARCH_PHRASE}"),
                 false => format!("__{i}"),
             })
             .collect()
@@ -114,27 +116,32 @@ impl Experiment for TuneFindElements {
                     .par()
                     .num_threads(variant.num_threads)
                     .map(|x| &x[2..])
-                    .find(|x| *x == "rust")
+                    .find(|x| *x == SEARCH_PHRASE)
                     .is_some(),
                 Approach::Any => input
                     .par()
                     .num_threads(variant.num_threads)
                     .map(|x| &x[2..])
-                    .any(|x| *x == "rust"),
+                    .any(|x| *x == SEARCH_PHRASE),
             },
             ParLib::Rayon => {
-                rayon::ThreadPoolBuilder::new()
-                    .num_threads(variant.num_threads)
-                    .build_global()
-                    .unwrap();
-                match variant.approach {
+                fn create_pool(num_threads: usize) -> rayon::ThreadPool {
+                    rayon::ThreadPoolBuilder::new()
+                        .num_threads(num_threads)
+                        .build()
+                        .unwrap()
+                }
+                create_pool(variant.num_threads).install(|| match variant.approach {
                     Approach::Find => input
                         .par_iter()
                         .map(|x| &x[2..])
-                        .find_any(|x| *x == "rust")
+                        .find_any(|x| *x == SEARCH_PHRASE)
                         .is_some(),
-                    Approach::Any => input.par_iter().map(|x| &x[2..]).any(|x| x == "rust"),
-                }
+                    Approach::Any => input
+                        .par_iter()
+                        .map(|x| &x[2..])
+                        .any(|x| x == SEARCH_PHRASE),
+                })
             }
         }
     }
