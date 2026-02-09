@@ -158,6 +158,11 @@ impl Experiment for TwoSumExp {
             StoreType::BTreeMap => algorithm::<BTreeMap<_, _>>(array, 3),
         }
     }
+
+    fn validate_output(_: &Self::Data, input: &Self::Input, output: &Self::Output) {
+        let [i, j] = output.expect("input data has exactly two elements adding up to 3");
+        assert_eq!(input.array[i] + input.array[j], 3, "two-sum must be 3");
+    }
 }
 
 fn run(c: &mut Criterion) {
