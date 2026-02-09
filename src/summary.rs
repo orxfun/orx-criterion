@@ -66,6 +66,11 @@ pub fn summarize<E: Experiment>(name: &str, data: &[E::Data], variants: &[E::Var
     print_summary_table::<E>(name, data, variants, &estimates);
 
     create_ai_prompt_to_analyze::<E>(name, data, variants).expect("Failed to create ai prompt");
+    let log = format!(
+        "\nA draft AI prompt to analyze the summary table is created at:\n{}\n",
+        E::ai_prompt_path(name).to_str().unwrap()
+    );
+    println!("{}", log.italic());
 }
 
 fn create_summary_csv<E: Experiment>(
@@ -223,6 +228,9 @@ Each data set, or combination, gets a unique index specified in column 'v'.
 
 In total, there exist {num_treatments} treatments as a unique combination of data settings and variant parameters.
 Each treatment gets a unique index specified in column 't'.
+
+The response variable is the time.
+Although we have a single value per treatment, these values are obtained by the 'criterion' crate which runs sufficiently large number of repetitions to obtain these point estimates.
 
 The objective is to solve the problem as fast as possible.
 In other words, we want to minimize elapsed time.
