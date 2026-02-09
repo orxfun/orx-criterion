@@ -8,11 +8,14 @@ publish = ["artifactory"]
 cli-table = { version = "0.5.0" }
 colorize = { version = "0.1.0" }
 criterion = { version = "0.8.2" }
+orx-priority-queue = { version = "1.8.0" }
 
 [dev-dependencies]
 orx-parallel = { version = "3.4.0" }
 rayon = { version = "1.11.0" }
+rand = "0.9.2"
+rand_chacha = "0.9"
 
 [[bench]]
-name = "my_test_bench"
+name = "shortest_path"
 harness = false
