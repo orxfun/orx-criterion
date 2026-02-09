@@ -49,9 +49,20 @@ pub trait Experiment: Sized {
         .collect()
     }
 
+    fn ai_prompt_path(bench_name: &str) -> PathBuf {
+        [
+            "target",
+            "criterion",
+            bench_name,
+            &format!("prompt_{bench_name}.md"),
+        ]
+        .iter()
+        .collect()
+    }
+
     fn input(data: &Self::Data) -> Self::Input;
 
-    fn expected_output(_: &Self::Input) -> Option<Self::Output> {
+    fn expected_output(_: &Self::Data, _: &Self::Input) -> Option<Self::Output> {
         None
     }
 
@@ -85,7 +96,7 @@ pub trait Experiment: Sized {
                 let execution_name = Self::run_key_short(datum, variant);
 
                 group.bench_with_input(&execution_name, &input, |b, input| {
-                    if let Some(expected_output) = Self::expected_output(input) {
+                    if let Some(expected_output) = Self::expected_output(datum, input) {
                         let output = Self::execute(variant, input);
                         assert_eq!(
                             output, expected_output,

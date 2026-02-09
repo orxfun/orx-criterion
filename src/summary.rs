@@ -5,6 +5,52 @@ use std::fs::File;
 use std::io::{Read, Write};
 use std::{cmp::Ordering, path::PathBuf};
 
+fn collect_point_estimates<E: Experiment>(
+    name: &str,
+    data: &[E::Data],
+    variants: &[E::Variant],
+) -> Vec<Vec<Option<f64>>> {
+    data.iter()
+        .map(|datum| {
+            variants
+                .iter()
+                .map(|variant| {
+                    let execution_path = E::run_estimates_path(name, datum, variant);
+                    get_slope_point_estimate(&execution_path)
+                })
+                .collect()
+        })
+        .collect()
+}
+
+fn get_slope_point_estimate(path: &PathBuf) -> Option<f64> {
+    let mut file = File::open(path).ok()?;
+    let mut contents = String::new();
+    file.read_to_string(&mut contents).ok()?;
+
+    let field_slope_null = "\"slope\":null";
+    let is_slope_null = contents.find(field_slope_null).is_some();
+
+    let field = match is_slope_null {
+        true => "\"mean\"",
+        false => "\"slope\"",
+    };
+    let position = contents.find(field)?;
+    let begin = position + field.len();
+    let slice = &contents[begin..];
+
+    let field_estimate = "\"point_estimate\":";
+    let position = slice.find(field_estimate)?;
+    let begin = position + field_estimate.len();
+    let slice = &slice[begin..];
+
+    let comma = ",";
+    let position = slice.find(comma)?;
+    let slice = &slice[0..position];
+
+    slice.parse().ok()
+}
+
 pub fn summarize<E: Experiment>(name: &str, data: &[E::Data], variants: &[E::Variant]) {
     let estimates = collect_point_estimates::<E>(name, data, variants);
 
@@ -18,6 +64,13 @@ pub fn summarize<E: Experiment>(name: &str, data: &[E::Data], variants: &[E::Var
     println!("{}", log.italic());
 
     print_summary_table::<E>(name, data, variants, &estimates);
+
+    create_ai_prompt_to_analyze::<E>(name, data, variants).expect("Failed to create ai prompt");
+    let log = format!(
+        "\nA draft AI prompt to analyze the summary table is created at:\n{}\n",
+        E::ai_prompt_path(name).to_str().unwrap()
+    );
+    println!("{}", log.italic());
 }
 
 fn create_summary_csv<E: Experiment>(
@@ -146,48 +199,47 @@ fn print_summary_table<E: Experiment>(
     print_stdout(table).expect("Failed to print the summary table");
 }
 
-fn collect_point_estimates<E: Experiment>(
+pub fn create_ai_prompt_to_analyze<E: Experiment>(
     name: &str,
     data: &[E::Data],
     variants: &[E::Variant],
-) -> Vec<Vec<Option<f64>>> {
-    data.iter()
-        .map(|datum| {
-            variants
-                .iter()
-                .map(|variant| {
-                    let execution_path = E::run_estimates_path(name, datum, variant);
-                    get_slope_point_estimate(&execution_path)
-                })
-                .collect()
-        })
-        .collect()
-}
+) -> std::io::Result<()> {
+    let path = E::ai_prompt_path(name);
+    let mut file = File::create(path)?;
 
-fn get_slope_point_estimate(path: &PathBuf) -> Option<f64> {
-    let mut file = File::open(path).ok()?;
-    let mut contents = String::new();
-    file.read_to_string(&mut contents).ok()?;
+    let summary_path = E::summary_csv_path(name);
+    let num_data = data.len();
+    let factor_names = <E::Data as Data>::factor_names().join(", ");
+    let num_variants = variants.len();
+    let param_names = <E::Variant as Variant>::param_names().join(", ");
+    let num_treatments = num_data * num_variants;
 
-    let field_slope_null = "\"slope\":null";
-    let is_slope_null = contents.find(field_slope_null).is_some();
+    let prompt = format!(
+        r"
+The file at '{summary_path:?}' is the output of a full-factorial experiment for the '{name}' benchmark.
 
-    let field = match is_slope_null {
-        true => "\"mean\"",
-        false => "\"slope\"",
-    };
-    let position = contents.find(field)?;
-    let begin = position + field.len();
-    let slice = &contents[begin..];
+The experiment is applied on {num_data} data sets.
+Each data set is defined by combination of values of factors '{factor_names}'.
+Each data set, or combination, gets a unique index specified in column 'd'.
 
-    let field_estimate = "\"point_estimate\":";
-    let position = slice.find(field_estimate)?;
-    let begin = position + field_estimate.len();
-    let slice = &slice[begin..];
+Problem of each data set is solved by {num_variants} variants.
+Each variant is defined by combination of values of parameters '{param_names}'.
+Each data set, or combination, gets a unique index specified in column 'v'.
 
-    let comma = ",";
-    let position = slice.find(comma)?;
-    let slice = &slice[0..position];
+In total, there exist {num_treatments} treatments as a unique combination of data settings and variant parameters.
+Each treatment gets a unique index specified in column 't'.
 
-    slice.parse().ok()
+The response variable is the time.
+Although we have a single value per treatment, these values are obtained by the 'criterion' crate which runs sufficiently large number of repetitions to obtain these point estimates.
+
+The objective is to solve the problem as fast as possible.
+In other words, we want to minimize elapsed time.
+We are searching the best values of the parameters, or best variant, that would perform the best across different data sets.
+
+Please analyze the output of the experiment and provide insights.
+    "
+    );
+
+    file.write(prompt.as_bytes())?;
+    Ok(())
 }

@@ -9,6 +9,10 @@ cli-table = { version = "0.5.0" }
 colorize = { version = "0.1.0" }
 criterion = { version = "0.8.2" }
 
+[dev-dependencies]
+orx-parallel = { version = "3.4.0" }
+rayon = { version = "1.11.0" }
+
 [[bench]]
 name = "my_test_bench"
 harness = false

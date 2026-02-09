@@ -66,7 +66,7 @@ impl Experiment for SearchExperiment {
         (vec, value)
     }
 
-    fn expected_output(input: &Self::Input) -> Option<Self::Output> {
+    fn expected_output(_: &Self::Data, input: &Self::Input) -> Option<Self::Output> {
         let (vec, value) = input;
         Some(vec.iter().position(|x| x == value))
     }
