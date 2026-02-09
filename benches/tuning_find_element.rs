@@ -150,19 +150,12 @@ impl Experiment for TuneFindElements {
 fn run(c: &mut Criterion) {
     // data
     let new_data = |len, position| DataSettings { len, position };
-    let data = [
-        new_data(1 << 10, 1 << 9),
-        new_data(1 << 10, 1 << 10),
-        new_data(1 << 15, 1 << 14),
-        new_data(1 << 15, 1 << 15),
-        new_data(1 << 20, 1 << 16),
-        new_data(1 << 20, 1 << 20),
-    ];
+    let data = [new_data(1 << 15, 1 << 14), new_data(1 << 15, 1 << 15)];
 
     // variants
 
-    let num_threads = || [1, 2, 4, 8, 16];
-    let chunk_size = || [1, 1 << 6, 1 << 10];
+    let num_threads = || [1, 2, 8];
+    let chunk_size = || [1, 1 << 10];
     let approach = || [Approach::Find, Approach::Any];
 
     let orx_variants = num_threads().into_iter().flat_map(|num_threads| {
