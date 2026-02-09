@@ -15,6 +15,10 @@ impl Data for DataSettings {
         vec!["len", "position"]
     }
 
+    fn factor_names_short() -> Vec<&'static str> {
+        vec!["l", "p"]
+    }
+
     fn factor_values(&self) -> Vec<String> {
         vec![self.len.to_string(), self.position.to_string()]
     }
@@ -46,12 +50,33 @@ impl Variant for SearchAlg {
         vec!["par_lib", "num_threads", "chunk_size", "approach"]
     }
 
+    fn param_names_short() -> Vec<&'static str> {
+        vec!["lib", "nt", "ch", "app"]
+    }
+
     fn param_values(&self) -> Vec<String> {
         vec![
             format!("{:?}", self.par_lib),
             self.num_threads.to_string(),
             self.chunk_size.to_string(),
             format!("{:?}", self.approach),
+        ]
+    }
+
+    fn param_values_short(&self) -> Vec<String> {
+        vec![
+            match self.par_lib {
+                ParLib::OrxParallel => "X",
+                ParLib::Rayon => "R",
+            }
+            .to_string(),
+            self.num_threads.to_string(),
+            self.chunk_size.to_string(),
+            match self.approach {
+                Approach::Find => "F",
+                Approach::Any => "A",
+            }
+            .to_string(),
         ]
     }
 }
