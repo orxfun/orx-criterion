@@ -14,11 +14,11 @@
 #[cfg(test)]
 mod tests;
 
+mod alg_factors;
 mod data;
 mod experiment;
 mod summary;
-mod variant;
 
+pub use alg_factors::AlgFactors;
 pub use data::Data;
 pub use experiment::Experiment;
-pub use variant::Variant;

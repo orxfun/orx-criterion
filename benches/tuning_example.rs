@@ -1,5 +1,5 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use orx_criterion::{Data, Experiment, Variant};
+use orx_criterion::{AlgFactors, Data, Experiment};
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
 
@@ -16,23 +16,23 @@ struct AlgParams {
     direction: Direction,
 }
 
-impl Variant for AlgParams {
-    fn param_names() -> Vec<&'static str> {
+impl AlgFactors for AlgParams {
+    fn factor_names() -> Vec<&'static str> {
         vec!["num_threads", "direction"]
     }
 
-    fn param_values(&self) -> Vec<String> {
+    fn factor_values(&self) -> Vec<String> {
         vec![
             self.num_threads.to_string(),
             format!("{:?}", self.direction),
         ]
     }
 
-    fn param_names_short() -> Vec<&'static str> {
+    fn factor_names_short() -> Vec<&'static str> {
         vec!["n", "d"]
     }
 
-    fn param_values_short(&self) -> Vec<String> {
+    fn factor_values_short(&self) -> Vec<String> {
         let direction = match self.direction {
             Direction::Forwards => "F",
             Direction::Backwards => "B",

@@ -1,4 +1,4 @@
-use crate::{Data, Experiment, Variant};
+use crate::{AlgFactors, Data, Experiment};
 use cli_table::{Cell, CellStruct, Color, Style, Table, format::Justify, print_stdout};
 use colorize::AnsiColor;
 use std::fs::File;
@@ -85,7 +85,7 @@ fn create_summary_csv<E: Experiment>(
     // title
     let mut row = vec!["t", "d", "v"];
     row.extend_from_slice(&<E::Data as Data>::factor_names());
-    row.extend_from_slice(&<E::Variant as Variant>::param_names());
+    row.extend_from_slice(&<E::Variant as AlgFactors>::factor_names());
     row.push("Time (ns)");
     file.write(row.join(",").as_bytes())?;
     file.write(b"\n")?;
@@ -95,14 +95,14 @@ fn create_summary_csv<E: Experiment>(
         let factor_values = datum.factor_values();
         for (v, (variant, estimate)) in variants.iter().zip(datum_estimates).enumerate() {
             let t = d * variants.len() + v;
-            let param_values = variant.param_values();
+            let factor_values = variant.factor_values();
             let mut row = vec![
                 (t + 1).to_string(),
                 (d + 1).to_string(),
                 (v + 1).to_string(),
             ];
             row.extend(factor_values.iter().map(|x| x.to_string()));
-            row.extend_from_slice(&param_values);
+            row.extend_from_slice(&factor_values);
             let estimate = estimate
                 .map(|x| format!("{x:.0}"))
                 .unwrap_or("NA".to_string());
@@ -140,7 +140,7 @@ fn print_summary_table<E: Experiment>(
     for factor in <E::Data as Data>::factor_names() {
         title.push(factor.cell().bold(true));
     }
-    for param in <E::Variant as Variant>::param_names() {
+    for param in <E::Variant as AlgFactors>::factor_names() {
         title.push(param.cell().bold(true));
     }
     title.push("Time (ns)".cell().bold(true).justify(Justify::Right));
@@ -173,7 +173,7 @@ fn print_summary_table<E: Experiment>(
         let factor_values = datum.factor_values();
         for (v, (variant, estimate)) in variants.iter().zip(datum_estimates).enumerate() {
             let t = d * variants.len() + v;
-            let param_values = variant.param_values();
+            let factor_values = variant.factor_values();
             let rank = rank_of(estimate);
             let estimate = estimate
                 .map(|x| format!("{x:.0}"))
@@ -184,7 +184,7 @@ fn print_summary_table<E: Experiment>(
                 cell_of(&rank, (v + 1).cell()),
             ];
 
-            for x in factor_values.iter().chain(&param_values) {
+            for x in factor_values.iter().chain(&factor_values) {
                 columns.push(cell_of(&rank, x.cell()));
             }
             columns.push(cell_of(&rank, estimate.cell().justify(Justify::Right)));
@@ -211,7 +211,7 @@ pub fn create_ai_prompt_to_analyze<E: Experiment>(
     let num_data = data.len();
     let factor_names = <E::Data as Data>::factor_names().join(", ");
     let num_variants = variants.len();
-    let param_names = <E::Variant as Variant>::param_names().join(", ");
+    let factor_names = <E::Variant as AlgFactors>::factor_names().join(", ");
     let num_treatments = num_data * num_variants;
 
     let prompt = format!(
@@ -223,7 +223,7 @@ Each data set is defined by combination of values of factors '{factor_names}'.
 Each data set, or combination, gets a unique index specified in column 'd'.
 
 Problem of each data set is solved by {num_variants} variants.
-Each variant is defined by combination of values of parameters '{param_names}'.
+Each variant is defined by combination of values of parameters '{factor_names}'.
 Each data set, or combination, gets a unique index specified in column 'v'.
 
 In total, there exist {num_treatments} treatments as a unique combination of data settings and variant parameters.

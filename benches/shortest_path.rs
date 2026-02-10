@@ -1,5 +1,5 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use orx_criterion::{Data, Experiment, Variant};
+use orx_criterion::{AlgFactors, Data, Experiment};
 use orx_priority_queue::{DaryHeapOfIndices, PriorityQueue, PriorityQueueDecKey};
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
@@ -87,12 +87,12 @@ impl Data for GraphSettings {
 
 struct HeapWidth(usize);
 
-impl Variant for HeapWidth {
-    fn param_names() -> Vec<&'static str> {
+impl AlgFactors for HeapWidth {
+    fn factor_names() -> Vec<&'static str> {
         vec!["heap-width"]
     }
 
-    fn param_values(&self) -> Vec<String> {
+    fn factor_values(&self) -> Vec<String> {
         vec![self.0.to_string()]
     }
 }

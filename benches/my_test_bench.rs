@@ -1,5 +1,5 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use orx_criterion::{Data, Experiment, Variant};
+use orx_criterion::{AlgFactors, Data, Experiment};
 
 struct SortData(usize, usize);
 
@@ -24,20 +24,20 @@ enum SearchMethod {
     Binary,
 }
 
-impl Variant for SearchMethod {
-    fn param_names() -> Vec<&'static str> {
+impl AlgFactors for SearchMethod {
+    fn factor_names() -> Vec<&'static str> {
         vec!["search"]
     }
 
-    fn param_names_short() -> Vec<&'static str> {
+    fn factor_names_short() -> Vec<&'static str> {
         vec!["s"]
     }
 
-    fn param_values(&self) -> Vec<String> {
+    fn factor_values(&self) -> Vec<String> {
         vec![format!("{self:?}")]
     }
 
-    fn param_values_short(&self) -> Vec<String> {
+    fn factor_values_short(&self) -> Vec<String> {
         vec![
             match self {
                 Self::Linear => "lin",

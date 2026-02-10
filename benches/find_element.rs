@@ -1,5 +1,5 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use orx_criterion::{Data, Experiment, Variant};
+use orx_criterion::{AlgFactors, Data, Experiment};
 use orx_parallel::{ParIter, Parallelizable};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
@@ -47,16 +47,16 @@ struct SearchAlg {
     approach: Approach,
 }
 
-impl Variant for SearchAlg {
-    fn param_names() -> Vec<&'static str> {
+impl AlgFactors for SearchAlg {
+    fn factor_names() -> Vec<&'static str> {
         vec!["par_lib", "num_threads", "chunk_size", "approach"]
     }
 
-    fn param_names_short() -> Vec<&'static str> {
+    fn factor_names_short() -> Vec<&'static str> {
         vec!["lib", "nt", "ch", "app"]
     }
 
-    fn param_values(&self) -> Vec<String> {
+    fn factor_values(&self) -> Vec<String> {
         vec![
             format!("{:?}", self.par_lib),
             self.num_threads.to_string(),
@@ -65,7 +65,7 @@ impl Variant for SearchAlg {
         ]
     }
 
-    fn param_values_short(&self) -> Vec<String> {
+    fn factor_values_short(&self) -> Vec<String> {
         vec![
             match self.par_lib {
                 ParLib::OrxParallel => "X",

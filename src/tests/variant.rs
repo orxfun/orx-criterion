@@ -1,15 +1,15 @@
-use crate::Variant;
+use crate::AlgFactors;
 
 #[test]
 fn variant_0() {
     pub struct MyVariant;
 
-    impl Variant for MyVariant {
-        fn param_names() -> Vec<&'static str> {
+    impl AlgFactors for MyVariant {
+        fn factor_names() -> Vec<&'static str> {
             vec![]
         }
 
-        fn param_values(&self) -> Vec<String> {
+        fn factor_values(&self) -> Vec<String> {
             vec![]
         }
     }
@@ -23,12 +23,12 @@ fn variant_0() {
 fn variant_1() {
     pub struct MyVariant(usize);
 
-    impl Variant for MyVariant {
-        fn param_names() -> Vec<&'static str> {
+    impl AlgFactors for MyVariant {
+        fn factor_names() -> Vec<&'static str> {
             vec!["width"]
         }
 
-        fn param_values(&self) -> Vec<String> {
+        fn factor_values(&self) -> Vec<String> {
             vec![self.0.to_string()]
         }
     }
@@ -46,16 +46,16 @@ fn variant_3() {
         split: char,
     }
 
-    impl Variant for MyVariant {
-        fn param_names() -> Vec<&'static str> {
+    impl AlgFactors for MyVariant {
+        fn factor_names() -> Vec<&'static str> {
             vec!["len", "sort", "split"]
         }
 
-        fn param_names_short() -> Vec<&'static str> {
+        fn factor_names_short() -> Vec<&'static str> {
             vec!["l", "srt", "sp"]
         }
 
-        fn param_values(&self) -> Vec<String> {
+        fn factor_values(&self) -> Vec<String> {
             vec![
                 self.len.to_string(),
                 self.sort.to_string(),
@@ -63,7 +63,7 @@ fn variant_3() {
             ]
         }
 
-        fn param_values_short(&self) -> Vec<String> {
+        fn factor_values_short(&self) -> Vec<String> {
             vec![
                 self.len.to_string(),
                 match self.sort {

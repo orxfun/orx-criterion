@@ -1,5 +1,5 @@
 use crate::summary::summarize;
-use crate::{Data, Variant};
+use crate::{Data, AlgFactors};
 use colorize::AnsiColor;
 use criterion::Criterion;
 use std::fmt::Debug;
@@ -8,7 +8,7 @@ use std::path::PathBuf;
 pub trait Experiment: Sized {
     type Data: Data;
 
-    type Variant: Variant;
+    type Variant: AlgFactors;
 
     type Input;
 

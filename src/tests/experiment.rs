@@ -1,4 +1,4 @@
-use crate::{Data, Experiment, Variant};
+use crate::{AlgFactors, Data, Experiment};
 
 pub struct MyData(usize);
 
@@ -21,20 +21,20 @@ pub struct MyVariant {
     sort: bool,
 }
 
-impl Variant for MyVariant {
-    fn param_names() -> Vec<&'static str> {
+impl AlgFactors for MyVariant {
+    fn factor_names() -> Vec<&'static str> {
         vec!["len", "sort"]
     }
 
-    fn param_names_short() -> Vec<&'static str> {
+    fn factor_names_short() -> Vec<&'static str> {
         vec!["l", "s"]
     }
 
-    fn param_values(&self) -> Vec<String> {
+    fn factor_values(&self) -> Vec<String> {
         vec![self.len.to_string(), self.sort.to_string()]
     }
 
-    fn param_values_short(&self) -> Vec<String> {
+    fn factor_values_short(&self) -> Vec<String> {
         vec![
             self.len.to_string(),
             match self.sort {

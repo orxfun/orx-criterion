@@ -1,4 +1,4 @@
-use crate::{Data, Experiment, Variant};
+use crate::{Data, Experiment, AlgFactors};
 
 struct MyData(usize, usize);
 
@@ -17,12 +17,12 @@ enum SearchMethod {
     Binary,
 }
 
-impl Variant for SearchMethod {
-    fn param_names() -> Vec<&'static str> {
+impl AlgFactors for SearchMethod {
+    fn factor_names() -> Vec<&'static str> {
         vec!["search"]
     }
 
-    fn param_values(&self) -> Vec<String> {
+    fn factor_values(&self) -> Vec<String> {
         vec![
             match self {
                 Self::Linear => "lin",

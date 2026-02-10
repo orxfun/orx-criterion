@@ -8,26 +8,26 @@ use crate::data::join;
 ///
 /// # Required Methods
 ///
-/// We must implement two methods: [`param_names`] and [`param_values`]:
+/// We must implement two methods: [`factor_names`] and [`factor_values`]:
 ///
-/// * `param_names` contains the names of parameters.
+/// * `factor_names` contains the names of parameters.
 ///   They will be used as column names of output table, or within logs.
-///   One can optionally implement [`param_names_short`] to provide shorter versions of the names
+///   One can optionally implement [`factor_names_short`] to provide shorter versions of the names
 ///   (please see the corresponding example below).
 ///
-/// * `param_values` contains the values of the parameters of an instance of the variant.
+/// * `factor_values` contains the values of the parameters of an instance of the variant.
 ///   They will be used to determine the variant to solve the problem.
-///   Similarly, [`param_values_short`] can optionally be implemented.
+///   Similarly, [`factor_values_short`] can optionally be implemented.
 ///
-/// Note that four of the methods (`param_names`, `param_values`, and short versions) must return vectors of the same
+/// Note that four of the methods (`factor_names`, `factor_values`, and short versions) must return vectors of the same
 /// length with elements matching in order.
 ///
 /// For demonstration benchmarks, please see the [benches](https://github.com/orxfun/orx-parallel/blob/main/benches) folder.
 ///
-/// [`param_names`]: Variant::param_names
-/// [`param_names_short`]: Variant::param_names_short
-/// [`param_values`]: Variant::param_values
-/// [`param_values_short`]: Variant::param_values_short
+/// [`factor_names`]: AlgFactors::factor_names
+/// [`factor_names_short`]: AlgFactors::factor_names_short
+/// [`factor_values`]: AlgFactors::factor_values
+/// [`factor_values_short`]: AlgFactors::factor_values_short
 ///
 /// # Examples
 ///
@@ -54,12 +54,12 @@ use crate::data::join;
 ///     direction: Direction,
 /// }
 ///
-/// impl Variant for AlgParams {
-///     fn param_names() -> Vec<&'static str> {
+/// impl AlgFactors for AlgParams {
+///     fn factor_names() -> Vec<&'static str> {
 ///         vec!["num_threads", "direction"]
 ///     }
 ///
-///     fn param_values(&self) -> Vec<String> {
+///     fn factor_values(&self) -> Vec<String> {
 ///         vec![
 ///             self.num_threads.to_string(),
 ///             format!("{:?}", self.direction),
@@ -79,7 +79,7 @@ use crate::data::join;
 /// );
 /// ```
 ///
-/// Importantly note that, `param_values` must be implemented in a way that each combination
+/// Importantly note that, `factor_values` must be implemented in a way that each combination
 /// leads to a **unique key** by the [`key_long`] call.
 ///
 /// This is often correct by default conversion to string.
@@ -87,8 +87,8 @@ use crate::data::join;
 /// Further notice that [`key_long`] and [`key_short`] returns the same key since we have not
 /// implemented the optional shorter versions for this example.
 ///
-/// [`key_long`]: Variant::key_long
-/// [`key_short`]: Variant::key_short
+/// [`key_long`]: AlgFactors::key_long
+/// [`key_short`]: AlgFactors::key_short
 ///
 /// # Examples - Optional Short Names and Values
 ///
@@ -116,23 +116,23 @@ use crate::data::join;
 ///     direction: Direction,
 /// }
 ///
-/// impl Variant for AlgParams {
-///     fn param_names() -> Vec<&'static str> {
+/// impl AlgFactors for AlgParams {
+///     fn factor_names() -> Vec<&'static str> {
 ///         vec!["num_threads", "direction"]
 ///     }
 ///
-///     fn param_values(&self) -> Vec<String> {
+///     fn factor_values(&self) -> Vec<String> {
 ///         vec![
 ///             self.num_threads.to_string(),
 ///             format!("{:?}", self.direction),
 ///         ]
 ///     }
 ///
-///     fn param_names_short() -> Vec<&'static str> {
+///     fn factor_names_short() -> Vec<&'static str> {
 ///         vec!["n", "d"]
 ///     }
 ///
-///     fn param_values_short(&self) -> Vec<String> {
+///     fn factor_values_short(&self) -> Vec<String> {
 ///         let direction = match self.direction {
 ///             Direction::Forwards => "F",
 ///             Direction::Backwards => "B",
@@ -149,7 +149,7 @@ use crate::data::join;
 /// assert_eq!(alg_params.key_long(), "num_threads:4_direction:Backwards");
 /// assert_eq!(alg_params.key_short(), "n:4_d:B");
 /// ```
-pub trait Variant {
+pub trait AlgFactors {
     /// Names (long) of parameters of the algorithm variant.
     ///
     /// The long parameter names are used:
@@ -157,45 +157,45 @@ pub trait Variant {
     /// * in criterion benchmark run logs, and
     /// * as column headers of summary tables.
     ///
-    /// Further, unless [`param_names_short`] is explicitly implemented,
+    /// Further, unless [`factor_names_short`] is explicitly implemented,
     /// they are used to create the unique keys of algorithm variants.
     ///
-    /// [`param_names_short`]: Variant::param_names_short
-    fn param_names() -> Vec<&'static str>;
+    /// [`factor_names_short`]: AlgFactors::factor_names_short
+    fn factor_names() -> Vec<&'static str>;
 
     /// String representation of values (long) of parameter values (levels) of the
     /// algorithm variant.
-    fn param_values(&self) -> Vec<String>;
+    fn factor_values(&self) -> Vec<String>;
 
     /// Short names of parameters of the algorithm variant.
     ///
-    /// Default implementation returns the result of [`param_names`].
+    /// Default implementation returns the result of [`factor_names`].
     ///
     /// The short versions are implemented to shorten the keys which is necessary
     /// when working with very long keys (exceeding 64 characters).
     ///
-    /// [`param_names`]: Variant::param_names
-    fn param_names_short() -> Vec<&'static str> {
-        Self::param_names()
+    /// [`factor_names`]: AlgFactors::factor_names
+    fn factor_names_short() -> Vec<&'static str> {
+        Self::factor_names()
     }
 
     /// String representation of values (short) of parameter values (levels) of the
     /// algorithm variant.
-    fn param_values_short(&self) -> Vec<String> {
-        self.param_values()
+    fn factor_values_short(&self) -> Vec<String> {
+        self.factor_values()
     }
 
-    /// Key of the algorithm variant created by joining results of param_names and param_values.
+    /// Key of the algorithm variant created by joining results of factor_names and factor_values.
     ///
     /// It uniquely identifies the algorithm variant.
     fn key_long(&self) -> String {
-        join(&Self::param_names(), &self.param_values())
+        join(&Self::factor_names(), &self.factor_values())
     }
 
-    /// Short key of the algorithm variant created by joining results of param_names_short and param_values_short.
+    /// Short key of the algorithm variant created by joining results of factor_names_short and factor_values_short.
     ///
     /// It uniquely identifies the algorithm variant.
     fn key_short(&self) -> String {
-        join(&Self::param_names_short(), &self.param_values_short())
+        join(&Self::factor_names_short(), &self.factor_values_short())
     }
 }
