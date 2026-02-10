@@ -1,8 +1,14 @@
 [package]
 name = "orx-criterion"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2024"
-publish = ["artifactory"]
+authors = ["orxfun <orx.ugur.arikan@gmail.com>"]
+readme = "README.md"
+description = "Additional 'criterion' benchmarking utilities to enable parameter tuning."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/orxfun/orx-criterion/"
+keywords = ["criterion", "benchmark", "tuning"]
+categories = ["development-tools::profiling"]
 
 [dependencies]
 cli-table = { version = "0.5.0" }
