@@ -45,7 +45,6 @@ impl AlgFactors for Params {
 enum ValuePosition {
     Beg,
     Mid,
-    End,
     None,
 }
 
@@ -71,7 +70,6 @@ impl InputFactors for Settings {
         let position = match self.position {
             ValuePosition::Beg => "B",
             ValuePosition::Mid => "M",
-            ValuePosition::End => "E",
             ValuePosition::None => "X",
         };
         vec![self.len.to_string(), position.to_string()]
@@ -103,7 +101,6 @@ impl Experiment for SearchExp {
         let position = match data.position {
             ValuePosition::Beg => data.len / 5,
             ValuePosition::Mid => data.len / 2,
-            ValuePosition::End => 4 * data.len / 5,
             ValuePosition::None => data.len,
         };
         // we place the search value at the position
@@ -117,44 +114,40 @@ impl Experiment for SearchExp {
     fn execute(alg_variant: &Self::Variant, input: &Self::Input) -> Self::Output {
         let chunk_size = input.array.len() / alg_variant.num_threads;
         let chunks: Vec<_> = input.array.chunks(chunk_size).collect();
-        match alg_variant.direction {
-            Direction::Forwards => std::thread::scope(|s| {
-                let mut handles = vec![];
-                for chunk in chunks {
-                    handles.push(s.spawn(|| {
-                        chunk
-                            .iter()
-                            .position(|x| x.as_str() == SEARCH_VALUE)
-                            .is_some()
-                    }));
-                }
-                handles.into_iter().map(|h| h.join().unwrap()).any(|x| x)
-            }),
-            Direction::Backwards => std::thread::scope(|s| {
-                let mut handles = vec![];
-                for chunk in chunks {
-                    handles.push(s.spawn(|| {
-                        chunk
-                            .iter()
-                            .rev()
-                            .position(|x| x.as_str() == SEARCH_VALUE)
-                            .is_some()
-                    }));
-                }
-                handles.into_iter().map(|h| h.join().unwrap()).any(|x| x)
-            }),
-        }
+        std::thread::scope(|s| {
+            let mut handles = vec![];
+            for chunk in chunks {
+                handles.push(s.spawn(|| {
+                    let mut iter = chunk.iter();
+                    match alg_variant.direction {
+                        Direction::Forwards => iter.position(|x| x.as_str() == SEARCH_VALUE),
+                        Direction::Backwards => iter.rev().position(|x| x.as_str() == SEARCH_VALUE),
+                    }
+                    .is_some()
+                }));
+            }
+            handles.into_iter().map(|h| h.join().unwrap()).any(|x| x)
+        })
+    }
+
+    fn expected_output(_settings: &Self::Data, input: &Self::Input) -> Option<Self::Output> {
+        // in this example, we could have also returned:
+        // Some(!matches!(_settings.position, ValuePosition::None))
+
+        // but it was easier just to cache the expected output within input
+        Some(input.exists)
+    }
+
+    fn validate_output(settings: &Self::Data, input: &Self::Input, exists: &Self::Output) {
+        // or we can perform some validation tests on the output (`exists` here) wrt the settings and input
+        assert_eq!(input.exists, *exists);
+        assert_ne!(matches!(settings.position, ValuePosition::None), *exists);
     }
 }
 
 fn run(c: &mut Criterion) {
-    let lengths = [1 << 5, 1 << 10];
-    let positions = [
-        ValuePosition::Beg,
-        ValuePosition::Mid,
-        ValuePosition::End,
-        ValuePosition::None,
-    ];
+    let lengths = [1 << 5, 1 << 15];
+    let positions = [ValuePosition::Beg, ValuePosition::Mid, ValuePosition::None];
     let input_levels: Vec<_> = lengths
         .into_iter()
         .flat_map(|len| {
