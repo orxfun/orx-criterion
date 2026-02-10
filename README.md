@@ -297,3 +297,17 @@ fn run(c: &mut Criterion) {
 criterion_group!(benches, run);
 criterion_main!(benches);
 ```
+
+### Configure Cargo.toml
+
+In order to run this file as a benchmark, we need to add the following lines to `Cargo.toml`:
+
+```yaml
+[[bench]]
+name = "tuning_example"
+harness = false
+```
+
+### Running the Benchmark
+
+Then, we can run the benchmark & experiment with `cargo bench` command.
