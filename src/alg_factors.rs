@@ -1,8 +1,8 @@
 use crate::input_factors::join;
 
-/// An algorithm variant defined by unique values of its factor levels.
+/// Factors defining an algorithm variant.
 ///
-/// Each variant can be uniquely determined by the combination of its parameter values.
+/// Each variant can be uniquely determined by the combination of its factor values.
 ///
 /// These parameters might have categorical or ordinal values.
 ///
@@ -36,9 +36,9 @@ use crate::input_factors::join;
 ///
 /// Further assume that we can search forwards or backwards.
 ///
-/// In this case, `"num_threads"` and `"direction"` would be the parameter names.
+/// In this case, `"num_threads"` and `"direction"` would be the factor names.
 ///
-/// And combination of values of these parameters would determine how the algorithm would execute.
+/// And combination of values of these factor would determine how the algorithm would execute.
 ///
 /// ```
 /// use orx_criterion::*;
@@ -91,8 +91,6 @@ use crate::input_factors::join;
 /// [`key_short`]: AlgFactors::key_short
 ///
 /// # Examples - Optional Short Names and Values
-///
-/// In order to shorten the
 ///
 /// In some cases, we need a short version of the unique key.
 /// This is due to the fact that criterion limits the result folder names (practically the keys) to 64 characters.
