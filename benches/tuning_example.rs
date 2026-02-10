@@ -145,12 +145,16 @@ impl Experiment for SearchExp {
     }
 
     fn expected_output(_settings: &Self::Data, input: &Self::Input) -> Option<Self::Output> {
-        // returning None (as in default implementation) leads to skipping this validation step
+        // Returning None (as in default implementation) leads to skipping this validation step.
+        // Note that this is executed only once per variant & input before starting the timer; i.e.,
+        // it does not affect the benchmark results.
         Some(input.position)
     }
 
     fn validate_output(_settings: &Self::Data, input: &Self::Input, output: &Self::Output) {
-        // or we can perform some additional validation tests on the output (`exists` here) wrt the settings and input
+        // We can perform some additional validation tests on the output (`exists` here) wrt the settings and input.
+        // Note that this is executed only once per variant & input before starting the timer; i.e.,
+        // it does not affect the benchmark results.
         match *output {
             Some(position) => assert_eq!(input.array[position], SEARCH_VALUE),
             None => assert!(!input.array.iter().any(|x| x.as_str() == SEARCH_VALUE)),
@@ -160,7 +164,7 @@ impl Experiment for SearchExp {
 
 fn run(c: &mut Criterion) {
     let lengths = [1 << 10, 1 << 24];
-    let positions = [ValuePosition::None];
+    let positions = [ValuePosition::Mid, ValuePosition::None];
     let input_levels: Vec<_> = lengths
         .into_iter()
         .flat_map(|len| {
@@ -172,7 +176,7 @@ fn run(c: &mut Criterion) {
         .collect();
 
     let num_threads = [1, 16];
-    let directions = [Direction::Forwards];
+    let directions = [Direction::Forwards, Direction::Backwards];
     let alg_levels: Vec<_> = num_threads
         .into_iter()
         .flat_map(|num_threads| {
