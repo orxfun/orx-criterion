@@ -129,15 +129,15 @@ struct Input {
 struct TwoSumExp;
 
 impl Experiment for TwoSumExp {
-    type Data = DataSettings;
+    type InputFactors = DataSettings;
 
-    type Variant = SearchMethod;
+    type AlgFactors = SearchMethod;
 
     type Input = Input;
 
     type Output = Option<[usize; 2]>;
 
-    fn input(data: &Self::Data) -> Self::Input {
+    fn input(data: &Self::InputFactors) -> Self::Input {
         let mut rng = ChaCha8Rng::seed_from_u64(42);
         let n = data.0;
         let mut array: Vec<_> = (0..data.0).map(|_| rng.random_range(3..n as i64)).collect();
@@ -149,7 +149,7 @@ impl Experiment for TwoSumExp {
         Input { array, indices }
     }
 
-    fn execute(variant: &Self::Variant, input: &Self::Input) -> Self::Output {
+    fn execute(variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
         let array = &input.array;
         match variant.0 {
             StoreType::None => algorithm::<&[i64]>(array, 3),
@@ -159,7 +159,7 @@ impl Experiment for TwoSumExp {
         }
     }
 
-    fn validate_output(_: &Self::Data, input: &Self::Input, output: &Self::Output) {
+    fn validate_output(_: &Self::InputFactors, input: &Self::Input, output: &Self::Output) {
         assert_eq!(input.indices, *output);
         assert_eq!(
             output.map(|[i, j]| input.array[i] + input.array[j]),

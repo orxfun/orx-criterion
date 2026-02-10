@@ -1,4 +1,4 @@
-use crate::{AlgFactors, InputFactors, Experiment};
+use crate::{AlgFactors, Experiment, InputFactors};
 
 struct MyData(usize, usize);
 
@@ -36,26 +36,26 @@ impl AlgFactors for SearchMethod {
 struct SearchExperiment;
 
 impl Experiment for SearchExperiment {
-    type Data = MyData;
+    type InputFactors = MyData;
 
-    type Variant = SearchMethod;
+    type AlgFactors = SearchMethod;
 
     type Input = (Vec<usize>, usize);
 
     type Output = Option<usize>;
 
-    fn input(datum: &Self::Data) -> Self::Input {
+    fn input(datum: &Self::InputFactors) -> Self::Input {
         let vec: Vec<_> = (0..datum.0).collect();
         let value = *vec.get(datum.1).unwrap_or(&usize::MAX);
         (vec, value)
     }
 
-    fn expected_output(_: &Self::Data, input: &Self::Input) -> Option<Self::Output> {
+    fn expected_output(_: &Self::InputFactors, input: &Self::Input) -> Option<Self::Output> {
         let (vec, value) = input;
         Some(vec.iter().position(|x| x == value))
     }
 
-    fn execute(variant: &Self::Variant, input: &Self::Input) -> Self::Output {
+    fn execute(variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
         let (vec, value) = input;
         match variant {
             SearchMethod::Linear => vec.iter().position(|x| x == value),

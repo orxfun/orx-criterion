@@ -93,7 +93,7 @@ const SEARCH_VALUE: &str = "criterion";
 
 struct Input {
     array: Vec<String>,
-    position: Option<usize>,
+    position: Option<usize>, // to be used for validation
 }
 
 /// Experiment to carry out factorial analysis for searching a target value
@@ -101,22 +101,25 @@ struct Input {
 struct SearchExp;
 
 impl Experiment for SearchExp {
-    type Data = Settings;
+    type InputFactors = Settings;
 
-    type Variant = Params;
+    type AlgFactors = Params;
 
     type Input = Input;
 
     type Output = Option<usize>;
 
-    fn input(data: &Self::Data) -> Self::Input {
-        let mut array: Vec<_> = (0..data.len).map(|i| i.to_string()).collect();
-        let index = match data.position {
-            ValuePosition::Mid => data.len / 2,
-            ValuePosition::None => data.len,
+    fn input(input_levels: &Self::InputFactors) -> Self::Input {
+        // we create an array with the given length, without the search value
+        let mut array: Vec<_> = (0..input_levels.len).map(|i| i.to_string()).collect();
+
+        // we decide on index of the search value depending on the position setting
+        let index = match input_levels.position {
+            ValuePosition::Mid => input_levels.len / 2,
+            ValuePosition::None => input_levels.len,
         };
 
-        // we place the search value at the position
+        // we place the search value at the index
         let position = match array.get_mut(index) {
             Some(element) => {
                 *element = SEARCH_VALUE.to_string();
@@ -128,15 +131,17 @@ impl Experiment for SearchExp {
         Input { array, position }
     }
 
-    fn execute(alg_variant: &Self::Variant, input: &Self::Input) -> Self::Output {
+    fn execute(alg_variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
         let chunk_size = input.array.len() / alg_variant.num_threads;
         let chunks: Vec<_> = input.array.chunks(chunk_size).collect();
+
         std::thread::scope(|s| {
             let mut handles = vec![];
             let mut begin = 0;
             for chunk in chunks {
                 handles.push(s.spawn(move || {
                     let mut iter = chunk.iter();
+
                     match alg_variant.direction {
                         Direction::Forwards => iter
                             .position(|x| x.as_str() == SEARCH_VALUE)
@@ -150,7 +155,7 @@ impl Experiment for SearchExp {
                 begin += chunk.len();
             }
 
-            // get the result that returned Some(position), if any
+            // get the result from threads in the form of Some(position), if any
             handles
                 .into_iter()
                 .map(|h| h.join().unwrap())
@@ -159,17 +164,17 @@ impl Experiment for SearchExp {
         })
     }
 
-    fn expected_output(_settings: &Self::Data, input: &Self::Input) -> Option<Self::Output> {
-        // Returning None (as in default implementation) leads to skipping this validation step.
-        // Note that this is executed only once per variant & input before starting the timer; i.e.,
-        // it does not affect the benchmark results.
+    fn expected_output(
+        _settings: &Self::InputFactors,
+        input: &Self::Input,
+    ) -> Option<Self::Output> {
+        // we simply return the expected output cached in the input
         Some(input.position)
     }
 
-    fn validate_output(_settings: &Self::Data, input: &Self::Input, output: &Self::Output) {
-        // We can perform some additional validation tests on the output (`exists` here) wrt the settings and input.
-        // Note that this is executed only once per variant & input before starting the timer; i.e.,
-        // it does not affect the benchmark results.
+    fn validate_output(_settings: &Self::InputFactors, input: &Self::Input, output: &Self::Output) {
+        // additional validation logic just to make sure
+        // the linear search below does not affect results
         match *output {
             Some(position) => assert_eq!(input.array[position], SEARCH_VALUE),
             None => assert!(!input.array.iter().any(|x| x.as_str() == SEARCH_VALUE)),

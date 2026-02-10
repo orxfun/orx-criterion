@@ -6,26 +6,26 @@ use std::fmt::Debug;
 use std::path::PathBuf;
 
 pub trait Experiment: Sized {
-    type Data: InputFactors;
+    type InputFactors: InputFactors;
 
-    type Variant: AlgFactors;
+    type AlgFactors: AlgFactors;
 
     type Input;
 
     type Output: PartialEq + Debug;
 
-    fn run_key_long(input_variant: &Self::Data, alg_variant: &Self::Variant) -> String {
+    fn run_key_long(input_variant: &Self::InputFactors, alg_variant: &Self::AlgFactors) -> String {
         format!("{}/{}", input_variant.key_long(), alg_variant.key_long())
     }
 
-    fn run_key_short(input_variant: &Self::Data, alg_variant: &Self::Variant) -> String {
+    fn run_key_short(input_variant: &Self::InputFactors, alg_variant: &Self::AlgFactors) -> String {
         format!("{}/{}", input_variant.key_short(), alg_variant.key_short())
     }
 
     fn run_estimates_path(
         bench_name: &str,
-        input_variant: &Self::Data,
-        alg_variant: &Self::Variant,
+        input_variant: &Self::InputFactors,
+        alg_variant: &Self::AlgFactors,
     ) -> PathBuf {
         let execution_path = Self::run_key_short(input_variant, alg_variant)
             .replace("/", "_")
@@ -64,21 +64,21 @@ pub trait Experiment: Sized {
         .collect()
     }
 
-    fn input(data: &Self::Data) -> Self::Input;
+    fn input(data: &Self::InputFactors) -> Self::Input;
 
-    fn expected_output(_: &Self::Data, _: &Self::Input) -> Option<Self::Output> {
+    fn expected_output(_: &Self::InputFactors, _: &Self::Input) -> Option<Self::Output> {
         None
     }
 
-    fn validate_output(_: &Self::Data, _: &Self::Input, _: &Self::Output) {}
+    fn validate_output(_: &Self::InputFactors, _: &Self::Input, _: &Self::Output) {}
 
-    fn execute(alg_variant: &Self::Variant, input: &Self::Input) -> Self::Output;
+    fn execute(alg_variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output;
 
     fn bench(
         c: &mut Criterion,
         name: &str,
-        input_levels: &[Self::Data],
-        alg_levels: &[Self::Variant],
+        input_levels: &[Self::InputFactors],
+        alg_levels: &[Self::AlgFactors],
     ) {
         let num_i = input_levels.len();
         let num_a = alg_levels.len();

@@ -102,19 +102,19 @@ impl AlgFactors for HeapWidth {
 struct ShortestPathExp;
 
 impl Experiment for ShortestPathExp {
-    type Data = GraphSettings;
+    type InputFactors = GraphSettings;
 
-    type Variant = HeapWidth;
+    type AlgFactors = HeapWidth;
 
     type Input = Vec<Vec<Edge>>;
 
     type Output = Option<usize>;
 
-    fn input(data: &Self::Data) -> Self::Input {
+    fn input(data: &Self::InputFactors) -> Self::Input {
         new_graph(data.num_nodes, data.connectivity_perc)
     }
 
-    fn execute(variant: &Self::Variant, input: &Self::Input) -> Self::Output {
+    fn execute(variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
         let (s, t) = (0, input.len() - 1);
         match variant.0 {
             2 => shortest_path::<2>(input, s, t),
@@ -129,7 +129,7 @@ impl Experiment for ShortestPathExp {
         }
     }
 
-    fn expected_output(_: &Self::Data, input: &Self::Input) -> Option<Self::Output> {
+    fn expected_output(_: &Self::InputFactors, input: &Self::Input) -> Option<Self::Output> {
         let (s, t) = (0, input.len() - 1);
         Some(shortest_path::<2>(input, s, t))
     }

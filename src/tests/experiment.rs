@@ -1,4 +1,4 @@
-use crate::{AlgFactors, InputFactors, Experiment};
+use crate::{AlgFactors, Experiment, InputFactors};
 
 pub struct MyData(usize);
 
@@ -49,19 +49,19 @@ impl AlgFactors for MyVariant {
 pub struct MyExperiment;
 
 impl Experiment for MyExperiment {
-    type Data = MyData;
+    type InputFactors = MyData;
 
-    type Variant = MyVariant;
+    type AlgFactors = MyVariant;
 
     type Input = Vec<usize>;
 
     type Output = Vec<usize>;
 
-    fn input(data: &Self::Data) -> Self::Input {
+    fn input(data: &Self::InputFactors) -> Self::Input {
         (0..data.0).collect()
     }
 
-    fn execute(variant: &Self::Variant, input: &Self::Input) -> Self::Output {
+    fn execute(variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
         let mut output = input.clone();
         if variant.sort {
             for _ in 0..variant.len {

@@ -124,3 +124,123 @@ impl AlgFactors for Params {
     }
 }
 ```
+
+## Experiment
+
+Finally, we will define the experiment.
+
+We need to implement two required methods.
+
+- `input` takes levels of input factors and produces the input to be solved by all algorithm variants of the experiment.
+- `execute` takes an algorithm variant and an input, and solves the problem on the input with the given algorithm variant. The method produces and returns the output.
+
+The experimentation will study how much time is spent by the `execute`. Time of the `input` creation is not important for the experimentation. We aim to find the best algorithm factor levels to minimize the execution time.
+
+Optionally, we can implement validation methods:
+
+- `expected_output` takes input levels and created input and returns the expected output. This value will be compared to the value that the `execute` method actually generates, and panics if they do not match. Importantly note that:
+  - all algorithm variants must produce exactly the same output for the same input, and
+  - an algorithm variant must always produce the same output for the same input.
+
+  We can still investigate randomized algorithms. In such cases; however, we cannot use the `expected_output` validation. We can then simply return `None`, or not implement the method at all since the default implementation returns none.
+
+  In the example below, we return the expected output that is cached inside the input while creating it. Another common way is to execute a well-tested method to compute the expected output, which will then be compared against new variants that are being evaluated.
+
+- `validate_output` takes input levels, created input together with the produced output, and performs custom validation logic on them. Similarly, the default implementation is an empty function which does nothing.
+
+Note that both of the validation methods are executed **only once** per (input, algorithm) combination and the time spent for validation is **not included** in the results. Therefore, it is okay to implement detailed, long-running validation methods when we need them to make sure of correctness of the results.
+
+```rust ignore
+use orx_criterion::*;
+
+/// Value to search for.
+const SEARCH_VALUE: &str = "criterion";
+
+struct Input {
+    array: Vec<String>,
+    position: Option<usize>, // to be used for validation
+}
+
+/// Experiment to carry out factorial analysis for searching a target value
+/// within an array.
+struct SearchExp;
+
+impl Experiment for SearchExp {
+    type InputFactors = Settings;
+
+    type AlgFactors = Params;
+
+    type Input = Input;
+
+    type Output = Option<usize>;
+
+    fn input(input_levels: &Self::InputFactors) -> Self::Input {
+        // we create an array with the given length, without the search value
+        let mut array: Vec<_> = (0..input_levels.len).map(|i| i.to_string()).collect();
+
+        // we decide on index of the search value depending on the position setting
+        let index = match input_levels.position {
+            ValuePosition::Mid => input_levels.len / 2,
+            ValuePosition::None => input_levels.len,
+        };
+
+        // we place the search value at the index
+        let position = match array.get_mut(index) {
+            Some(element) => {
+                *element = SEARCH_VALUE.to_string();
+                Some(index)
+            }
+            None => None,
+        };
+
+        Input { array, position }
+    }
+
+    fn execute(alg_variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
+        let chunk_size = input.array.len() / alg_variant.num_threads;
+        let chunks: Vec<_> = input.array.chunks(chunk_size).collect();
+
+        std::thread::scope(|s| {
+            let mut handles = vec![];
+            let mut begin = 0;
+            for chunk in chunks {
+                handles.push(s.spawn(move || {
+                    let mut iter = chunk.iter();
+
+                    match alg_variant.direction {
+                        Direction::Forwards => iter
+                            .position(|x| x.as_str() == SEARCH_VALUE)
+                            .map(|x| begin + x),
+                        Direction::Backwards => iter
+                            .rev()
+                            .position(|x| x.as_str() == SEARCH_VALUE)
+                            .map(|x| begin + (chunk.len() - 1 - x)),
+                    }
+                }));
+                begin += chunk.len();
+            }
+
+            // get the result from threads in the form of Some(position), if any
+            handles
+                .into_iter()
+                .map(|h| h.join().unwrap())
+                .filter_map(|x| x)
+                .next()
+        })
+    }
+
+    fn expected_output(_input_levels: &Self::InputFactors, input: &Self::Input) -> Option<Self::Output> {
+        // we simply return the expected output cached in the input
+        Some(input.position)
+    }
+
+    fn validate_output(_input_levels: &Self::InputFactors, input: &Self::Input, output: &Self::Output) {
+        // additional validation logic just to make sure
+        // the linear search below does not affect results
+        match *output {
+            Some(position) => assert_eq!(input.array[position], SEARCH_VALUE),
+            None => assert!(!input.array.iter().any(|x| x.as_str() == SEARCH_VALUE)),
+        }
+    }
+}
+```

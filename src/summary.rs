@@ -7,8 +7,8 @@ use std::{cmp::Ordering, path::PathBuf};
 
 fn collect_point_estimates<E: Experiment>(
     name: &str,
-    input_levels: &[E::Data],
-    alg_levels: &[E::Variant],
+    input_levels: &[E::InputFactors],
+    alg_levels: &[E::AlgFactors],
 ) -> Vec<Vec<Option<f64>>> {
     input_levels
         .iter()
@@ -52,7 +52,7 @@ fn get_slope_point_estimate(path: &PathBuf) -> Option<f64> {
     slice.parse().ok()
 }
 
-pub fn summarize<E: Experiment>(name: &str, input_levels: &[E::Data], alg_levels: &[E::Variant]) {
+pub fn summarize<E: Experiment>(name: &str, input_levels: &[E::InputFactors], alg_levels: &[E::AlgFactors]) {
     let estimates = collect_point_estimates::<E>(name, input_levels, alg_levels);
 
     create_summary_csv::<E>(name, input_levels, alg_levels, &estimates)
@@ -77,8 +77,8 @@ pub fn summarize<E: Experiment>(name: &str, input_levels: &[E::Data], alg_levels
 
 fn create_summary_csv<E: Experiment>(
     name: &str,
-    input_levels: &[E::Data],
-    alg_levels: &[E::Variant],
+    input_levels: &[E::InputFactors],
+    alg_levels: &[E::AlgFactors],
     estimates: &[Vec<Option<f64>>],
 ) -> std::io::Result<()> {
     let path = E::summary_csv_path(name);
@@ -86,8 +86,8 @@ fn create_summary_csv<E: Experiment>(
 
     // title
     let mut row = vec!["t", "i", "a"];
-    row.extend_from_slice(&<E::Data as InputFactors>::factor_names());
-    row.extend_from_slice(&<E::Variant as AlgFactors>::factor_names());
+    row.extend_from_slice(&<E::InputFactors as InputFactors>::factor_names());
+    row.extend_from_slice(&<E::AlgFactors as AlgFactors>::factor_names());
     row.push("Time (ns)");
     file.write(row.join(",").as_bytes())?;
     file.write(b"\n")?;
@@ -118,8 +118,8 @@ fn create_summary_csv<E: Experiment>(
 
 fn print_summary_table<E: Experiment>(
     name: &str,
-    input_levels: &[E::Data],
-    alg_levels: &[E::Variant],
+    input_levels: &[E::InputFactors],
+    alg_levels: &[E::AlgFactors],
     estimates: &[Vec<Option<f64>>],
 ) {
     let cmp = |a: &f64, b: &f64| match a < b {
@@ -139,10 +139,10 @@ fn print_summary_table<E: Experiment>(
         "i".cell().bold(true),
         "a".cell().bold(true),
     ];
-    for factor in <E::Data as InputFactors>::factor_names() {
+    for factor in <E::InputFactors as InputFactors>::factor_names() {
         title.push(factor.cell().bold(true));
     }
-    for param in <E::Variant as AlgFactors>::factor_names() {
+    for param in <E::AlgFactors as AlgFactors>::factor_names() {
         title.push(param.cell().bold(true));
     }
     title.push("Time (ns)".cell().bold(true).justify(Justify::Right));
@@ -203,17 +203,17 @@ fn print_summary_table<E: Experiment>(
 
 pub fn create_ai_prompt_to_analyze<E: Experiment>(
     name: &str,
-    data: &[E::Data],
-    variants: &[E::Variant],
+    data: &[E::InputFactors],
+    variants: &[E::AlgFactors],
 ) -> std::io::Result<()> {
     let path = E::ai_prompt_path(name);
     let mut file = File::create(path)?;
 
     let summary_path = E::summary_csv_path(name);
     let num_inputs = data.len();
-    let input_factor_names = <E::Data as InputFactors>::factor_names().join(", ");
+    let input_factor_names = <E::InputFactors as InputFactors>::factor_names().join(", ");
     let num_variants = variants.len();
-    let alg_factor_names = <E::Variant as AlgFactors>::factor_names().join(", ");
+    let alg_factor_names = <E::AlgFactors as AlgFactors>::factor_names().join(", ");
     let num_treatments = num_inputs * num_variants;
 
     let prompt = format!(

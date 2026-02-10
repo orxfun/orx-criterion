@@ -88,15 +88,15 @@ impl AlgFactors for SearchAlg {
 struct TuneFindElements;
 
 impl Experiment for TuneFindElements {
-    type Data = DataSettings;
+    type InputFactors = DataSettings;
 
-    type Variant = SearchAlg;
+    type AlgFactors = SearchAlg;
 
     type Input = Vec<String>;
 
     type Output = bool;
 
-    fn input(data: &Self::Data) -> Self::Input {
+    fn input(data: &Self::InputFactors) -> Self::Input {
         (0..data.len)
             .map(|i| match i == data.position {
                 true => format!("__{SEARCH_PHRASE}"),
@@ -105,11 +105,11 @@ impl Experiment for TuneFindElements {
             .collect()
     }
 
-    fn expected_output(data: &Self::Data, _: &Self::Input) -> Option<Self::Output> {
+    fn expected_output(data: &Self::InputFactors, _: &Self::Input) -> Option<Self::Output> {
         Some(data.position < data.len)
     }
 
-    fn execute(variant: &Self::Variant, input: &Self::Input) -> Self::Output {
+    fn execute(variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
         match variant.par_lib {
             ParLib::OrxParallel => match variant.approach {
                 Approach::Find => input
