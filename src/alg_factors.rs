@@ -49,12 +49,12 @@ use crate::data::join;
 ///     Backwards,
 /// }
 ///
-/// struct AlgParams {
+/// struct Params {
 ///     num_threads: usize,
 ///     direction: Direction,
 /// }
 ///
-/// impl AlgFactors for AlgParams {
+/// impl AlgFactors for Params {
 ///     fn factor_names() -> Vec<&'static str> {
 ///         vec!["num_threads", "direction"]
 ///     }
@@ -67,7 +67,7 @@ use crate::data::join;
 ///     }
 /// }
 ///
-/// let alg_params = AlgParams {
+/// let alg_params = Params {
 ///     num_threads: 1,
 ///     direction: Direction::Forwards,
 /// };
@@ -111,12 +111,12 @@ use crate::data::join;
 ///     Backwards,
 /// }
 ///
-/// struct AlgParams {
+/// struct Params {
 ///     num_threads: usize,
 ///     direction: Direction,
 /// }
 ///
-/// impl AlgFactors for AlgParams {
+/// impl AlgFactors for Params {
 ///     fn factor_names() -> Vec<&'static str> {
 ///         vec!["num_threads", "direction"]
 ///     }
@@ -141,7 +141,7 @@ use crate::data::join;
 ///     }
 /// }
 ///
-/// let alg_params = AlgParams {
+/// let alg_params = Params {
 ///     num_threads: 4,
 ///     direction: Direction::Backwards,
 /// };

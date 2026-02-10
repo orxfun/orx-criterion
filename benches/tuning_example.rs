@@ -11,12 +11,12 @@ enum Direction {
     Backwards,
 }
 
-struct AlgParams {
+struct Params {
     num_threads: usize,
     direction: Direction,
 }
 
-impl AlgFactors for AlgParams {
+impl AlgFactors for Params {
     fn factor_names() -> Vec<&'static str> {
         vec!["num_threads", "direction"]
     }
