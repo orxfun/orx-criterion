@@ -183,14 +183,14 @@ pub trait AlgFactors {
         self.factor_levels()
     }
 
-    /// Key of the algorithm variant created by joining results of factor_names and factor_levels.
+    /// Key of the algorithm variant created by joining results of `factor_names` and `factor_levels`.
     ///
     /// It uniquely identifies the algorithm variant.
     fn key_long(&self) -> String {
         join(&Self::factor_names(), &self.factor_levels())
     }
 
-    /// Short key of the algorithm variant created by joining results of factor_names_short and factor_levels_short.
+    /// Short key of the algorithm variant created by joining results of `factor_names_short` and `factor_levels_short`.
     ///
     /// It uniquely identifies the algorithm variant.
     fn key_short(&self) -> String {

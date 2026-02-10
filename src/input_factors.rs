@@ -129,22 +129,51 @@
 /// assert_eq!(settings.key_short(), "l:1024_p:M");
 /// ```
 pub trait InputFactors {
+    /// Names (long) of settings of the input.
+    ///
+    /// The long factor names are used:
+    ///
+    /// * in criterion benchmark run logs, and
+    /// * as column headers of summary tables.
+    ///
+    /// Further, unless [`factor_names_short`] is explicitly implemented,
+    /// they are used to create the unique keys of inputs.
+    ///
+    /// [`factor_names_short`]: AlgFactors::factor_names_short
     fn factor_names() -> Vec<&'static str>;
 
+    /// String representation of values (long) of setting values (levels) of the
+    /// input.
     fn factor_levels(&self) -> Vec<String>;
 
+    /// Short names of settings of the input.
+    ///
+    /// Default implementation returns the result of [`factor_names`].
+    ///
+    /// The short versions are implemented to shorten the keys which is necessary
+    /// when working with very long keys (exceeding 64 characters).
+    ///
+    /// [`factor_names`]: AlgFactors::factor_names
     fn factor_names_short() -> Vec<&'static str> {
         Self::factor_names()
     }
 
+    /// String representation of values (short) of setting values (levels) of the
+    /// input.
     fn factor_levels_short(&self) -> Vec<String> {
         self.factor_levels()
     }
 
+    /// Key of the input created by joining results of `factor_names` and `factor_levels`.
+    ///
+    /// It uniquely identifies the input.
     fn key_long(&self) -> String {
         join(&Self::factor_names(), &self.factor_levels())
     }
 
+    /// Short key of the input created by joining results of `factor_names_short` and `factor_levels_short`.
+    ///
+    /// It uniquely identifies the input.
     fn key_short(&self) -> String {
         join(&Self::factor_names_short(), &self.factor_levels_short())
     }
