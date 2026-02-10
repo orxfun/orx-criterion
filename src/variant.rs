@@ -19,6 +19,9 @@ use crate::data::join;
 ///   They will be used to determine the variant to solve the problem.
 ///   Similarly, [`param_values_short`] can optionally be implemented.
 ///
+/// Note that four of the methods (`param_names`, `param_values`, and short versions) must return vectors of the same
+/// length with elements matching in order.
+///
 /// For demonstration benchmarks, please see the [benches](https://github.com/orxfun/orx-parallel/blob/main/benches) folder.
 ///
 /// [`param_names`]: Variant::param_names
@@ -154,28 +157,44 @@ pub trait Variant {
     /// * in criterion benchmark run logs, and
     /// * as column headers of summary tables.
     ///
-    /// Unless, [`param_names_short`] is explicitly implemented,
-    /// they will also be used in the unique key of the benchmark run.
-    /// Otherwise, short names will be used in the key due to 64 character limit.
+    /// Further, unless [`param_names_short`] is explicitly implemented,
+    /// they are used to create the unique keys of algorithm variants.
     ///
     /// [`param_names_short`]: Variant::param_names_short
     fn param_names() -> Vec<&'static str>;
 
-    ///
+    /// String representation of values (long) of parameter values (levels) of the
+    /// algorithm variant.
     fn param_values(&self) -> Vec<String>;
 
+    /// Short names of parameters of the algorithm variant.
+    ///
+    /// Default implementation returns the result of [`param_names`].
+    ///
+    /// The short versions are implemented to shorten the keys which is necessary
+    /// when working with very long keys (exceeding 64 characters).
+    ///
+    /// [`param_names`]: Variant::param_names
     fn param_names_short() -> Vec<&'static str> {
         Self::param_names()
     }
 
+    /// String representation of values (short) of parameter values (levels) of the
+    /// algorithm variant.
     fn param_values_short(&self) -> Vec<String> {
         self.param_values()
     }
 
+    /// Key of the algorithm variant created by joining results of param_names and param_values.
+    ///
+    /// It uniquely identifies the algorithm variant.
     fn key_long(&self) -> String {
         join(&Self::param_names(), &self.param_values())
     }
 
+    /// Short key of the algorithm variant created by joining results of param_names_short and param_values_short.
+    ///
+    /// It uniquely identifies the algorithm variant.
     fn key_short(&self) -> String {
         join(&Self::param_names_short(), &self.param_values_short())
     }
