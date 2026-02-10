@@ -15,11 +15,11 @@ pub trait Experiment: Sized {
     type Output: PartialEq + Debug;
 
     fn run_key_long(data: &Self::Data, variant: &Self::Variant) -> String {
-        format!("{}/{}", data.to_str_long(), variant.to_str_long())
+        format!("{}/{}", data.key_long(), variant.key_long())
     }
 
     fn run_key_short(data: &Self::Data, variant: &Self::Variant) -> String {
-        format!("{}/{}", data.to_str_short(), variant.to_str_short())
+        format!("{}/{}", data.key_short(), variant.key_short())
     }
 
     fn run_estimates_path(bench_name: &str, data: &Self::Data, variant: &Self::Variant) -> PathBuf {
@@ -82,7 +82,7 @@ pub trait Experiment: Sized {
 
         let mut group = c.benchmark_group(name);
         for (d, datum) in data.iter().enumerate() {
-            let datum_str = datum.to_str_long();
+            let datum_str = datum.key_long();
             let d = d + 1;
             let log = format!("\n\n\n\n\n## Data point [{d}/{num_d}]: {datum_str}");
             println!("{}", log.yellow().bold());

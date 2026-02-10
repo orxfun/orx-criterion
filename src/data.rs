@@ -11,11 +11,11 @@ pub trait Data {
         self.factor_values()
     }
 
-    fn to_str_long(&self) -> String {
+    fn key_long(&self) -> String {
         join(&Self::factor_names(), &self.factor_values())
     }
 
-    fn to_str_short(&self) -> String {
+    fn key_short(&self) -> String {
         join(&Self::factor_names_short(), &self.factor_values_short())
     }
 }

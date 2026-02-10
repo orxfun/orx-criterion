@@ -16,7 +16,7 @@ fn treatment_0() {
 
     let t = MyData;
 
-    assert_eq!(t.to_str_long(), "");
+    assert_eq!(t.key_long(), "");
 }
 
 #[test]
@@ -35,7 +35,7 @@ fn treatment_1() {
 
     let t = MyData(42);
 
-    assert_eq!(t.to_str_long(), "width:42");
+    assert_eq!(t.key_long(), "width:42");
 }
 
 #[test]
@@ -81,6 +81,6 @@ fn treatment_3() {
         split: '7',
     };
 
-    assert_eq!(t.to_str_long(), "len:9876543210_sort:true_split:7");
-    assert_eq!(t.to_str_short(), "l:9876543210_srt:T_sp:7");
+    assert_eq!(t.key_long(), "len:9876543210_sort:true_split:7");
+    assert_eq!(t.key_short(), "l:9876543210_srt:T_sp:7");
 }
