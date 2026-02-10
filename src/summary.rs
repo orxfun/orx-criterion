@@ -1,4 +1,4 @@
-use crate::{AlgFactors, InputFactors, Experiment};
+use crate::{AlgFactors, Experiment, InputFactors};
 use cli_table::{Cell, CellStruct, Color, Style, Table, format::Justify, print_stdout};
 use colorize::AnsiColor;
 use std::fs::File;
@@ -7,15 +7,16 @@ use std::{cmp::Ordering, path::PathBuf};
 
 fn collect_point_estimates<E: Experiment>(
     name: &str,
-    data: &[E::Data],
-    variants: &[E::Variant],
+    input_levels: &[E::Data],
+    alg_levels: &[E::Variant],
 ) -> Vec<Vec<Option<f64>>> {
-    data.iter()
-        .map(|datum| {
-            variants
+    input_levels
+        .iter()
+        .map(|input_variant| {
+            alg_levels
                 .iter()
-                .map(|variant| {
-                    let execution_path = E::run_estimates_path(name, datum, variant);
+                .map(|alg_variant| {
+                    let execution_path = E::run_estimates_path(name, input_variant, alg_variant);
                     get_slope_point_estimate(&execution_path)
                 })
                 .collect()
@@ -51,10 +52,10 @@ fn get_slope_point_estimate(path: &PathBuf) -> Option<f64> {
     slice.parse().ok()
 }
 
-pub fn summarize<E: Experiment>(name: &str, data: &[E::Data], variants: &[E::Variant]) {
-    let estimates = collect_point_estimates::<E>(name, data, variants);
+pub fn summarize<E: Experiment>(name: &str, input_levels: &[E::Data], alg_levels: &[E::Variant]) {
+    let estimates = collect_point_estimates::<E>(name, input_levels, alg_levels);
 
-    create_summary_csv::<E>(name, data, variants, &estimates)
+    create_summary_csv::<E>(name, input_levels, alg_levels, &estimates)
         .expect("Failed to create csv summary");
 
     let log = format!(
@@ -63,9 +64,10 @@ pub fn summarize<E: Experiment>(name: &str, data: &[E::Data], variants: &[E::Var
     );
     println!("{}", log.italic());
 
-    print_summary_table::<E>(name, data, variants, &estimates);
+    print_summary_table::<E>(name, input_levels, alg_levels, &estimates);
 
-    create_ai_prompt_to_analyze::<E>(name, data, variants).expect("Failed to create ai prompt");
+    create_ai_prompt_to_analyze::<E>(name, input_levels, alg_levels)
+        .expect("Failed to create ai prompt");
     let log = format!(
         "\nA draft AI prompt to analyze the summary table is created at:\n{}\n",
         E::ai_prompt_path(name).to_str().unwrap()
@@ -75,15 +77,15 @@ pub fn summarize<E: Experiment>(name: &str, data: &[E::Data], variants: &[E::Var
 
 fn create_summary_csv<E: Experiment>(
     name: &str,
-    data: &[E::Data],
-    variants: &[E::Variant],
+    input_levels: &[E::Data],
+    alg_levels: &[E::Variant],
     estimates: &[Vec<Option<f64>>],
 ) -> std::io::Result<()> {
     let path = E::summary_csv_path(name);
     let mut file = File::create(path)?;
 
     // title
-    let mut row = vec!["t", "d", "v"];
+    let mut row = vec!["t", "i", "a"];
     row.extend_from_slice(&<E::Data as InputFactors>::factor_names());
     row.extend_from_slice(&<E::Variant as AlgFactors>::factor_names());
     row.push("Time (ns)");
@@ -91,18 +93,18 @@ fn create_summary_csv<E: Experiment>(
     file.write(b"\n")?;
 
     // rows
-    for (d, (datum, datum_estimates)) in data.iter().zip(estimates).enumerate() {
-        let factor_levels = datum.factor_levels();
-        for (v, (variant, estimate)) in variants.iter().zip(datum_estimates).enumerate() {
-            let t = d * variants.len() + v;
-            let factor_levels = variant.factor_levels();
+    for (i, (input_variant, input_estimates)) in input_levels.iter().zip(estimates).enumerate() {
+        let input_factor_levels = input_variant.factor_levels();
+        for (a, (alg_variant, estimate)) in alg_levels.iter().zip(input_estimates).enumerate() {
+            let t = i * alg_levels.len() + a;
+            let alg_factor_levels = alg_variant.factor_levels();
             let mut row = vec![
                 (t + 1).to_string(),
-                (d + 1).to_string(),
-                (v + 1).to_string(),
+                (i + 1).to_string(),
+                (a + 1).to_string(),
             ];
-            row.extend(factor_levels.iter().map(|x| x.to_string()));
-            row.extend_from_slice(&factor_levels);
+            row.extend(input_factor_levels.iter().map(|x| x.to_string()));
+            row.extend_from_slice(&alg_factor_levels);
             let estimate = estimate
                 .map(|x| format!("{x:.0}"))
                 .unwrap_or("NA".to_string());
@@ -116,8 +118,8 @@ fn create_summary_csv<E: Experiment>(
 
 fn print_summary_table<E: Experiment>(
     name: &str,
-    data: &[E::Data],
-    variants: &[E::Variant],
+    input_levels: &[E::Data],
+    alg_levels: &[E::Variant],
     estimates: &[Vec<Option<f64>>],
 ) {
     let cmp = |a: &f64, b: &f64| match a < b {
@@ -134,8 +136,8 @@ fn print_summary_table<E: Experiment>(
     // title
     let mut title = vec![
         "t".cell().bold(true),
-        "d".cell().bold(true),
-        "v".cell().bold(true),
+        "i".cell().bold(true),
+        "a".cell().bold(true),
     ];
     for factor in <E::Data as InputFactors>::factor_names() {
         title.push(factor.cell().bold(true));
@@ -147,8 +149,8 @@ fn print_summary_table<E: Experiment>(
 
     // cells
     let mut rows = vec![];
-    for (d, (datum, datum_estimates)) in data.iter().zip(estimates).enumerate() {
-        let values = || datum_estimates.iter().map(|x| x.unwrap_or(f64::MAX));
+    for (i, (input_variant, input_estimates)) in input_levels.iter().zip(estimates).enumerate() {
+        let values = || input_estimates.iter().map(|x| x.unwrap_or(f64::MAX));
         let min = values().min_by(cmp).unwrap_or(f64::MAX);
         let max = values().max_by(cmp).unwrap_or(f64::MIN);
         let rank_of = |estimate: &Option<f64>| match estimate {
@@ -170,21 +172,21 @@ fn print_summary_table<E: Experiment>(
             Rank::Missing => cell.foreground_color(Some(Color::Rgb(50, 50, 50))),
         };
 
-        let factor_levels = datum.factor_levels();
-        for (v, (variant, estimate)) in variants.iter().zip(datum_estimates).enumerate() {
-            let t = d * variants.len() + v;
-            let factor_levels = variant.factor_levels();
+        let input_factor_levels = input_variant.factor_levels();
+        for (a, (alg_variant, estimate)) in alg_levels.iter().zip(input_estimates).enumerate() {
+            let t = i * alg_levels.len() + a;
+            let alg_factor_levels = alg_variant.factor_levels();
             let rank = rank_of(estimate);
             let estimate = estimate
                 .map(|x| format!("{x:.0}"))
                 .unwrap_or("NA".to_string());
             let mut columns = vec![
                 cell_of(&rank, (t + 1).cell()),
-                cell_of(&rank, (d + 1).cell()),
-                cell_of(&rank, (v + 1).cell()),
+                cell_of(&rank, (i + 1).cell()),
+                cell_of(&rank, (a + 1).cell()),
             ];
 
-            for x in factor_levels.iter().chain(&factor_levels) {
+            for x in input_factor_levels.iter().chain(&alg_factor_levels) {
                 columns.push(cell_of(&rank, x.cell()));
             }
             columns.push(cell_of(&rank, estimate.cell().justify(Justify::Right)));
@@ -208,25 +210,25 @@ pub fn create_ai_prompt_to_analyze<E: Experiment>(
     let mut file = File::create(path)?;
 
     let summary_path = E::summary_csv_path(name);
-    let num_data = data.len();
-    let factor_names = <E::Data as InputFactors>::factor_names().join(", ");
+    let num_inputs = data.len();
+    let input_factor_names = <E::Data as InputFactors>::factor_names().join(", ");
     let num_variants = variants.len();
-    let factor_names = <E::Variant as AlgFactors>::factor_names().join(", ");
-    let num_treatments = num_data * num_variants;
+    let alg_factor_names = <E::Variant as AlgFactors>::factor_names().join(", ");
+    let num_treatments = num_inputs * num_variants;
 
     let prompt = format!(
         r"
 The file at '{summary_path:?}' is the output of a full-factorial experiment for the '{name}' benchmark.
 
-The experiment is applied on {num_data} data sets.
-Each data set is defined by combination of values of factors '{factor_names}'.
-Each data set, or combination, gets a unique index specified in column 'd'.
+The experiment is applied on {num_inputs} data sets.
+Each data set is defined by combination of values of factors '{input_factor_names}'.
+Each data set, or combination, gets a unique index specified in column 'i'.
 
-Problem of each data set is solved by {num_variants} variants.
-Each variant is defined by combination of values of parameters '{factor_names}'.
-Each data set, or combination, gets a unique index specified in column 'v'.
+Problem of each data set is solved by {num_variants} algorithm variants.
+Each variant is defined by combination of values of parameters '{alg_factor_names}'.
+Each algorithm variant gets a unique index specified in column 'a'.
 
-In total, there exist {num_treatments} treatments as a unique combination of data settings and variant parameters.
+In total, there exist {num_treatments} treatments as unique combinations of input data settings and algorithm variant parameters.
 Each treatment gets a unique index specified in column 't'.
 
 The response variable is the time.

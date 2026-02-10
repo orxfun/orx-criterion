@@ -139,7 +139,7 @@ pub trait InputFactors {
     /// Further, unless [`factor_names_short`] is explicitly implemented,
     /// they are used to create the unique keys of inputs.
     ///
-    /// [`factor_names_short`]: AlgFactors::factor_names_short
+    /// [`factor_names_short`]: InputFactors::factor_names_short
     fn factor_names() -> Vec<&'static str>;
 
     /// String representation of values (long) of setting values (levels) of the
@@ -153,7 +153,7 @@ pub trait InputFactors {
     /// The short versions are implemented to shorten the keys which is necessary
     /// when working with very long keys (exceeding 64 characters).
     ///
-    /// [`factor_names`]: AlgFactors::factor_names
+    /// [`factor_names`]: InputFactors::factor_names
     fn factor_names_short() -> Vec<&'static str> {
         Self::factor_names()
     }

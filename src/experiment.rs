@@ -1,5 +1,5 @@
 use crate::summary::summarize;
-use crate::{InputFactors, AlgFactors};
+use crate::{AlgFactors, InputFactors};
 use colorize::AnsiColor;
 use criterion::Criterion;
 use std::fmt::Debug;
@@ -14,16 +14,20 @@ pub trait Experiment: Sized {
 
     type Output: PartialEq + Debug;
 
-    fn run_key_long(data: &Self::Data, variant: &Self::Variant) -> String {
-        format!("{}/{}", data.key_long(), variant.key_long())
+    fn run_key_long(input_variant: &Self::Data, alg_variant: &Self::Variant) -> String {
+        format!("{}/{}", input_variant.key_long(), alg_variant.key_long())
     }
 
-    fn run_key_short(data: &Self::Data, variant: &Self::Variant) -> String {
-        format!("{}/{}", data.key_short(), variant.key_short())
+    fn run_key_short(input_variant: &Self::Data, alg_variant: &Self::Variant) -> String {
+        format!("{}/{}", input_variant.key_short(), alg_variant.key_short())
     }
 
-    fn run_estimates_path(bench_name: &str, data: &Self::Data, variant: &Self::Variant) -> PathBuf {
-        let execution_path = Self::run_key_short(data, variant)
+    fn run_estimates_path(
+        bench_name: &str,
+        input_variant: &Self::Data,
+        alg_variant: &Self::Variant,
+    ) -> PathBuf {
+        let execution_path = Self::run_key_short(input_variant, alg_variant)
             .replace("/", "_")
             .replace(":", "_");
         [
@@ -68,52 +72,57 @@ pub trait Experiment: Sized {
 
     fn validate_output(_: &Self::Data, _: &Self::Input, _: &Self::Output) {}
 
-    fn execute(variant: &Self::Variant, input: &Self::Input) -> Self::Output;
+    fn execute(alg_variant: &Self::Variant, input: &Self::Input) -> Self::Output;
 
-    fn bench(c: &mut Criterion, name: &str, data: &[Self::Data], variants: &[Self::Variant]) {
-        let num_d = data.len();
-        let num_v = variants.len();
-        let num_t = data.len() * variants.len();
+    fn bench(
+        c: &mut Criterion,
+        name: &str,
+        input_levels: &[Self::Data],
+        alg_levels: &[Self::Variant],
+    ) {
+        let num_i = input_levels.len();
+        let num_a = alg_levels.len();
+        let num_t = input_levels.len() * alg_levels.len();
 
         let log = format!(
-            "\n\n\n# {name} benchmarks with {num_d} data points and {num_v} variants => {num_t} treatments"
+            "\n\n\n# {name} benchmarks with {num_i} data points and {num_a} variants => {num_t} treatments"
         );
         println!("{}", log.bold().underlined());
 
         let mut group = c.benchmark_group(name);
-        for (d, datum) in data.iter().enumerate() {
-            let datum_str = datum.key_long();
-            let d = d + 1;
-            let log = format!("\n\n\n\n\n## Data point [{d}/{num_d}]: {datum_str}");
+        for (i, input_variant) in input_levels.iter().enumerate() {
+            let datum_str = input_variant.key_long();
+            let i = i + 1;
+            let log = format!("\n\n\n\n\n## Data point [{i}/{num_i}]: {datum_str}");
             println!("{}", log.yellow().bold());
 
-            let input = Self::input(datum);
-            for (v, variant) in variants.iter().enumerate() {
-                let v = v + 1;
-                let idx = (d - 1) * num_v + v;
-                let run_str = Self::run_key_long(datum, variant);
-                let log = format!("\n### [{idx}/{num_t} || {v}/{num_v}]: {run_str}");
+            let input = Self::input(input_variant);
+            for (a, alg_variant) in alg_levels.iter().enumerate() {
+                let a = a + 1;
+                let idx = (i - 1) * num_a + a;
+                let run_str = Self::run_key_long(input_variant, alg_variant);
+                let log = format!("\n### [{idx}/{num_t} || {a}/{num_a}]: {run_str}");
                 println!("{}", log.green());
 
-                let execution_name = Self::run_key_short(datum, variant);
+                let execution_name = Self::run_key_short(input_variant, alg_variant);
 
                 group.bench_with_input(&execution_name, &input, |b, input| {
-                    let output = Self::execute(variant, input);
-                    Self::validate_output(datum, input, &output);
-                    if let Some(expected_output) = Self::expected_output(datum, input) {
+                    let output = Self::execute(alg_variant, input);
+                    Self::validate_output(input_variant, input, &output);
+                    if let Some(expected_output) = Self::expected_output(input_variant, input) {
                         assert_eq!(
                             output, expected_output,
                             "Output of run is not equal to expected output. Run: {run_str}",
                         );
                     }
 
-                    b.iter(|| Self::execute(variant, input));
+                    b.iter(|| Self::execute(alg_variant, input));
                 });
             }
         }
 
         group.finish();
 
-        summarize::<Self>(name, data, variants);
+        summarize::<Self>(name, input_levels, alg_levels);
     }
 }
