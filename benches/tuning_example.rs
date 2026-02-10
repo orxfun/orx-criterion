@@ -43,7 +43,6 @@ impl AlgFactors for Params {
 
 #[derive(Debug, Clone, Copy)]
 enum ValuePosition {
-    Beg,
     Mid,
     None,
 }
@@ -68,7 +67,6 @@ impl InputFactors for Settings {
 
     fn factor_levels_short(&self) -> Vec<String> {
         let position = match self.position {
-            ValuePosition::Beg => "B",
             ValuePosition::Mid => "M",
             ValuePosition::None => "X",
         };
@@ -99,7 +97,6 @@ impl Experiment for SearchExp {
     fn input(data: &Self::Data) -> Self::Input {
         let mut array: Vec<_> = (0..data.len).map(|i| i.to_string()).collect();
         let position = match data.position {
-            ValuePosition::Beg => data.len / 5,
             ValuePosition::Mid => data.len / 2,
             ValuePosition::None => data.len,
         };
@@ -146,8 +143,8 @@ impl Experiment for SearchExp {
 }
 
 fn run(c: &mut Criterion) {
-    let lengths = [1 << 5, 1 << 15];
-    let positions = [ValuePosition::Beg, ValuePosition::Mid, ValuePosition::None];
+    let lengths = [1 << 10, 1 << 18];
+    let positions = [ValuePosition::Mid, ValuePosition::None];
     let input_levels: Vec<_> = lengths
         .into_iter()
         .flat_map(|len| {
