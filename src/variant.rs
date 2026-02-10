@@ -1,6 +1,6 @@
 use crate::data::join;
 
-/// A variant to execute a common task.
+/// An algorithm variant to execute a common task.
 ///
 /// Each variant can be uniquely determined by the combination of its parameter values.
 ///
@@ -12,137 +12,156 @@ use crate::data::join;
 ///
 /// * `param_names` contains the names of parameters.
 ///   They will be used as column names of output table, or within logs.
-///   * One can optionally implement [`param_names_short`] to provide shorter versions of the names.
-///     Short names are used to create keys of treatments.
-///     It is important to provide them when there exist many data and variants because criterion crate limits each treatment key to 64 characters.
+///   One can optionally implement [`param_names_short`] to provide shorter versions of the names
+///   (please see the corresponding example below).
 ///
 /// * `param_values` contains the values of the parameters of an instance of the variant.
 ///   They will be used to determine the variant to solve the problem.
-///   * One can optionally implement [`param_values_short`] to provide shorter versions of the names due to key length limitation mentioned above.
+///   Similarly, [`param_values_short`] can optionally be implemented.
+///
+/// For demonstration benchmarks, please see the [benches](https://github.com/orxfun/orx-parallel/blob/main/benches) folder.
 ///
 /// [`param_names`]: Variant::param_names
 /// [`param_names_short`]: Variant::param_names_short
 /// [`param_values`]: Variant::param_values
 /// [`param_values_short`]: Variant::param_values_short
 ///
-/// # Examples - Categorical
+/// # Examples
 ///
-/// Consider for instance the [two-sum problem](https://leetcode.com/problems/two-sum/description/).
-/// As the storage, we may use a `HashMap` or `BTreeMap` for constant time lookups;
-/// or a sorted `Vec` for logarithmic time lookups.
-/// The algorithm can be parameterized over storage type as demonstrated in [`two_sum.rs`](https://github.com/orxfun/orx-parallel/blob/main/benches/two_sum.rs).
+/// Consider for instance a parallelized algorithm which can be executed using
+/// different number threads.
 ///
-/// ```
-/// use orx_criterion::*;
+/// Further assume that we can search forwards or backwards.
 ///
-/// #[derive(Debug)]
-/// enum StoreType {
-///     None,
-///     SortedVec,
-///     HashMap,
-///     BTreeMap,
-/// }
+/// In this case, `"num_threads"` and `"direction"` would be the parameter names.
 ///
-/// struct SearchMethod(StoreType);
-///
-/// impl Variant for SearchMethod {
-///     fn param_names() -> Vec<&'static str> {
-///         vec!["store-type"]
-///     }
-///
-///     fn param_values(&self) -> Vec<String> {
-///         vec![format!("{:?}", self.0)]
-///     }
-/// }
-/// ```
-///
-/// # Examples - Ordinal
-///
-/// A Dijkstra's shortest-path algorithm implementation might use a d-ary heap.
-/// We can investigate the impact of `d` on the algorithm performance, as demonstrated in [`shortest_path.rs`](https://github.com/orxfun/orx-parallel/blob/main/benches/shortest_path.rs).
-///
-/// ```
-/// use orx_criterion::*;
-///
-/// struct HeapWidth(usize);
-///
-/// impl Variant for HeapWidth {
-///     fn param_names() -> Vec<&'static str> {
-///         vec!["heap-width"]
-///     }
-///
-///     fn param_values(&self) -> Vec<String> {
-///         vec![self.0.to_string()]
-///     }
-/// }
-/// ```
-///
-/// # Examples - Mixed
-///
-/// We might try to tune a collection of categorical and ordinal parameters at the same time.
-/// Such an example is provided in [`find_element.rs`](https://github.com/orxfun/orx-parallel/blob/main/benches/find_element.rs) benchmark.
+/// And combination of values of these parameters would determine how the algorithm would execute.
 ///
 /// ```
 /// use orx_criterion::*;
 ///
 /// #[derive(Debug)]
-/// enum ParLib {
-///     Rayon,
-///     OrxParallel,
+/// enum Direction {
+///     Forwards,
+///     Backwards,
 /// }
 ///
-/// #[derive(Debug, Clone, Copy)]
-/// enum Approach {
-///     Find,
-///     Any,
-/// }
-///
-/// struct SearchAlg {
-///     par_lib: ParLib,
+/// struct AlgParams {
 ///     num_threads: usize,
-///     chunk_size: usize,
-///     approach: Approach,
+///     direction: Direction,
 /// }
 ///
-/// impl Variant for SearchAlg {
+/// impl Variant for AlgParams {
 ///     fn param_names() -> Vec<&'static str> {
-///         vec!["par_lib", "num_threads", "chunk_size", "approach"]
+///         vec!["num_threads", "direction"]
+///     }
+///
+///     fn param_values(&self) -> Vec<String> {
+///         vec![
+///             self.num_threads.to_string(),
+///             format!("{:?}", self.direction),
+///         ]
+///     }
+/// }
+///
+/// let alg_params = AlgParams {
+///     num_threads: 1,
+///     direction: Direction::Forwards,
+/// };
+///
+/// assert_eq!(alg_params.to_str_long(), "num_threads:1_direction:Forwards");
+/// assert_eq!(
+///     alg_params.to_str_short(),
+///     "num_threads:1_direction:Forwards"
+/// );
+/// ```
+///
+/// Importantly note that, `param_values` must be implemented in a way that each combination
+/// leads to a **unique key** by the [`to_str_long`] call.
+///
+/// This is often correct by default conversion to string.
+///
+/// Further notice that [`to_str_long`] and [`to_str_short`] returns the same key since we have not
+/// implemented the optional shorter versions for this example.
+///
+/// [`to_str_long`]: Variant::to_str_long
+/// [`to_str_short`]: Variant::to_str_short
+///
+/// # Examples - Optional Short Names and Values
+///
+/// In order to shorten the
+///
+/// In some cases, we need a short version of the unique key.
+/// This is due to the fact that criterion limits the result folder names (practically the keys) to 64 characters.
+/// The short names and values are used to create the short keys to be used as the folder names,
+/// while reports and summaries will still be created by the long and human-friendly names.
+///
+/// It is important to make sure that short keys still uniquely define a combination of the variant,
+/// as demonstrated in the following example.
+///
+/// ```
+/// use orx_criterion::*;
+///
+/// #[derive(Debug)]
+/// enum Direction {
+///     Forwards,
+///     Backwards,
+/// }
+///
+/// struct AlgParams {
+///     num_threads: usize,
+///     direction: Direction,
+/// }
+///
+/// impl Variant for AlgParams {
+///     fn param_names() -> Vec<&'static str> {
+///         vec!["num_threads", "direction"]
+///     }
+///
+///     fn param_values(&self) -> Vec<String> {
+///         vec![
+///             self.num_threads.to_string(),
+///             format!("{:?}", self.direction),
+///         ]
 ///     }
 ///
 ///     fn param_names_short() -> Vec<&'static str> {
-///         vec!["lib", "nt", "ch", "app"]
-///     }
-///
-///     fn param_values(&self) -> Vec<String> {
-///         vec![
-///             format!("{:?}", self.par_lib),
-///             self.num_threads.to_string(),
-///             self.chunk_size.to_string(),
-///             format!("{:?}", self.approach),
-///         ]
+///         vec!["n", "d"]
 ///     }
 ///
 ///     fn param_values_short(&self) -> Vec<String> {
-///         vec![
-///             match self.par_lib {
-///                 ParLib::OrxParallel => "X",
-///                 ParLib::Rayon => "R",
-///             }
-///             .to_string(),
-///             self.num_threads.to_string(),
-///             self.chunk_size.to_string(),
-///             match self.approach {
-///                 Approach::Find => "F",
-///                 Approach::Any => "A",
-///             }
-///             .to_string(),
-///         ]
+///         let direction = match self.direction {
+///             Direction::Forwards => "F",
+///             Direction::Backwards => "B",
+///         };
+///         vec![self.num_threads.to_string(), direction.to_string()]
 ///     }
 /// }
+///
+/// let alg_params = AlgParams {
+///     num_threads: 4,
+///     direction: Direction::Backwards,
+/// };
+///
+/// assert_eq!(alg_params.to_str_long(), "num_threads:4_direction:Backwards");
+/// assert_eq!(alg_params.to_str_short(), "n:4_d:B");
 /// ```
 pub trait Variant {
+    /// Names (long) of parameters of the algorithm variant.
+    ///
+    /// The long parameter names are used:
+    ///
+    /// * in criterion benchmark run logs, and
+    /// * as column headers of summary tables.
+    ///
+    /// Unless, [`param_names_short`] is explicitly implemented,
+    /// they will also be used in the unique key of the benchmark run.
+    /// Otherwise, short names will be used in the key due to 64 character limit.
+    ///
+    /// [`param_names_short`]: Variant::param_names_short
     fn param_names() -> Vec<&'static str>;
 
+    ///
     fn param_values(&self) -> Vec<String>;
 
     fn param_names_short() -> Vec<&'static str> {
