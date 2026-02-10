@@ -1,16 +1,63 @@
 use criterion::{Criterion, criterion_group, criterion_main};
 use orx_criterion::{AlgFactors, Experiment, InputFactors};
 
+// Input Factors
+
+/// Position of the target value in the input array.
+#[derive(Debug, Clone, Copy)]
+enum ValuePosition {
+    /// The target value is located in the middle of the array.
+    Mid,
+    /// The target value does not exist in the array.
+    None,
+}
+
+/// Settings to define input of the search problem.
+struct Settings {
+    /// Length of the input array.
+    len: usize,
+    /// Position of the target value inside the input array.
+    position: ValuePosition,
+}
+
+impl InputFactors for Settings {
+    fn factor_names() -> Vec<&'static str> {
+        vec!["len", "position"]
+    }
+
+    fn factor_levels(&self) -> Vec<String> {
+        vec![self.len.to_string(), format!("{:?}", self.position)]
+    }
+
+    fn factor_names_short() -> Vec<&'static str> {
+        vec!["l", "p"]
+    }
+
+    fn factor_levels_short(&self) -> Vec<String> {
+        let position = match self.position {
+            ValuePosition::Mid => "M",
+            ValuePosition::None => "X",
+        };
+        vec![self.len.to_string(), position.to_string()]
+    }
+}
+
 // Algorithm Factors
 
+/// Defines the direction of the search for the target value.
 #[derive(Debug, Clone, Copy)]
 enum Direction {
+    /// The array will be search from beginning to the end.
     Forwards,
+    /// The array will be search from end to the beginning.
     Backwards,
 }
 
+/// Parameters defining the search algorithm.
 struct Params {
+    /// Number of threads to use for the search.
     num_threads: usize,
+    /// Direction of search by each thread.
     direction: Direction,
 }
 
@@ -38,44 +85,9 @@ impl AlgFactors for Params {
         vec![self.num_threads.to_string(), direction.to_string()]
     }
 }
-
-// Input Factors
-
-#[derive(Debug, Clone, Copy)]
-enum ValuePosition {
-    Mid,
-    None,
-}
-
-struct Settings {
-    len: usize,
-    position: ValuePosition,
-}
-
-impl InputFactors for Settings {
-    fn factor_names() -> Vec<&'static str> {
-        vec!["len", "position"]
-    }
-
-    fn factor_levels(&self) -> Vec<String> {
-        vec![self.len.to_string(), format!("{:?}", self.position)]
-    }
-
-    fn factor_names_short() -> Vec<&'static str> {
-        vec!["l", "p"]
-    }
-
-    fn factor_levels_short(&self) -> Vec<String> {
-        let position = match self.position {
-            ValuePosition::Mid => "M",
-            ValuePosition::None => "X",
-        };
-        vec![self.len.to_string(), position.to_string()]
-    }
-}
-
 // Experiment
 
+/// Value to search for.
 const SEARCH_VALUE: &str = "criterion";
 
 struct Input {
@@ -83,6 +95,8 @@ struct Input {
     position: Option<usize>,
 }
 
+/// Experiment to carry out factorial analysis for searching a target value
+/// within an array.
 struct SearchExp;
 
 impl Experiment for SearchExp {
