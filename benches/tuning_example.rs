@@ -85,6 +85,7 @@ impl AlgFactors for Params {
         vec![self.num_threads.to_string(), direction.to_string()]
     }
 }
+
 // Experiment
 
 /// Value to search for.

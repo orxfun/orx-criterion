@@ -24,7 +24,7 @@ Input to this problem might differ in two ways:
 - length of the array,
 - position of the value that we search for.
 
-In order to represent these input variants, we define [`InputFactors`](https://docs.rs/orx-criterion/latest/orx_criterion/trait.InputFactors.html) named as `Settings`. Each unique setting instance can create a unique input for our experimentation. We will later add the interesting settings to the experimentation.
+In order to represent these input variants, we define [`InputFactors`](https://docs.rs/orx-criterion/latest/orx_criterion/trait.InputFactors.html) named as `Settings`. Each unique setting instance can create a unique input for our experimentation. We will later add to experiment the settings that are interesting for our use case.
 
 ```rust
 use orx_criterion::*;
@@ -74,3 +74,53 @@ Factor names and levels are used to create unique key of each input. For instanc
 Treatment keys are also used as directory names by "criterion" to store the results. In order to keep the directory names sufficiently short (within 64 characters), we can optionally implement the short versions of names and levels. The short key to be used as directory name for the above example would then be `l:1024_p:M`.
 
 ## Algorithm Factors
+
+We want to solve this problem by a linear search. Additionally, we want to consider the parallelized variants.
+
+In order to represent these algorithm variants, we define [`AlgFactors`](https://docs.rs/orx-criterion/latest/orx_criterion/trait.AlgFactors.html) named as `Params`. Each unique setting instance determines the way that our algorithm will execute. We will later add to experiment the algorithm variants that we want to evaluate.
+
+```rust
+use orx_criterion::*;
+
+/// Defines the direction of the search for the target value.
+#[derive(Debug, Clone, Copy)]
+enum Direction {
+    /// The array will be search from beginning to the end.
+    Forwards,
+    /// The array will be search from end to the beginning.
+    Backwards,
+}
+
+/// Parameters defining the search algorithm.
+struct Params {
+    /// Number of threads to use for the search.
+    num_threads: usize,
+    /// Direction of search by each thread.
+    direction: Direction,
+}
+
+impl AlgFactors for Params {
+    fn factor_names() -> Vec<&'static str> {
+        vec!["num_threads", "direction"]
+    }
+
+    fn factor_levels(&self) -> Vec<String> {
+        vec![
+            self.num_threads.to_string(),
+            format!("{:?}", self.direction),
+        ]
+    }
+
+    fn factor_names_short() -> Vec<&'static str> {
+        vec!["n", "d"]
+    }
+
+    fn factor_levels_short(&self) -> Vec<String> {
+        let direction = match self.direction {
+            Direction::Forwards => "F",
+            Direction::Backwards => "B",
+        };
+        vec![self.num_threads.to_string(), direction.to_string()]
+    }
+}
+```
