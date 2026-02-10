@@ -1,5 +1,5 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use orx_criterion::{AlgFactors, InputFactors, Experiment};
+use orx_criterion::{AlgFactors, Experiment, InputFactors};
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
 use std::collections::{BTreeMap, HashMap};
@@ -141,8 +141,8 @@ impl Experiment for TwoSumExp {
         let mut rng = ChaCha8Rng::seed_from_u64(42);
         let n = data.0;
         let mut array: Vec<_> = (0..data.0).map(|_| rng.random_range(3..n as i64)).collect();
-        let i = array[n / 2] as usize;
-        let j = array[3 * n / 4] as usize;
+        let i = n / 2;
+        let j = 3 * n / 4;
         array[i] = 1;
         array[j] = 2;
         let indices = Some([i, j]);

@@ -17,5 +17,5 @@ rand = "0.9.2"
 rand_chacha = "0.9"
 
 [[bench]]
-name = "tuning_example"
+name = "two_sum"
 harness = false
