@@ -127,7 +127,7 @@ impl AlgFactors for Params {
 
 ## Experiment
 
-Finally, we will define the experiment.
+Finally, we define the experiment.
 
 We need to implement two required methods.
 
@@ -197,6 +197,9 @@ impl Experiment for SearchExp {
     }
 
     fn execute(alg_variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
+        // notice that how we compute the output is determined by
+        // values of `alg_variant` fields.
+
         let chunk_size = input.array.len() / alg_variant.num_threads;
         let chunks: Vec<_> = input.array.chunks(chunk_size).collect();
 
@@ -243,4 +246,54 @@ impl Experiment for SearchExp {
         }
     }
 }
+```
+
+## Run the Experiment (Benchmark)
+
+We defined everything we need to run the experiment.
+
+Finally, we will run it using the [criterion](https://crates.io/crates/criterion) crate.
+
+### Define the Experiment as a Criterion Benchmark
+
+We create the benchmark file under the **benches** folder, say `benches/tuning_example.rs`. We add all the code above to this file.
+
+Finally, we add the following lines that will allow us to start the benchmark run.
+
+```rust
+use criterion::{Criterion, criterion_group, criterion_main};
+
+fn run(c: &mut Criterion) {
+    // input levels that we are interested in
+    let lengths = [1 << 10, 1 << 24];
+    let positions = [ValuePosition::Mid, ValuePosition::None];
+    let input_levels: Vec<_> = lengths
+        .into_iter()
+        .flat_map(|len| {
+            positions
+                .iter()
+                .copied()
+                .map(move |position| Settings { len, position })
+        })
+        .collect();
+
+    // algorithm variants that we want to evaluate
+    let num_threads = [1, 16];
+    let directions = [Direction::Forwards, Direction::Backwards];
+    let alg_levels: Vec<_> = num_threads
+        .into_iter()
+        .flat_map(|num_threads| {
+            directions.iter().copied().map(move |direction| Params {
+                num_threads,
+                direction,
+            })
+        })
+        .collect();
+
+    // execute a full-factorial experiment over the union of input and algorithm factors
+    SearchExp::bench(c, "tuning_example", &input_levels, &alg_levels);
+}
+
+criterion_group!(benches, run);
+criterion_main!(benches);
 ```

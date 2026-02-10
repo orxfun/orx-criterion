@@ -132,6 +132,9 @@ impl Experiment for SearchExp {
     }
 
     fn execute(alg_variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
+        // notice that how we compute the output is determined by
+        // values of `alg_variant` fields.
+
         let chunk_size = input.array.len() / alg_variant.num_threads;
         let chunks: Vec<_> = input.array.chunks(chunk_size).collect();
 
@@ -183,6 +186,7 @@ impl Experiment for SearchExp {
 }
 
 fn run(c: &mut Criterion) {
+    // input levels that we are interested in
     let lengths = [1 << 10, 1 << 24];
     let positions = [ValuePosition::Mid, ValuePosition::None];
     let input_levels: Vec<_> = lengths
@@ -195,6 +199,7 @@ fn run(c: &mut Criterion) {
         })
         .collect();
 
+    // algorithm variants that we want to evaluate
     let num_threads = [1, 16];
     let directions = [Direction::Forwards, Direction::Backwards];
     let alg_levels: Vec<_> = num_threads
@@ -207,6 +212,7 @@ fn run(c: &mut Criterion) {
         })
         .collect();
 
+    // execute a full-factorial experiment over the union of input and algorithm factors
     SearchExp::bench(c, "tuning_example", &input_levels, &alg_levels);
 }
 
