@@ -2,6 +2,7 @@ use criterion::{Criterion, criterion_group, criterion_main};
 use orx_criterion::{AlgFactors, Experiment, InputFactors};
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
+use rayon::iter::Positions;
 
 // Algorithm Factors
 
@@ -42,6 +43,41 @@ impl AlgFactors for Params {
 }
 
 // Input Factors
+
+#[derive(Debug)]
+enum ValuePosition {
+    Beg,
+    Mid,
+    End,
+}
+
+struct Settings {
+    len: usize,
+    position: ValuePosition,
+}
+
+impl InputFactors for Settings {
+    fn factor_names() -> Vec<&'static str> {
+        vec!["len", "position"]
+    }
+
+    fn factor_levels(&self) -> Vec<String> {
+        vec![self.len.to_string(), format!("{:?}", self.position)]
+    }
+
+    fn factor_names_short() -> Vec<&'static str> {
+        vec!["l", "p"]
+    }
+
+    fn factor_levels_short(&self) -> Vec<String> {
+        let position = match self.position {
+            ValuePosition::Beg => "B",
+            ValuePosition::Mid => "M",
+            ValuePosition::End => "E",
+        };
+        vec![self.len.to_string(), position.to_string()]
+    }
+}
 
 fn run(c: &mut Criterion) {
     // let data = [
