@@ -69,23 +69,23 @@ use crate::data::join;
 ///     direction: Direction::Forwards,
 /// };
 ///
-/// assert_eq!(alg_params.to_str_long(), "num_threads:1_direction:Forwards");
+/// assert_eq!(alg_params.key_long(), "num_threads:1_direction:Forwards");
 /// assert_eq!(
-///     alg_params.to_str_short(),
+///     alg_params.key_short(),
 ///     "num_threads:1_direction:Forwards"
 /// );
 /// ```
 ///
 /// Importantly note that, `param_values` must be implemented in a way that each combination
-/// leads to a **unique key** by the [`to_str_long`] call.
+/// leads to a **unique key** by the [`key_long`] call.
 ///
 /// This is often correct by default conversion to string.
 ///
-/// Further notice that [`to_str_long`] and [`to_str_short`] returns the same key since we have not
+/// Further notice that [`key_long`] and [`key_short`] returns the same key since we have not
 /// implemented the optional shorter versions for this example.
 ///
-/// [`to_str_long`]: Variant::to_str_long
-/// [`to_str_short`]: Variant::to_str_short
+/// [`key_long`]: Variant::key_long
+/// [`key_short`]: Variant::key_short
 ///
 /// # Examples - Optional Short Names and Values
 ///
@@ -143,8 +143,8 @@ use crate::data::join;
 ///     direction: Direction::Backwards,
 /// };
 ///
-/// assert_eq!(alg_params.to_str_long(), "num_threads:4_direction:Backwards");
-/// assert_eq!(alg_params.to_str_short(), "n:4_d:B");
+/// assert_eq!(alg_params.key_long(), "num_threads:4_direction:Backwards");
+/// assert_eq!(alg_params.key_short(), "n:4_d:B");
 /// ```
 pub trait Variant {
     /// Names (long) of parameters of the algorithm variant.
@@ -172,11 +172,11 @@ pub trait Variant {
         self.param_values()
     }
 
-    fn to_str_long(&self) -> String {
+    fn key_long(&self) -> String {
         join(&Self::param_names(), &self.param_values())
     }
 
-    fn to_str_short(&self) -> String {
+    fn key_short(&self) -> String {
         join(&Self::param_names_short(), &self.param_values_short())
     }
 }
