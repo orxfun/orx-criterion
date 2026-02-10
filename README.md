@@ -311,3 +311,77 @@ harness = false
 ### Running the Benchmark
 
 Then, we can run the benchmark & experiment with `cargo bench` command.
+
+Notice that the experimentation is run by having data points (inputs) as the outer loop and algorithm variants in the inner loop. This allows to create each input only once.
+
+You may also notice both the long and short keys of each treatment, such as:
+
+- len:1024_position:Mid/num_threads:1_direction:Forwards
+- l:1024_p:M/n:1_d:F
+
+## Logs
+
+This crate will add some additional logs to default "criterion" logs containing information about the full-factorial runs.
+
+```shell
+# tuning_example benchmarks with 4 data points and 4 variants => 16 treatments
+
+
+## Data point [1/4]: len:1024_position:Mid
+
+### [1/16 || 1/4]: len:1024_position:Mid/num_threads:1_direction:Forwards
+tuning_example/l:1024_p:M/n:1_d:F
+                        time:   [135.56 µs 140.41 µs 145.96 µs]
+                        change: [−3.3333% +0.8703% +5.5680%] (p = 0.69 > 0.05)
+                        No change in performance detected.
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high mild
+
+### [2/16 || 2/4]: len:1024_position:Mid/num_threads:1_direction:Backwards
+tuning_example/l:1024_p:M/n:1_d:B
+                        time:   [131.06 µs 136.04 µs 141.49 µs]
+                        change: [−16.743% −13.143% −9.4026%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 3 outliers among 100 measurements (3.00%)
+  2 (2.00%) high mild
+  1 (1.00%) high severe
+
+### [3/16 || 3/4]: len:1024_position:Mid/num_threads:16_direction:Forwards
+Benchmarking tuning_example/l:1024_p:M/n:16_d:F: Warming up for 3.0000 s
+Warning: Unable to complete 100 samples in 5.0s. You may wish to increase target time to 5.7s, enable flat sampling, or reduce sample count to 60.
+tuning_example/l:1024_p:M/n:16_d:F
+                        time:   [958.02 µs 995.59 µs 1.0376 ms]
+                        change: [−33.388% −30.257% −26.639%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 2 outliers among 100 measurements (2.00%)
+  2 (2.00%) high mild
+
+### [4/16 || 4/4]: len:1024_position:Mid/num_threads:16_direction:Backwards
+Benchmarking tuning_example/l:1024_p:M/n:16_d:B: Warming up for 3.0000 s
+Warning: Unable to complete 100 samples in 5.0s. You may wish to increase target time to 6.8s, enable flat sampling, or reduce sample count to 60.
+tuning_example/l:1024_p:M/n:16_d:B
+                        time:   [1.2515 ms 1.3025 ms 1.3544 ms]
+                        change: [−21.130% −16.332% −11.060%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 4 outliers among 100 measurements (4.00%)
+  4 (4.00%) high mild
+
+
+
+
+
+## Data point [2/4]: len:1024_position:None
+
+### [5/16 || 1/4]: len:1024_position:None/num_threads:1_direction:Forwards
+tuning_example/l:1024_p:X/n:1_d:F
+                        time:   [138.13 µs 144.15 µs 150.80 µs]
+                        change: [−27.490% −23.275% −18.948%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 6 outliers among 100 measurements (6.00%)
+  4 (4.00%) high mild
+  2 (2.00%) high severe
+
+...
+```
+
+## Summary Table
