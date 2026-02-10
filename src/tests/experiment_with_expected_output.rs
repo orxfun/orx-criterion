@@ -1,4 +1,4 @@
-use crate::{Data, Experiment, AlgFactors};
+use crate::{AlgFactors, Data, Experiment};
 
 struct MyData(usize, usize);
 
@@ -7,7 +7,7 @@ impl Data for MyData {
         vec!["len", "position"]
     }
 
-    fn factor_values(&self) -> Vec<String> {
+    fn factor_levels(&self) -> Vec<String> {
         vec![self.0.to_string(), self.1.to_string()]
     }
 }
@@ -22,7 +22,7 @@ impl AlgFactors for SearchMethod {
         vec!["search"]
     }
 
-    fn factor_values(&self) -> Vec<String> {
+    fn factor_levels(&self) -> Vec<String> {
         vec![
             match self {
                 Self::Linear => "lin",

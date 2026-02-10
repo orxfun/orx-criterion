@@ -21,7 +21,7 @@ impl Data for DataSettings {
         vec!["l", "p"]
     }
 
-    fn factor_values(&self) -> Vec<String> {
+    fn factor_levels(&self) -> Vec<String> {
         vec![self.len.to_string(), self.position.to_string()]
     }
 }
@@ -56,7 +56,7 @@ impl AlgFactors for SearchAlg {
         vec!["lib", "nt", "ch", "app"]
     }
 
-    fn factor_values(&self) -> Vec<String> {
+    fn factor_levels(&self) -> Vec<String> {
         vec![
             format!("{:?}", self.par_lib),
             self.num_threads.to_string(),
@@ -65,7 +65,7 @@ impl AlgFactors for SearchAlg {
         ]
     }
 
-    fn factor_values_short(&self) -> Vec<String> {
+    fn factor_levels_short(&self) -> Vec<String> {
         vec![
             match self.par_lib {
                 ParLib::OrxParallel => "X",

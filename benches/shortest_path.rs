@@ -75,7 +75,7 @@ impl Data for GraphSettings {
         vec!["num_nodes", "connectivity"]
     }
 
-    fn factor_values(&self) -> Vec<String> {
+    fn factor_levels(&self) -> Vec<String> {
         vec![
             self.num_nodes.to_string(),
             format!("{}%", self.connectivity_perc),
@@ -92,7 +92,7 @@ impl AlgFactors for HeapWidth {
         vec!["heap-width"]
     }
 
-    fn factor_values(&self) -> Vec<String> {
+    fn factor_levels(&self) -> Vec<String> {
         vec![self.0.to_string()]
     }
 }

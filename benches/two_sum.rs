@@ -15,7 +15,7 @@ impl Data for DataSettings {
         vec!["len"]
     }
 
-    fn factor_values(&self) -> Vec<String> {
+    fn factor_levels(&self) -> Vec<String> {
         vec![self.0.to_string()]
     }
 }
@@ -37,7 +37,7 @@ impl AlgFactors for SearchMethod {
         vec!["store-type"]
     }
 
-    fn factor_values(&self) -> Vec<String> {
+    fn factor_levels(&self) -> Vec<String> {
         vec![format!("{:?}", self.0)]
     }
 }

@@ -21,7 +21,7 @@ impl AlgFactors for AlgParams {
         vec!["num_threads", "direction"]
     }
 
-    fn factor_values(&self) -> Vec<String> {
+    fn factor_levels(&self) -> Vec<String> {
         vec![
             self.num_threads.to_string(),
             format!("{:?}", self.direction),
@@ -32,7 +32,7 @@ impl AlgFactors for AlgParams {
         vec!["n", "d"]
     }
 
-    fn factor_values_short(&self) -> Vec<String> {
+    fn factor_levels_short(&self) -> Vec<String> {
         let direction = match self.direction {
             Direction::Forwards => "F",
             Direction::Backwards => "B",

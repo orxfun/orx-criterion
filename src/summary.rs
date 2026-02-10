@@ -92,17 +92,17 @@ fn create_summary_csv<E: Experiment>(
 
     // rows
     for (d, (datum, datum_estimates)) in data.iter().zip(estimates).enumerate() {
-        let factor_values = datum.factor_values();
+        let factor_levels = datum.factor_levels();
         for (v, (variant, estimate)) in variants.iter().zip(datum_estimates).enumerate() {
             let t = d * variants.len() + v;
-            let factor_values = variant.factor_values();
+            let factor_levels = variant.factor_levels();
             let mut row = vec![
                 (t + 1).to_string(),
                 (d + 1).to_string(),
                 (v + 1).to_string(),
             ];
-            row.extend(factor_values.iter().map(|x| x.to_string()));
-            row.extend_from_slice(&factor_values);
+            row.extend(factor_levels.iter().map(|x| x.to_string()));
+            row.extend_from_slice(&factor_levels);
             let estimate = estimate
                 .map(|x| format!("{x:.0}"))
                 .unwrap_or("NA".to_string());
@@ -170,10 +170,10 @@ fn print_summary_table<E: Experiment>(
             Rank::Missing => cell.foreground_color(Some(Color::Rgb(50, 50, 50))),
         };
 
-        let factor_values = datum.factor_values();
+        let factor_levels = datum.factor_levels();
         for (v, (variant, estimate)) in variants.iter().zip(datum_estimates).enumerate() {
             let t = d * variants.len() + v;
-            let factor_values = variant.factor_values();
+            let factor_levels = variant.factor_levels();
             let rank = rank_of(estimate);
             let estimate = estimate
                 .map(|x| format!("{x:.0}"))
@@ -184,7 +184,7 @@ fn print_summary_table<E: Experiment>(
                 cell_of(&rank, (v + 1).cell()),
             ];
 
-            for x in factor_values.iter().chain(&factor_values) {
+            for x in factor_levels.iter().chain(&factor_levels) {
                 columns.push(cell_of(&rank, x.cell()));
             }
             columns.push(cell_of(&rank, estimate.cell().justify(Justify::Right)));

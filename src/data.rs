@@ -1,22 +1,22 @@
 pub trait Data {
     fn factor_names() -> Vec<&'static str>;
 
-    fn factor_values(&self) -> Vec<String>;
+    fn factor_levels(&self) -> Vec<String>;
 
     fn factor_names_short() -> Vec<&'static str> {
         Self::factor_names()
     }
 
-    fn factor_values_short(&self) -> Vec<String> {
-        self.factor_values()
+    fn factor_levels_short(&self) -> Vec<String> {
+        self.factor_levels()
     }
 
     fn key_long(&self) -> String {
-        join(&Self::factor_names(), &self.factor_values())
+        join(&Self::factor_names(), &self.factor_levels())
     }
 
     fn key_short(&self) -> String {
-        join(&Self::factor_names_short(), &self.factor_values_short())
+        join(&Self::factor_names_short(), &self.factor_levels_short())
     }
 }
 

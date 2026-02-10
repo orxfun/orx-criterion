@@ -9,7 +9,7 @@ fn treatment_0() {
             vec![]
         }
 
-        fn factor_values(&self) -> Vec<String> {
+        fn factor_levels(&self) -> Vec<String> {
             vec![]
         }
     }
@@ -28,7 +28,7 @@ fn treatment_1() {
             vec!["width"]
         }
 
-        fn factor_values(&self) -> Vec<String> {
+        fn factor_levels(&self) -> Vec<String> {
             vec![self.0.to_string()]
         }
     }
@@ -55,7 +55,7 @@ fn treatment_3() {
             vec!["l", "srt", "sp"]
         }
 
-        fn factor_values(&self) -> Vec<String> {
+        fn factor_levels(&self) -> Vec<String> {
             vec![
                 self.len.to_string(),
                 self.sort.to_string(),
@@ -63,7 +63,7 @@ fn treatment_3() {
             ]
         }
 
-        fn factor_values_short(&self) -> Vec<String> {
+        fn factor_levels_short(&self) -> Vec<String> {
             vec![
                 self.len.to_string(),
                 match self.sort {

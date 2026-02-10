@@ -1,6 +1,6 @@
 use crate::data::join;
 
-/// An algorithm variant to execute a common task.
+/// An algorithm variant defined by unique values of its factor levels.
 ///
 /// Each variant can be uniquely determined by the combination of its parameter values.
 ///
@@ -8,26 +8,26 @@ use crate::data::join;
 ///
 /// # Required Methods
 ///
-/// We must implement two methods: [`factor_names`] and [`factor_values`]:
+/// We must implement two methods: [`factor_names`] and [`factor_levels`]:
 ///
 /// * `factor_names` contains the names of parameters.
 ///   They will be used as column names of output table, or within logs.
 ///   One can optionally implement [`factor_names_short`] to provide shorter versions of the names
 ///   (please see the corresponding example below).
 ///
-/// * `factor_values` contains the values of the parameters of an instance of the variant.
+/// * `factor_levels` contains the values of the parameters of an instance of the variant.
 ///   They will be used to determine the variant to solve the problem.
-///   Similarly, [`factor_values_short`] can optionally be implemented.
+///   Similarly, [`factor_levels_short`] can optionally be implemented.
 ///
-/// Note that four of the methods (`factor_names`, `factor_values`, and short versions) must return vectors of the same
+/// Note that four of the methods (`factor_names`, `factor_levels`, and short versions) must return vectors of the same
 /// length with elements matching in order.
 ///
 /// For demonstration benchmarks, please see the [benches](https://github.com/orxfun/orx-parallel/blob/main/benches) folder.
 ///
 /// [`factor_names`]: AlgFactors::factor_names
 /// [`factor_names_short`]: AlgFactors::factor_names_short
-/// [`factor_values`]: AlgFactors::factor_values
-/// [`factor_values_short`]: AlgFactors::factor_values_short
+/// [`factor_levels`]: AlgFactors::factor_levels
+/// [`factor_levels_short`]: AlgFactors::factor_levels_short
 ///
 /// # Examples
 ///
@@ -59,7 +59,7 @@ use crate::data::join;
 ///         vec!["num_threads", "direction"]
 ///     }
 ///
-///     fn factor_values(&self) -> Vec<String> {
+///     fn factor_levels(&self) -> Vec<String> {
 ///         vec![
 ///             self.num_threads.to_string(),
 ///             format!("{:?}", self.direction),
@@ -79,7 +79,7 @@ use crate::data::join;
 /// );
 /// ```
 ///
-/// Importantly note that, `factor_values` must be implemented in a way that each combination
+/// Importantly note that, `factor_levels` must be implemented in a way that each combination
 /// leads to a **unique key** by the [`key_long`] call.
 ///
 /// This is often correct by default conversion to string.
@@ -121,7 +121,7 @@ use crate::data::join;
 ///         vec!["num_threads", "direction"]
 ///     }
 ///
-///     fn factor_values(&self) -> Vec<String> {
+///     fn factor_levels(&self) -> Vec<String> {
 ///         vec![
 ///             self.num_threads.to_string(),
 ///             format!("{:?}", self.direction),
@@ -132,7 +132,7 @@ use crate::data::join;
 ///         vec!["n", "d"]
 ///     }
 ///
-///     fn factor_values_short(&self) -> Vec<String> {
+///     fn factor_levels_short(&self) -> Vec<String> {
 ///         let direction = match self.direction {
 ///             Direction::Forwards => "F",
 ///             Direction::Backwards => "B",
@@ -165,7 +165,7 @@ pub trait AlgFactors {
 
     /// String representation of values (long) of parameter values (levels) of the
     /// algorithm variant.
-    fn factor_values(&self) -> Vec<String>;
+    fn factor_levels(&self) -> Vec<String>;
 
     /// Short names of parameters of the algorithm variant.
     ///
@@ -181,21 +181,21 @@ pub trait AlgFactors {
 
     /// String representation of values (short) of parameter values (levels) of the
     /// algorithm variant.
-    fn factor_values_short(&self) -> Vec<String> {
-        self.factor_values()
+    fn factor_levels_short(&self) -> Vec<String> {
+        self.factor_levels()
     }
 
-    /// Key of the algorithm variant created by joining results of factor_names and factor_values.
+    /// Key of the algorithm variant created by joining results of factor_names and factor_levels.
     ///
     /// It uniquely identifies the algorithm variant.
     fn key_long(&self) -> String {
-        join(&Self::factor_names(), &self.factor_values())
+        join(&Self::factor_names(), &self.factor_levels())
     }
 
-    /// Short key of the algorithm variant created by joining results of factor_names_short and factor_values_short.
+    /// Short key of the algorithm variant created by joining results of factor_names_short and factor_levels_short.
     ///
     /// It uniquely identifies the algorithm variant.
     fn key_short(&self) -> String {
-        join(&Self::factor_names_short(), &self.factor_values_short())
+        join(&Self::factor_names_short(), &self.factor_levels_short())
     }
 }

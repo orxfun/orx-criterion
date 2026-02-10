@@ -11,7 +11,7 @@ impl Data for MyData {
         vec!["w"]
     }
 
-    fn factor_values(&self) -> Vec<String> {
+    fn factor_levels(&self) -> Vec<String> {
         vec![self.0.to_string()]
     }
 }
@@ -30,11 +30,11 @@ impl AlgFactors for MyVariant {
         vec!["l", "s"]
     }
 
-    fn factor_values(&self) -> Vec<String> {
+    fn factor_levels(&self) -> Vec<String> {
         vec![self.len.to_string(), self.sort.to_string()]
     }
 
-    fn factor_values_short(&self) -> Vec<String> {
+    fn factor_levels_short(&self) -> Vec<String> {
         vec![
             self.len.to_string(),
             match self.sort {

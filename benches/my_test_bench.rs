@@ -12,7 +12,7 @@ impl Data for SortData {
         vec!["l", "p"]
     }
 
-    fn factor_values(&self) -> Vec<String> {
+    fn factor_levels(&self) -> Vec<String> {
         vec![self.0.to_string(), self.1.to_string()]
     }
 }
@@ -33,11 +33,11 @@ impl AlgFactors for SearchMethod {
         vec!["s"]
     }
 
-    fn factor_values(&self) -> Vec<String> {
+    fn factor_levels(&self) -> Vec<String> {
         vec![format!("{self:?}")]
     }
 
-    fn factor_values_short(&self) -> Vec<String> {
+    fn factor_levels_short(&self) -> Vec<String> {
         vec![
             match self {
                 Self::Linear => "lin",
