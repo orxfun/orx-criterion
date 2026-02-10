@@ -80,7 +80,7 @@ const SEARCH_VALUE: &str = "criterion";
 
 struct Input {
     array: Vec<String>,
-    exists: bool,
+    position: Option<usize>,
 }
 
 struct SearchExp;
@@ -92,20 +92,25 @@ impl Experiment for SearchExp {
 
     type Input = Input;
 
-    type Output = bool;
+    type Output = Option<usize>;
 
     fn input(data: &Self::Data) -> Self::Input {
         let mut array: Vec<_> = (0..data.len).map(|i| i.to_string()).collect();
-        let position = match data.position {
+        let index = match data.position {
             ValuePosition::Mid => data.len / 2,
             ValuePosition::None => data.len,
         };
+
         // we place the search value at the position
-        if let Some(element) = array.get_mut(position) {
-            *element = SEARCH_VALUE.to_string();
-        }
-        let exists = position < array.len();
-        Input { array, exists }
+        let position = match array.get_mut(index) {
+            Some(element) => {
+                *element = SEARCH_VALUE.to_string();
+                Some(index)
+            }
+            None => None,
+        };
+
+        Input { array, position }
     }
 
     fn execute(alg_variant: &Self::Variant, input: &Self::Input) -> Self::Output {
@@ -113,38 +118,49 @@ impl Experiment for SearchExp {
         let chunks: Vec<_> = input.array.chunks(chunk_size).collect();
         std::thread::scope(|s| {
             let mut handles = vec![];
+            let mut begin = 0;
             for chunk in chunks {
-                handles.push(s.spawn(|| {
+                handles.push(s.spawn(move || {
                     let mut iter = chunk.iter();
                     match alg_variant.direction {
-                        Direction::Forwards => iter.position(|x| x.as_str() == SEARCH_VALUE),
-                        Direction::Backwards => iter.rev().position(|x| x.as_str() == SEARCH_VALUE),
+                        Direction::Forwards => iter
+                            .position(|x| x.as_str() == SEARCH_VALUE)
+                            .map(|x| begin + x),
+                        Direction::Backwards => iter
+                            .rev()
+                            .position(|x| x.as_str() == SEARCH_VALUE)
+                            .map(|x| begin + (chunk.len() - 1 - x)),
                     }
-                    .is_some()
                 }));
+                begin += chunk.len();
             }
-            handles.into_iter().map(|h| h.join().unwrap()).any(|x| x)
+
+            // get the result that returned Some(position), if any
+            handles
+                .into_iter()
+                .map(|h| h.join().unwrap())
+                .filter_map(|x| x)
+                .next()
         })
     }
 
     fn expected_output(_settings: &Self::Data, input: &Self::Input) -> Option<Self::Output> {
-        // in this example, we could have also returned:
-        // Some(!matches!(_settings.position, ValuePosition::None))
-
-        // but it was easier just to cache the expected output within input
-        Some(input.exists)
+        // returning None (as in default implementation) leads to skipping this validation step
+        Some(input.position)
     }
 
-    fn validate_output(settings: &Self::Data, input: &Self::Input, exists: &Self::Output) {
-        // or we can perform some validation tests on the output (`exists` here) wrt the settings and input
-        assert_eq!(input.exists, *exists);
-        assert_ne!(matches!(settings.position, ValuePosition::None), *exists);
+    fn validate_output(_settings: &Self::Data, input: &Self::Input, output: &Self::Output) {
+        // or we can perform some additional validation tests on the output (`exists` here) wrt the settings and input
+        match *output {
+            Some(position) => assert_eq!(input.array[position], SEARCH_VALUE),
+            None => assert!(!input.array.iter().any(|x| x.as_str() == SEARCH_VALUE)),
+        }
     }
 }
 
 fn run(c: &mut Criterion) {
-    let lengths = [1 << 10, 1 << 18];
-    let positions = [ValuePosition::Mid, ValuePosition::None];
+    let lengths = [1 << 10, 1 << 24];
+    let positions = [ValuePosition::None];
     let input_levels: Vec<_> = lengths
         .into_iter()
         .flat_map(|len| {
@@ -155,8 +171,8 @@ fn run(c: &mut Criterion) {
         })
         .collect();
 
-    let num_threads = [1, 8];
-    let directions = [Direction::Forwards, Direction::Backwards];
+    let num_threads = [1, 16];
+    let directions = [Direction::Forwards];
     let alg_levels: Vec<_> = num_threads
         .into_iter()
         .flat_map(|num_threads| {
