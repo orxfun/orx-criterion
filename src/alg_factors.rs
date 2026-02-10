@@ -1,4 +1,4 @@
-use crate::data::join;
+use crate::input_factors::join;
 
 /// An algorithm variant defined by unique values of its factor levels.
 ///

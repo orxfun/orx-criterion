@@ -1,4 +1,4 @@
-use crate::{AlgFactors, Data, Experiment};
+use crate::{AlgFactors, InputFactors, Experiment};
 use cli_table::{Cell, CellStruct, Color, Style, Table, format::Justify, print_stdout};
 use colorize::AnsiColor;
 use std::fs::File;
@@ -84,7 +84,7 @@ fn create_summary_csv<E: Experiment>(
 
     // title
     let mut row = vec!["t", "d", "v"];
-    row.extend_from_slice(&<E::Data as Data>::factor_names());
+    row.extend_from_slice(&<E::Data as InputFactors>::factor_names());
     row.extend_from_slice(&<E::Variant as AlgFactors>::factor_names());
     row.push("Time (ns)");
     file.write(row.join(",").as_bytes())?;
@@ -137,7 +137,7 @@ fn print_summary_table<E: Experiment>(
         "d".cell().bold(true),
         "v".cell().bold(true),
     ];
-    for factor in <E::Data as Data>::factor_names() {
+    for factor in <E::Data as InputFactors>::factor_names() {
         title.push(factor.cell().bold(true));
     }
     for param in <E::Variant as AlgFactors>::factor_names() {
@@ -209,7 +209,7 @@ pub fn create_ai_prompt_to_analyze<E: Experiment>(
 
     let summary_path = E::summary_csv_path(name);
     let num_data = data.len();
-    let factor_names = <E::Data as Data>::factor_names().join(", ");
+    let factor_names = <E::Data as InputFactors>::factor_names().join(", ");
     let num_variants = variants.len();
     let factor_names = <E::Variant as AlgFactors>::factor_names().join(", ");
     let num_treatments = num_data * num_variants;

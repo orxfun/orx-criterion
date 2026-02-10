@@ -1,8 +1,8 @@
-use crate::{AlgFactors, Data, Experiment};
+use crate::{AlgFactors, InputFactors, Experiment};
 
 pub struct MyData(usize);
 
-impl Data for MyData {
+impl InputFactors for MyData {
     fn factor_names() -> Vec<&'static str> {
         vec!["width"]
     }

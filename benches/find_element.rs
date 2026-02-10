@@ -1,5 +1,5 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use orx_criterion::{AlgFactors, Data, Experiment};
+use orx_criterion::{AlgFactors, InputFactors, Experiment};
 use orx_parallel::{ParIter, Parallelizable};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
@@ -12,7 +12,7 @@ struct DataSettings {
     position: usize,
 }
 
-impl Data for DataSettings {
+impl InputFactors for DataSettings {
     fn factor_names() -> Vec<&'static str> {
         vec!["len", "position"]
     }

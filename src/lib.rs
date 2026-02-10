@@ -15,10 +15,10 @@
 mod tests;
 
 mod alg_factors;
-mod data;
 mod experiment;
+mod input_factors;
 mod summary;
 
 pub use alg_factors::AlgFactors;
-pub use data::Data;
 pub use experiment::Experiment;
+pub use input_factors::InputFactors;

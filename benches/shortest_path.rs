@@ -1,5 +1,5 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use orx_criterion::{AlgFactors, Data, Experiment};
+use orx_criterion::{AlgFactors, InputFactors, Experiment};
 use orx_priority_queue::{DaryHeapOfIndices, PriorityQueue, PriorityQueueDecKey};
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
@@ -70,7 +70,7 @@ struct GraphSettings {
     connectivity_perc: usize,
 }
 
-impl Data for GraphSettings {
+impl InputFactors for GraphSettings {
     fn factor_names() -> Vec<&'static str> {
         vec!["num_nodes", "connectivity"]
     }

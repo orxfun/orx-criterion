@@ -1,9 +1,9 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use orx_criterion::{AlgFactors, Data, Experiment};
+use orx_criterion::{AlgFactors, Experiment, InputFactors};
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
 
-// Variant
+// Algorithm Factors
 
 #[derive(Debug)]
 enum Direction {
@@ -41,7 +41,7 @@ impl AlgFactors for Params {
     }
 }
 
-// Instance
+// Input Factors
 
 fn run(c: &mut Criterion) {
     // let data = [

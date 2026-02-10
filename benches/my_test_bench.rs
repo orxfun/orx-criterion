@@ -1,9 +1,9 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use orx_criterion::{AlgFactors, Data, Experiment};
+use orx_criterion::{AlgFactors, InputFactors, Experiment};
 
 struct SortData(usize, usize);
 
-impl Data for SortData {
+impl InputFactors for SortData {
     fn factor_names() -> Vec<&'static str> {
         vec!["len", "position"]
     }
