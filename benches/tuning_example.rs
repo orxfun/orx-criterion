@@ -1,13 +1,9 @@
 use criterion::{Criterion, criterion_group, criterion_main};
 use orx_criterion::{AlgFactors, Experiment, InputFactors};
-use orx_parallel::{ParIter, ParallelizableCollection};
-use rand::prelude::*;
-use rand_chacha::ChaCha8Rng;
-use rayon::iter::Positions;
 
 // Algorithm Factors
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 enum Direction {
     Forwards,
     Backwards,
@@ -45,7 +41,7 @@ impl AlgFactors for Params {
 
 // Input Factors
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 enum ValuePosition {
     Beg,
     Mid,
@@ -119,46 +115,69 @@ impl Experiment for SearchExp {
     }
 
     fn execute(alg_variant: &Self::Variant, input: &Self::Input) -> Self::Output {
+        let chunk_size = input.array.len() / alg_variant.num_threads;
+        let chunks: Vec<_> = input.array.chunks(chunk_size).collect();
         match alg_variant.direction {
-            Direction::Forwards => input
-                .array
-                .par()
-                .num_threads(alg_variant.num_threads)
-                .find(|x| x.as_str() == SEARCH_VALUE)
-                .is_some(),
-            Direction::Backwards => {
-                let chunk_size = input.array.len() / alg_variant.num_threads;
-                let chunks: Vec<_> = input.array.chunks(chunk_size).collect();
-                std::thread::scope(|s| {
-                    let mut handles = vec![];
-                    for chunk in chunks {
-                        handles.push(s.spawn(|| {
-                            chunk
-                                .iter()
-                                .position(|x| x.as_str() == SEARCH_VALUE)
-                                .is_some()
-                        }));
-                    }
-                    handles.into_iter().map(|h| h.join().unwrap()).any(|x| x)
-                })
-            }
+            Direction::Forwards => std::thread::scope(|s| {
+                let mut handles = vec![];
+                for chunk in chunks {
+                    handles.push(s.spawn(|| {
+                        chunk
+                            .iter()
+                            .position(|x| x.as_str() == SEARCH_VALUE)
+                            .is_some()
+                    }));
+                }
+                handles.into_iter().map(|h| h.join().unwrap()).any(|x| x)
+            }),
+            Direction::Backwards => std::thread::scope(|s| {
+                let mut handles = vec![];
+                for chunk in chunks {
+                    handles.push(s.spawn(|| {
+                        chunk
+                            .iter()
+                            .rev()
+                            .position(|x| x.as_str() == SEARCH_VALUE)
+                            .is_some()
+                    }));
+                }
+                handles.into_iter().map(|h| h.join().unwrap()).any(|x| x)
+            }),
         }
     }
 }
 
 fn run(c: &mut Criterion) {
-    // let data = [
-    //     DataSettings(1 << 5),
-    //     DataSettings(1 << 10),
-    //     DataSettings(1 << 15),
-    // ];
-    // let variants = [
-    //     SearchMethod(StoreType::None),
-    //     SearchMethod(StoreType::SortedVec),
-    //     SearchMethod(StoreType::HashMap),
-    //     SearchMethod(StoreType::BTreeMap),
-    // ];
-    // TwoSumExp::bench(c, "two_sum", &data, &variants);
+    let lengths = [1 << 5, 1 << 10];
+    let positions = [
+        ValuePosition::Beg,
+        ValuePosition::Mid,
+        ValuePosition::End,
+        ValuePosition::None,
+    ];
+    let input_levels: Vec<_> = lengths
+        .into_iter()
+        .flat_map(|len| {
+            positions
+                .iter()
+                .copied()
+                .map(move |position| Settings { len, position })
+        })
+        .collect();
+
+    let num_threads = [1, 8];
+    let directions = [Direction::Forwards, Direction::Backwards];
+    let alg_levels: Vec<_> = num_threads
+        .into_iter()
+        .flat_map(|num_threads| {
+            directions.iter().copied().map(move |direction| Params {
+                num_threads,
+                direction,
+            })
+        })
+        .collect();
+
+    SearchExp::bench(c, "tuning_example", &input_levels, &alg_levels);
 }
 
 criterion_group!(benches, run);
