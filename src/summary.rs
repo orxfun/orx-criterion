@@ -1,4 +1,4 @@
-use crate::experiment_sealed::ExperimentSealed;
+use crate::experimentation_sealed::ExperimentationSealed;
 use crate::{AlgFactors, Experimentation, InputFactors};
 use cli_table::{Cell, CellStruct, Color, Style, Table, format::Justify, print_stdout};
 use colorize::AnsiColor;

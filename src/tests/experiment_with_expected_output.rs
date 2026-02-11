@@ -1,4 +1,4 @@
-use crate::experiment_sealed::ExperimentSealed;
+use crate::experimentation_sealed::ExperimentationSealed;
 use crate::{AlgFactors, Experimentation, InputFactors};
 
 struct MyData(usize, usize);

@@ -15,8 +15,8 @@
 mod tests;
 
 mod alg_factors;
-mod experiment_sealed;
 mod experimentation;
+mod experimentation_sealed;
 mod input_factors;
 mod summary;
 

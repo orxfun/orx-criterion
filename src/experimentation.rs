@@ -1,4 +1,4 @@
-use crate::experiment_sealed::ExperimentSealed;
+use crate::experimentation_sealed::ExperimentationSealed;
 use crate::summary::summarize;
 use crate::{AlgFactors, InputFactors};
 use colorize::AnsiColor;
