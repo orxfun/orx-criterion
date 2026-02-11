@@ -5,9 +5,9 @@ use colorize::AnsiColor;
 use criterion::Criterion;
 use std::fmt::Debug;
 
-/// An experiment to analyze the impact of algorithm factors, or parameter settings, on solution time
+/// An experimentation to analyze the impact of algorithm factors, or parameter settings, on solution time
 /// over different data sets defined by input factors.
-pub trait Experiment: Sized {
+pub trait Experimentation: Sized {
     /// Input factors of the experiment.
     /// Each instance of this type allows to create a particular input for the problem.
     type InputFactors: InputFactors;
@@ -25,13 +25,13 @@ pub trait Experiment: Sized {
     /// Creates the input of the problem defined by the given `input_variant`.
     fn input(&mut self, input_variant: &Self::InputFactors) -> Self::Input;
 
+    fn execute(&mut self, alg_variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output;
+
     fn expected_output(&self, _: &Self::InputFactors, _: &Self::Input) -> Option<Self::Output> {
         None
     }
 
     fn validate_output(&self, _: &Self::InputFactors, _: &Self::Input, _: &Self::Output) {}
-
-    fn execute(&mut self, alg_variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output;
 
     fn bench(
         &mut self,

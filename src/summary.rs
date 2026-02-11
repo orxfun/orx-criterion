@@ -1,12 +1,12 @@
 use crate::experiment_sealed::ExperimentSealed;
-use crate::{AlgFactors, Experiment, InputFactors};
+use crate::{AlgFactors, Experimentation, InputFactors};
 use cli_table::{Cell, CellStruct, Color, Style, Table, format::Justify, print_stdout};
 use colorize::AnsiColor;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::{cmp::Ordering, path::PathBuf};
 
-fn collect_point_estimates<E: Experiment>(
+fn collect_point_estimates<E: Experimentation>(
     exp: &E,
     name: &str,
     input_levels: &[E::InputFactors],
@@ -54,7 +54,7 @@ fn get_slope_point_estimate(path: &PathBuf) -> Option<f64> {
     slice.parse().ok()
 }
 
-pub fn summarize<E: Experiment>(
+pub fn summarize<E: Experimentation>(
     exp: &E,
     name: &str,
     input_levels: &[E::InputFactors],
@@ -82,7 +82,7 @@ pub fn summarize<E: Experiment>(
     println!("{}", log.italic());
 }
 
-fn create_summary_csv<E: Experiment>(
+fn create_summary_csv<E: Experimentation>(
     exp: &E,
     name: &str,
     input_levels: &[E::InputFactors],
@@ -124,7 +124,7 @@ fn create_summary_csv<E: Experiment>(
     Ok(())
 }
 
-fn print_summary_table<E: Experiment>(
+fn print_summary_table<E: Experimentation>(
     exp: &E,
     name: &str,
     input_levels: &[E::InputFactors],
@@ -210,7 +210,7 @@ fn print_summary_table<E: Experiment>(
     print_stdout(table).expect("Failed to print the summary table");
 }
 
-pub fn create_ai_prompt_to_analyze<E: Experiment>(
+pub fn create_ai_prompt_to_analyze<E: Experimentation>(
     exp: &E,
     name: &str,
     data: &[E::InputFactors],

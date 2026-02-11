@@ -1,5 +1,5 @@
 use crate::experiment_sealed::ExperimentSealed;
-use crate::{AlgFactors, Experiment, InputFactors};
+use crate::{AlgFactors, Experimentation, InputFactors};
 
 struct MyData(usize, usize);
 
@@ -36,7 +36,7 @@ impl AlgFactors for SearchMethod {
 
 struct SearchExperiment;
 
-impl Experiment for SearchExperiment {
+impl Experimentation for SearchExperiment {
     type InputFactors = MyData;
 
     type AlgFactors = SearchMethod;

@@ -1,5 +1,5 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use orx_criterion::{AlgFactors, Experiment, InputFactors};
+use orx_criterion::{AlgFactors, Experimentation, InputFactors};
 
 // Input Factors
 
@@ -100,7 +100,7 @@ struct Input {
 /// within an array.
 struct SearchExp;
 
-impl Experiment for SearchExp {
+impl Experimentation for SearchExp {
     type InputFactors = Settings;
 
     type AlgFactors = Params;

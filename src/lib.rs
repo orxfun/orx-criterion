@@ -15,11 +15,11 @@
 mod tests;
 
 mod alg_factors;
-mod experiment;
 mod experiment_sealed;
+mod experimentation;
 mod input_factors;
 mod summary;
 
 pub use alg_factors::AlgFactors;
-pub use experiment::Experiment;
+pub use experimentation::Experimentation;
 pub use input_factors::InputFactors;
