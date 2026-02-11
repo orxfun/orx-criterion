@@ -260,7 +260,9 @@ We create the benchmark file under the **benches** folder, say `benches/tuning_e
 
 Finally, we add the following lines that will allow us to start the benchmark run.
 
-```rust
+We can start our benchmark with `SearchExp::bench(c, "tuning_example", &input_levels, &alg_levels)` call, which will create a benchmark run for each (input, algorithm) combination.
+
+```rust ignore
 use criterion::{Criterion, criterion_group, criterion_main};
 
 fn run(c: &mut Criterion) {
@@ -290,7 +292,7 @@ fn run(c: &mut Criterion) {
         })
         .collect();
 
-    // execute a full-factorial experiment over the union of input and algorithm factors
+    // execute benchmarks for each (input, algorithm) combination
     SearchExp::bench(c, "tuning_example", &input_levels, &alg_levels);
 }
 
@@ -321,7 +323,7 @@ You may also notice both the long and short keys of each treatment, such as:
 
 ## Logs
 
-This crate will add some additional logs to default "criterion" logs containing information about the full-factorial runs.
+This crate will add some additional logs to default "criterion" logs containing information about the experimentation.
 
 ```shell
 # tuning_example benchmarks with 4 data points and 4 variants => 16 treatments
