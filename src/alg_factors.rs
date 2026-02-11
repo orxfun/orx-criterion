@@ -43,14 +43,20 @@ use crate::input_factors::join;
 /// ```
 /// use orx_criterion::*;
 ///
-/// #[derive(Debug)]
+/// /// Defines the direction of the search for the target value.
+/// #[derive(Debug, Clone, Copy)]
 /// enum Direction {
+///     /// The array will be search from beginning to the end.
 ///     Forwards,
+///     /// The array will be search from end to the beginning.
 ///     Backwards,
 /// }
 ///
+/// /// Parameters defining the search algorithm.
 /// struct Params {
+///     /// Number of threads to use for the search.
 ///     num_threads: usize,
+///     /// Direction of search by each thread.
 ///     direction: Direction,
 /// }
 ///
@@ -68,15 +74,12 @@ use crate::input_factors::join;
 /// }
 ///
 /// let alg_params = Params {
-///     num_threads: 1,
+///     num_threads: 4,
 ///     direction: Direction::Forwards,
 /// };
 ///
-/// assert_eq!(alg_params.key_long(), "num_threads:1_direction:Forwards");
-/// assert_eq!(
-///     alg_params.key_short(),
-///     "num_threads:1_direction:Forwards"
-/// );
+/// assert_eq!(alg_params.key_long(), "num_threads:4_direction:Forwards");
+/// assert_eq!(alg_params.key_short(), "num_threads:4_direction:Forwards");
 /// ```
 ///
 /// Importantly note that, `factor_levels` must be implemented in a way that each combination
@@ -103,14 +106,20 @@ use crate::input_factors::join;
 /// ```
 /// use orx_criterion::*;
 ///
-/// #[derive(Debug)]
+/// /// Defines the direction of the search for the target value.
+/// #[derive(Debug, Clone, Copy)]
 /// enum Direction {
+///     /// The array will be search from beginning to the end.
 ///     Forwards,
+///     /// The array will be search from end to the beginning.
 ///     Backwards,
 /// }
 ///
+/// /// Parameters defining the search algorithm.
 /// struct Params {
+///     /// Number of threads to use for the search.
 ///     num_threads: usize,
+///     /// Direction of search by each thread.
 ///     direction: Direction,
 /// }
 ///
@@ -195,5 +204,51 @@ pub trait AlgFactors {
     /// It uniquely identifies the algorithm variant.
     fn key_short(&self) -> String {
         join(&Self::factor_names_short(), &self.factor_levels_short())
+    }
+}
+
+fn abc() {
+    use crate::*;
+
+    /// Defines the direction of the search for the target value.
+    #[derive(Debug, Clone, Copy)]
+    enum Direction {
+        /// The array will be search from beginning to the end.
+        Forwards,
+        /// The array will be search from end to the beginning.
+        Backwards,
+    }
+
+    /// Parameters defining the search algorithm.
+    struct Params {
+        /// Number of threads to use for the search.
+        num_threads: usize,
+        /// Direction of search by each thread.
+        direction: Direction,
+    }
+
+    impl AlgFactors for Params {
+        fn factor_names() -> Vec<&'static str> {
+            vec!["num_threads", "direction"]
+        }
+
+        fn factor_levels(&self) -> Vec<String> {
+            vec![
+                self.num_threads.to_string(),
+                format!("{:?}", self.direction),
+            ]
+        }
+
+        fn factor_names_short() -> Vec<&'static str> {
+            vec!["n", "d"]
+        }
+
+        fn factor_levels_short(&self) -> Vec<String> {
+            let direction = match self.direction {
+                Direction::Forwards => "F",
+                Direction::Backwards => "B",
+            };
+            vec![self.num_threads.to_string(), direction.to_string()]
+        }
     }
 }
