@@ -1,5 +1,5 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use orx_criterion::{AlgFactors, Experimentation, InputFactors};
+use orx_criterion::{AlgFactors, Experiment, InputFactors};
 
 struct SortData(usize, usize);
 
@@ -51,7 +51,7 @@ impl AlgFactors for SearchMethod {
 
 struct SearchExperiment;
 
-impl Experimentation for SearchExperiment {
+impl Experiment for SearchExperiment {
     type InputFactors = SortData;
 
     type AlgFactors = SearchMethod;

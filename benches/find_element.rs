@@ -1,5 +1,5 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use orx_criterion::{AlgFactors, Experimentation, InputFactors};
+use orx_criterion::{AlgFactors, Experiment, InputFactors};
 use orx_parallel::{ParIter, Parallelizable};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
@@ -87,7 +87,7 @@ impl AlgFactors for SearchAlg {
 
 struct TuneFindElements;
 
-impl Experimentation for TuneFindElements {
+impl Experiment for TuneFindElements {
     type InputFactors = DataSettings;
 
     type AlgFactors = SearchAlg;

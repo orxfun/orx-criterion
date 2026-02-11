@@ -1,5 +1,5 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use orx_criterion::{AlgFactors, Experimentation, InputFactors};
+use orx_criterion::{AlgFactors, Experiment, InputFactors};
 use orx_priority_queue::{DaryHeapOfIndices, PriorityQueue, PriorityQueueDecKey};
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
@@ -101,7 +101,7 @@ impl AlgFactors for HeapWidth {
 
 struct ShortestPathExp;
 
-impl Experimentation for ShortestPathExp {
+impl Experiment for ShortestPathExp {
     type InputFactors = GraphSettings;
 
     type AlgFactors = HeapWidth;

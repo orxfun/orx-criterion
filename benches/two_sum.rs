@@ -1,5 +1,5 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use orx_criterion::{AlgFactors, Experimentation, InputFactors};
+use orx_criterion::{AlgFactors, Experiment, InputFactors};
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
 use std::collections::{BTreeMap, HashMap};
@@ -128,7 +128,7 @@ struct Input {
 
 struct TwoSumExp;
 
-impl Experimentation for TwoSumExp {
+impl Experiment for TwoSumExp {
     type InputFactors = DataSettings;
 
     type AlgFactors = SearchMethod;

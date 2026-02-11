@@ -1,7 +1,7 @@
-use crate::{AlgFactors, Experimentation, InputFactors};
+use crate::{AlgFactors, Experiment, InputFactors};
 use std::path::PathBuf;
 
-pub trait ExperimentationSealed: Experimentation {
+pub trait ExperimentSealed: Experiment {
     /// Long key of the treatment, or run, for the input defined by the `input_variant` and algorithm
     /// defined by the `algorithm_variant`.
     fn run_key_long(
@@ -78,4 +78,4 @@ pub trait ExperimentationSealed: Experimentation {
     }
 }
 
-impl<X: Experimentation> ExperimentationSealed for X {}
+impl<X: Experiment> ExperimentSealed for X {}

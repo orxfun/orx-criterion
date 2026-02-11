@@ -1,5 +1,5 @@
-use crate::experimentation_sealed::ExperimentationSealed;
-use crate::{AlgFactors, Experimentation, InputFactors};
+use crate::experiment_sealed::ExperimentSealed;
+use crate::{AlgFactors, Experiment, InputFactors};
 
 pub struct MyData(usize);
 
@@ -49,7 +49,7 @@ impl AlgFactors for MyVariant {
 
 pub struct MyExperiment;
 
-impl Experimentation for MyExperiment {
+impl Experiment for MyExperiment {
     type InputFactors = MyData;
 
     type AlgFactors = MyVariant;

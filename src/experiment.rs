@@ -1,13 +1,13 @@
-use crate::experimentation_sealed::ExperimentationSealed;
+use crate::experiment_sealed::ExperimentSealed;
 use crate::summary::summarize;
 use crate::{AlgFactors, InputFactors};
 use colorize::AnsiColor;
 use criterion::Criterion;
 use std::fmt::Debug;
 
-/// An experimentation to analyze the impact of algorithm factors, or parameter settings, on solution time
+/// An experiment to analyze the impact of algorithm factors, or parameter settings, on solution time
 /// over different data sets defined by input factors.
-pub trait Experimentation: Sized {
+pub trait Experiment: Sized {
     /// Input factors of the experiment.
     /// Each instance of this type allows to create a particular input for the problem.
     type InputFactors: InputFactors;
