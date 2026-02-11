@@ -159,11 +159,7 @@ impl Experiment for SearchExp {
             }
 
             // get the result from threads in the form of Some(position), if any
-            handles
-                .into_iter()
-                .map(|h| h.join().unwrap())
-                .filter_map(|x| x)
-                .next()
+            handles.into_iter().filter_map(|h| h.join().unwrap()).next()
         })
     }
 
