@@ -52,7 +52,11 @@ fn get_slope_point_estimate(path: &PathBuf) -> Option<f64> {
     slice.parse().ok()
 }
 
-pub fn summarize<E: Experiment>(name: &str, input_levels: &[E::InputFactors], alg_levels: &[E::AlgFactors]) {
+pub fn summarize<E: Experiment>(
+    name: &str,
+    input_levels: &[E::InputFactors],
+    alg_levels: &[E::AlgFactors],
+) {
     let estimates = collect_point_estimates::<E>(name, input_levels, alg_levels);
 
     create_summary_csv::<E>(name, input_levels, alg_levels, &estimates)
@@ -210,6 +214,7 @@ pub fn create_ai_prompt_to_analyze<E: Experiment>(
     let mut file = File::create(path)?;
 
     let summary_path = E::summary_csv_path(name);
+    let benchmark_path = E::benchmark_file_path(name);
     let num_inputs = data.len();
     let input_factor_names = <E::InputFactors as InputFactors>::factor_names().join(", ");
     let num_variants = variants.len();
@@ -237,6 +242,9 @@ Although we have a single value per treatment, these values are obtained by the 
 The objective is to solve the problem as fast as possible.
 In other words, we want to minimize elapsed time.
 We are searching the best values of the parameters, or best variant, that would perform the best across different data sets.
+
+The benchmark file is located at {benchmark_path:?}, where you may find types that implement `InputFactors` and `AlgFactors` traits.
+Please see the documentation of fields of these types for explanation of the factors.
 
 Please analyze the output of the experiment and provide insights.
     "

@@ -42,6 +42,10 @@ pub trait Experiment: Sized {
         .collect()
     }
 
+    fn benchmark_file_path(bench_name: &str) -> PathBuf {
+        ["benches", &format!("{bench_name}.rs")].iter().collect()
+    }
+
     fn summary_csv_path(bench_name: &str) -> PathBuf {
         [
             "target",

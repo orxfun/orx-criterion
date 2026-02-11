@@ -352,4 +352,8 @@ Summary table created at:
 target/criterion/tuning_example/summary_tuning_example.csv
 ```
 
-## Summary Table - CSV
+## AI Prompt
+
+Also a draft AI prompt to summarize the results will be created at `target/criterion/{bench_name}/prompt_{bench_name}.md`, in case you find it helpful for a quick overview. The following is a response to the prompt created for this example.
+
+![summary-table-console](docs/img/readme_ai_summary.jpg)
