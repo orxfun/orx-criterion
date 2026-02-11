@@ -77,7 +77,7 @@ Treatment keys are also used as directory names by "criterion" to store the resu
 
 We want to solve this problem by a linear search. Additionally, we want to consider the parallelized variants.
 
-In order to represent these algorithm variants, we define [`AlgFactors`](https://docs.rs/orx-criterion/latest/orx_criterion/trait.AlgFactors.html) named as `Params`. Each unique setting instance determines the way that our algorithm will execute. We will later add to experiment the algorithm variants that we want to evaluate.
+In order to represent these algorithm variants, we define [`AlgFactors`](https://docs.rs/orx-criterion/latest/orx_criterion/trait.AlgFactors.html) named as `Params`. Each unique setting parameters determines the way that our algorithm will execute. We will later add to experiment the algorithm variants that we want to evaluate.
 
 ```rust
 use orx_criterion::*;
@@ -138,7 +138,7 @@ The experimentation will study how much time is spent by the `execute`. Time of 
 
 Optionally, we can implement validation methods:
 
-- `expected_output` takes input levels and created input and returns the expected output. This value will be compared to the value that the `execute` method actually generates, and panics if they do not match. Importantly note that:
+- `expected_output` takes input levels and created input and returns the expected output. This value will be compared to the value that the `execute` method generates, and panics if they do not match. Importantly note that:
   - all algorithm variants must produce exactly the same output for the same input, and
   - an algorithm variant must always produce the same output for the same input.
 
@@ -320,16 +320,11 @@ Then, we can run the benchmark & experiment with `cargo bench` command.
 
 Notice that the experimentation is run by having data points (inputs) as the outer loop and algorithm variants in the inner loop. This allows to create each input only once.
 
-You may also notice both the long and short keys of each treatment, such as:
-
-- len:1024_position:Mid/num_threads:1_direction:Forwards
-- l:1024_p:M/n:1_d:F
-
 ## Logs
 
 This crate will add some additional logs to default "criterion" logs containing information about the experimentation.
 
-![logs](docs/img/readme_criterion_logs.jpg)
+![logs](docs/img/readme_criterion_logs.png)
 
 ## Summary Table - Console
 
@@ -345,7 +340,7 @@ Rows of the <span style="color:green">best</span> and the <span style="color:red
 
 The following table is the result of the run of the benchmark defined in this example.
 
-![summary-table-console](docs/img/readme_summary_table_console.jpg)
+![summary-table-console](docs/img/readme_summary_table_console.png)
 
 ## Summary Table - CSV
 
@@ -360,7 +355,7 @@ target/criterion/tuning_example/summary_tuning_example.csv
 
 Also a draft AI prompt to summarize the results will be created at `target/criterion/{bench_name}/prompt_{bench_name}.md`, in case you find it helpful for a quick overview. The following is a response to the prompt created for this example.
 
-![summary-table-console](docs/img/readme_ai_summary.jpg)
+![summary-table-console](docs/img/readme_ai_summary.png)
 
 ## Contributing
 
