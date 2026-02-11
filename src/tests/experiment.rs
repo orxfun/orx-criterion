@@ -1,8 +1,9 @@
-use crate::{Data, Experiment, Variant};
+use crate::experiment_sealed::ExperimentSealed;
+use crate::{AlgFactors, Experiment, InputFactors};
 
 pub struct MyData(usize);
 
-impl Data for MyData {
+impl InputFactors for MyData {
     fn factor_names() -> Vec<&'static str> {
         vec!["width"]
     }
@@ -11,7 +12,7 @@ impl Data for MyData {
         vec!["w"]
     }
 
-    fn factor_values(&self) -> Vec<String> {
+    fn factor_levels(&self) -> Vec<String> {
         vec![self.0.to_string()]
     }
 }
@@ -21,20 +22,20 @@ pub struct MyVariant {
     sort: bool,
 }
 
-impl Variant for MyVariant {
-    fn param_names() -> Vec<&'static str> {
+impl AlgFactors for MyVariant {
+    fn factor_names() -> Vec<&'static str> {
         vec!["len", "sort"]
     }
 
-    fn param_names_short() -> Vec<&'static str> {
+    fn factor_names_short() -> Vec<&'static str> {
         vec!["l", "s"]
     }
 
-    fn param_values(&self) -> Vec<String> {
+    fn factor_levels(&self) -> Vec<String> {
         vec![self.len.to_string(), self.sort.to_string()]
     }
 
-    fn param_values_short(&self) -> Vec<String> {
+    fn factor_levels_short(&self) -> Vec<String> {
         vec![
             self.len.to_string(),
             match self.sort {
@@ -49,19 +50,19 @@ impl Variant for MyVariant {
 pub struct MyExperiment;
 
 impl Experiment for MyExperiment {
-    type Data = MyData;
+    type InputFactors = MyData;
 
-    type Variant = MyVariant;
+    type AlgFactors = MyVariant;
 
     type Input = Vec<usize>;
 
     type Output = Vec<usize>;
 
-    fn input(data: &Self::Data) -> Self::Input {
+    fn input(&mut self, data: &Self::InputFactors) -> Self::Input {
         (0..data.0).collect()
     }
 
-    fn execute(variant: &Self::Variant, input: &Self::Input) -> Self::Output {
+    fn execute(&mut self, variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
         let mut output = input.clone();
         if variant.sort {
             for _ in 0..variant.len {
@@ -76,6 +77,7 @@ impl Experiment for MyExperiment {
 
 #[test]
 fn basic_experiment() {
+    let mut exp = MyExperiment;
     let data = [MyData(2), MyData(5)];
     let variants = [
         MyVariant {
@@ -92,11 +94,11 @@ fn basic_experiment() {
     let mut names = vec![];
     let mut names_short = vec![];
     for datum in &data {
-        let input = MyExperiment::input(datum);
+        let input = exp.input(datum);
         for variant in &variants {
-            names.push(MyExperiment::run_key_long(datum, variant));
-            names_short.push(MyExperiment::run_key_short(datum, variant));
-            outputs.push(MyExperiment::execute(variant, &input));
+            names.push(exp.run_key_long(datum, variant));
+            names_short.push(exp.run_key_short(datum, variant));
+            outputs.push(exp.execute(variant, &input));
         }
     }
 

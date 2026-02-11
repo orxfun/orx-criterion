@@ -1,6 +1,6 @@
 #![doc = include_str!("../README.md")]
 #![warn(
-    // missing_docs,
+    missing_docs,
     clippy::unwrap_in_result,
     clippy::unwrap_used,
     clippy::panic,
@@ -14,11 +14,12 @@
 #[cfg(test)]
 mod tests;
 
-mod data;
+mod alg_factors;
 mod experiment;
+mod experiment_sealed;
+mod input_factors;
 mod summary;
-mod variant;
 
-pub use data::Data;
+pub use alg_factors::AlgFactors;
 pub use experiment::Experiment;
-pub use variant::Variant;
+pub use input_factors::InputFactors;

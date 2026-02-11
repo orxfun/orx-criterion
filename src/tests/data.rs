@@ -1,15 +1,15 @@
-use crate::Data;
+use crate::InputFactors;
 
 #[test]
 fn treatment_0() {
     pub struct MyData;
 
-    impl Data for MyData {
+    impl InputFactors for MyData {
         fn factor_names() -> Vec<&'static str> {
             vec![]
         }
 
-        fn factor_values(&self) -> Vec<String> {
+        fn factor_levels(&self) -> Vec<String> {
             vec![]
         }
     }
@@ -23,12 +23,12 @@ fn treatment_0() {
 fn treatment_1() {
     pub struct MyData(usize);
 
-    impl Data for MyData {
+    impl InputFactors for MyData {
         fn factor_names() -> Vec<&'static str> {
             vec!["width"]
         }
 
-        fn factor_values(&self) -> Vec<String> {
+        fn factor_levels(&self) -> Vec<String> {
             vec![self.0.to_string()]
         }
     }
@@ -46,7 +46,7 @@ fn treatment_3() {
         split: char,
     }
 
-    impl Data for MyData {
+    impl InputFactors for MyData {
         fn factor_names() -> Vec<&'static str> {
             vec!["len", "sort", "split"]
         }
@@ -55,7 +55,7 @@ fn treatment_3() {
             vec!["l", "srt", "sp"]
         }
 
-        fn factor_values(&self) -> Vec<String> {
+        fn factor_levels(&self) -> Vec<String> {
             vec![
                 self.len.to_string(),
                 self.sort.to_string(),
@@ -63,7 +63,7 @@ fn treatment_3() {
             ]
         }
 
-        fn factor_values_short(&self) -> Vec<String> {
+        fn factor_levels_short(&self) -> Vec<String> {
             vec![
                 self.len.to_string(),
                 match self.sort {

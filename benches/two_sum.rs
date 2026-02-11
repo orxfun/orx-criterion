@@ -1,5 +1,5 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use orx_criterion::{Data, Experiment, Variant};
+use orx_criterion::{AlgFactors, Experiment, InputFactors};
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
 use std::collections::{BTreeMap, HashMap};
@@ -10,12 +10,12 @@ use std::collections::{BTreeMap, HashMap};
 
 struct DataSettings(usize);
 
-impl Data for DataSettings {
+impl InputFactors for DataSettings {
     fn factor_names() -> Vec<&'static str> {
         vec!["len"]
     }
 
-    fn factor_values(&self) -> Vec<String> {
+    fn factor_levels(&self) -> Vec<String> {
         vec![self.0.to_string()]
     }
 }
@@ -32,12 +32,12 @@ enum StoreType {
 
 struct SearchMethod(StoreType);
 
-impl Variant for SearchMethod {
-    fn param_names() -> Vec<&'static str> {
+impl AlgFactors for SearchMethod {
+    fn factor_names() -> Vec<&'static str> {
         vec!["store-type"]
     }
 
-    fn param_values(&self) -> Vec<String> {
+    fn factor_levels(&self) -> Vec<String> {
         vec![format!("{:?}", self.0)]
     }
 }
@@ -129,27 +129,27 @@ struct Input {
 struct TwoSumExp;
 
 impl Experiment for TwoSumExp {
-    type Data = DataSettings;
+    type InputFactors = DataSettings;
 
-    type Variant = SearchMethod;
+    type AlgFactors = SearchMethod;
 
     type Input = Input;
 
     type Output = Option<[usize; 2]>;
 
-    fn input(data: &Self::Data) -> Self::Input {
+    fn input(&mut self, data: &Self::InputFactors) -> Self::Input {
         let mut rng = ChaCha8Rng::seed_from_u64(42);
         let n = data.0;
         let mut array: Vec<_> = (0..data.0).map(|_| rng.random_range(3..n as i64)).collect();
-        let i = array[n / 2] as usize;
-        let j = array[3 * n / 4] as usize;
+        let i = n / 2;
+        let j = 3 * n / 4;
         array[i] = 1;
         array[j] = 2;
         let indices = Some([i, j]);
         Input { array, indices }
     }
 
-    fn execute(variant: &Self::Variant, input: &Self::Input) -> Self::Output {
+    fn execute(&mut self, variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
         let array = &input.array;
         match variant.0 {
             StoreType::None => algorithm::<&[i64]>(array, 3),
@@ -159,7 +159,7 @@ impl Experiment for TwoSumExp {
         }
     }
 
-    fn validate_output(_: &Self::Data, input: &Self::Input, output: &Self::Output) {
+    fn validate_output(&self, _: &Self::InputFactors, input: &Self::Input, output: &Self::Output) {
         assert_eq!(input.indices, *output);
         assert_eq!(
             output.map(|[i, j]| input.array[i] + input.array[j]),
@@ -181,7 +181,7 @@ fn run(c: &mut Criterion) {
         SearchMethod(StoreType::BTreeMap),
     ];
 
-    TwoSumExp::bench(c, "two_sum", &data, &variants);
+    TwoSumExp.bench(c, "two_sum", &data, &variants);
 }
 
 criterion_group!(benches, run);

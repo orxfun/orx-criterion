@@ -1,5 +1,5 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use orx_criterion::{Data, Experiment, Variant};
+use orx_criterion::{AlgFactors, Experiment, InputFactors};
 use orx_priority_queue::{DaryHeapOfIndices, PriorityQueue, PriorityQueueDecKey};
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
@@ -70,12 +70,12 @@ struct GraphSettings {
     connectivity_perc: usize,
 }
 
-impl Data for GraphSettings {
+impl InputFactors for GraphSettings {
     fn factor_names() -> Vec<&'static str> {
         vec!["num_nodes", "connectivity"]
     }
 
-    fn factor_values(&self) -> Vec<String> {
+    fn factor_levels(&self) -> Vec<String> {
         vec![
             self.num_nodes.to_string(),
             format!("{}%", self.connectivity_perc),
@@ -87,12 +87,12 @@ impl Data for GraphSettings {
 
 struct HeapWidth(usize);
 
-impl Variant for HeapWidth {
-    fn param_names() -> Vec<&'static str> {
+impl AlgFactors for HeapWidth {
+    fn factor_names() -> Vec<&'static str> {
         vec!["heap-width"]
     }
 
-    fn param_values(&self) -> Vec<String> {
+    fn factor_levels(&self) -> Vec<String> {
         vec![self.0.to_string()]
     }
 }
@@ -102,19 +102,19 @@ impl Variant for HeapWidth {
 struct ShortestPathExp;
 
 impl Experiment for ShortestPathExp {
-    type Data = GraphSettings;
+    type InputFactors = GraphSettings;
 
-    type Variant = HeapWidth;
+    type AlgFactors = HeapWidth;
 
     type Input = Vec<Vec<Edge>>;
 
     type Output = Option<usize>;
 
-    fn input(data: &Self::Data) -> Self::Input {
+    fn input(&mut self, data: &Self::InputFactors) -> Self::Input {
         new_graph(data.num_nodes, data.connectivity_perc)
     }
 
-    fn execute(variant: &Self::Variant, input: &Self::Input) -> Self::Output {
+    fn execute(&mut self, variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
         let (s, t) = (0, input.len() - 1);
         match variant.0 {
             2 => shortest_path::<2>(input, s, t),
@@ -129,7 +129,7 @@ impl Experiment for ShortestPathExp {
         }
     }
 
-    fn expected_output(_: &Self::Data, input: &Self::Input) -> Option<Self::Output> {
+    fn expected_output(&self, _: &Self::InputFactors, input: &Self::Input) -> Option<Self::Output> {
         let (s, t) = (0, input.len() - 1);
         Some(shortest_path::<2>(input, s, t))
     }
@@ -151,7 +151,7 @@ fn run(c: &mut Criterion) {
 
     let variants = [HeapWidth(2), HeapWidth(4), HeapWidth(512)];
 
-    ShortestPathExp::bench(c, "shortest_path", &data, &variants);
+    ShortestPathExp.bench(c, "shortest_path", &data, &variants);
 }
 
 criterion_group!(benches, run);

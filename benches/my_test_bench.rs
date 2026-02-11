@@ -1,9 +1,9 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use orx_criterion::{Data, Experiment, Variant};
+use orx_criterion::{AlgFactors, Experiment, InputFactors};
 
 struct SortData(usize, usize);
 
-impl Data for SortData {
+impl InputFactors for SortData {
     fn factor_names() -> Vec<&'static str> {
         vec!["len", "position"]
     }
@@ -12,7 +12,7 @@ impl Data for SortData {
         vec!["l", "p"]
     }
 
-    fn factor_values(&self) -> Vec<String> {
+    fn factor_levels(&self) -> Vec<String> {
         vec![self.0.to_string(), self.1.to_string()]
     }
 }
@@ -24,20 +24,20 @@ enum SearchMethod {
     Binary,
 }
 
-impl Variant for SearchMethod {
-    fn param_names() -> Vec<&'static str> {
+impl AlgFactors for SearchMethod {
+    fn factor_names() -> Vec<&'static str> {
         vec!["search"]
     }
 
-    fn param_names_short() -> Vec<&'static str> {
+    fn factor_names_short() -> Vec<&'static str> {
         vec!["s"]
     }
 
-    fn param_values(&self) -> Vec<String> {
+    fn factor_levels(&self) -> Vec<String> {
         vec![format!("{self:?}")]
     }
 
-    fn param_values_short(&self) -> Vec<String> {
+    fn factor_levels_short(&self) -> Vec<String> {
         vec![
             match self {
                 Self::Linear => "lin",
@@ -52,26 +52,26 @@ impl Variant for SearchMethod {
 struct SearchExperiment;
 
 impl Experiment for SearchExperiment {
-    type Data = SortData;
+    type InputFactors = SortData;
 
-    type Variant = SearchMethod;
+    type AlgFactors = SearchMethod;
 
     type Input = (Vec<usize>, usize);
 
     type Output = Option<usize>;
 
-    fn input(datum: &Self::Data) -> Self::Input {
+    fn input(&mut self, datum: &Self::InputFactors) -> Self::Input {
         let vec: Vec<_> = (0..(100 * datum.0)).collect();
         let value = *vec.get(100 * datum.1).unwrap_or(&usize::MAX);
         (vec, value)
     }
 
-    fn expected_output(_: &Self::Data, input: &Self::Input) -> Option<Self::Output> {
+    fn expected_output(&self, _: &Self::InputFactors, input: &Self::Input) -> Option<Self::Output> {
         let (vec, value) = input;
         Some(vec.iter().position(|x| x == value))
     }
 
-    fn execute(variant: &Self::Variant, input: &Self::Input) -> Self::Output {
+    fn execute(&mut self, variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
         let (vec, value) = input;
         match variant {
             SearchMethod::Linear => vec.iter().position(|x| x == value),
@@ -97,7 +97,7 @@ fn run(c: &mut Criterion) {
         SearchMethod::Binary,
     ];
 
-    SearchExperiment::bench(c, "my_test_bench", &data, &variants);
+    SearchExperiment.bench(c, "my_test_bench", &data, &variants);
 }
 
 criterion_group!(benches, run);

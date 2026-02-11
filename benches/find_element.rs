@@ -1,5 +1,5 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use orx_criterion::{Data, Experiment, Variant};
+use orx_criterion::{AlgFactors, Experiment, InputFactors};
 use orx_parallel::{ParIter, Parallelizable};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
@@ -12,7 +12,7 @@ struct DataSettings {
     position: usize,
 }
 
-impl Data for DataSettings {
+impl InputFactors for DataSettings {
     fn factor_names() -> Vec<&'static str> {
         vec!["len", "position"]
     }
@@ -21,7 +21,7 @@ impl Data for DataSettings {
         vec!["l", "p"]
     }
 
-    fn factor_values(&self) -> Vec<String> {
+    fn factor_levels(&self) -> Vec<String> {
         vec![self.len.to_string(), self.position.to_string()]
     }
 }
@@ -47,16 +47,16 @@ struct SearchAlg {
     approach: Approach,
 }
 
-impl Variant for SearchAlg {
-    fn param_names() -> Vec<&'static str> {
+impl AlgFactors for SearchAlg {
+    fn factor_names() -> Vec<&'static str> {
         vec!["par_lib", "num_threads", "chunk_size", "approach"]
     }
 
-    fn param_names_short() -> Vec<&'static str> {
+    fn factor_names_short() -> Vec<&'static str> {
         vec!["lib", "nt", "ch", "app"]
     }
 
-    fn param_values(&self) -> Vec<String> {
+    fn factor_levels(&self) -> Vec<String> {
         vec![
             format!("{:?}", self.par_lib),
             self.num_threads.to_string(),
@@ -65,7 +65,7 @@ impl Variant for SearchAlg {
         ]
     }
 
-    fn param_values_short(&self) -> Vec<String> {
+    fn factor_levels_short(&self) -> Vec<String> {
         vec![
             match self.par_lib {
                 ParLib::OrxParallel => "X",
@@ -88,15 +88,15 @@ impl Variant for SearchAlg {
 struct TuneFindElements;
 
 impl Experiment for TuneFindElements {
-    type Data = DataSettings;
+    type InputFactors = DataSettings;
 
-    type Variant = SearchAlg;
+    type AlgFactors = SearchAlg;
 
     type Input = Vec<String>;
 
     type Output = bool;
 
-    fn input(data: &Self::Data) -> Self::Input {
+    fn input(&mut self, data: &Self::InputFactors) -> Self::Input {
         (0..data.len)
             .map(|i| match i == data.position {
                 true => format!("__{SEARCH_PHRASE}"),
@@ -105,11 +105,11 @@ impl Experiment for TuneFindElements {
             .collect()
     }
 
-    fn expected_output(data: &Self::Data, _: &Self::Input) -> Option<Self::Output> {
+    fn expected_output(&self, data: &Self::InputFactors, _: &Self::Input) -> Option<Self::Output> {
         Some(data.position < data.len)
     }
 
-    fn execute(variant: &Self::Variant, input: &Self::Input) -> Self::Output {
+    fn execute(&mut self, variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
         match variant.par_lib {
             ParLib::OrxParallel => match variant.approach {
                 Approach::Find => input
@@ -187,7 +187,7 @@ fn run(c: &mut Criterion) {
 
     // experiment
 
-    TuneFindElements::bench(c, "tuning_find_element", &data, &variants);
+    TuneFindElements.bench(c, "tuning_find_element", &data, &variants);
 }
 
 criterion_group!(benches, run);
