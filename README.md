@@ -4,7 +4,7 @@
 [![orx-criterion crate](https://img.shields.io/crates/d/orx-criterion.svg)](https://crates.io/crates/orx-criterion)
 [![orx-criterion documentation](https://docs.rs/orx-criterion/badge.svg)](https://docs.rs/orx-criterion)
 
-Additional [criterion](https://crates.io/crates/criterion) benchmarking utilities to enable parameter tuning for speed.
+Experimentation library using [criterion](https://crates.io/crates/criterion) benchmarks for parameter tuning.
 
 Please see the example below for demonstration.
 
