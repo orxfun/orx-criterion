@@ -88,7 +88,7 @@ impl AlgFactors for Params {
 
 // Experiment
 
-/// Value to search for.
+/// Value to search for
 const SEARCH_VALUE: &str = "criterion";
 
 struct Input {
@@ -144,7 +144,6 @@ impl Experiment for SearchExp {
             for chunk in chunks {
                 handles.push(s.spawn(move || {
                     let mut iter = chunk.iter();
-
                     match alg_variant.direction {
                         Direction::Forwards => iter
                             .position(|x| x.as_str() == SEARCH_VALUE)

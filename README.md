@@ -153,7 +153,7 @@ Note that both of the validation methods are executed **only once** per (input, 
 ```rust ignore
 use orx_criterion::*;
 
-/// Value to search for.
+/// Value to search for
 const SEARCH_VALUE: &str = "criterion";
 
 struct Input {
@@ -174,7 +174,7 @@ impl Experiment for SearchExp {
 
     type Output = Option<usize>;
 
-    fn input(input_levels: &Self::InputFactors) -> Self::Input {
+    fn input(&mut self, input_levels: &Self::InputFactors) -> Self::Input {
         // we create an array with the given length, without the search value
         let mut array: Vec<_> = (0..input_levels.len).map(|i| i.to_string()).collect();
 
@@ -196,7 +196,7 @@ impl Experiment for SearchExp {
         Input { array, position }
     }
 
-    fn execute(alg_variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
+    fn execute(&mut self, alg_variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
         // notice that how we compute the output is determined by
         // values of `alg_variant` fields.
 
@@ -209,7 +209,6 @@ impl Experiment for SearchExp {
             for chunk in chunks {
                 handles.push(s.spawn(move || {
                     let mut iter = chunk.iter();
-
                     match alg_variant.direction {
                         Direction::Forwards => iter
                             .position(|x| x.as_str() == SEARCH_VALUE)
@@ -224,20 +223,25 @@ impl Experiment for SearchExp {
             }
 
             // get the result from threads in the form of Some(position), if any
-            handles
-                .into_iter()
-                .map(|h| h.join().unwrap())
-                .filter_map(|x| x)
-                .next()
+            handles.into_iter().filter_map(|h| h.join().unwrap()).next()
         })
     }
 
-    fn expected_output(_input_levels: &Self::InputFactors, input: &Self::Input) -> Option<Self::Output> {
+    fn expected_output(
+        &self,
+        _settings: &Self::InputFactors,
+        input: &Self::Input,
+    ) -> Option<Self::Output> {
         // we simply return the expected output cached in the input
         Some(input.position)
     }
 
-    fn validate_output(_input_levels: &Self::InputFactors, input: &Self::Input, output: &Self::Output) {
+    fn validate_output(
+        &self,
+        _settings: &Self::InputFactors,
+        input: &Self::Input,
+        output: &Self::Output,
+    ) {
         // additional validation logic just to make sure
         // the linear search below does not affect results
         match *output {
@@ -292,8 +296,8 @@ fn run(c: &mut Criterion) {
         })
         .collect();
 
-    // execute benchmarks for each (input, algorithm) combination
-    SearchExp::bench(c, "tuning_example", &input_levels, &alg_levels);
+    // execute a full-factorial experiment over the union of input and algorithm factors
+    SearchExp.bench(c, "tuning_example", &input_levels, &alg_levels);
 }
 
 criterion_group!(benches, run);
