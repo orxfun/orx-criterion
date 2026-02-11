@@ -32,7 +32,7 @@ fn get_slope_point_estimate(path: &PathBuf) -> Option<f64> {
     file.read_to_string(&mut contents).ok()?;
 
     let field_slope_null = "\"slope\":null";
-    let is_slope_null = contents.find(field_slope_null).is_some();
+    let is_slope_null = contents.contains(field_slope_null);
 
     let field = match is_slope_null {
         true => "\"mean\"",
@@ -66,8 +66,8 @@ pub fn summarize<E: Experiment>(
         .expect("Failed to create csv summary");
 
     let log = format!(
-        "\nSummary table created at:\n{}\n",
-        exp.summary_csv_path(name).to_str().unwrap()
+        "\nSummary table created at:\n{:?}\n",
+        exp.summary_csv_path(name)
     );
     println!("{}", log.italic());
 
@@ -76,8 +76,8 @@ pub fn summarize<E: Experiment>(
     create_ai_prompt_to_analyze(exp, name, input_levels, alg_levels)
         .expect("Failed to create ai prompt");
     let log = format!(
-        "\nA draft AI prompt to analyze the summary table is created at:\n{}\n",
-        exp.ai_prompt_path(name).to_str().unwrap()
+        "\nA draft AI prompt to analyze the summary table is created at:\n{:?}\n",
+        exp.ai_prompt_path(name)
     );
     println!("{}", log.italic());
 }
@@ -97,8 +97,8 @@ fn create_summary_csv<E: Experiment>(
     row.extend_from_slice(&<E::InputFactors as InputFactors>::factor_names());
     row.extend_from_slice(&<E::AlgFactors as AlgFactors>::factor_names());
     row.push("Time (ns)");
-    file.write(row.join(",").as_bytes())?;
-    file.write(b"\n")?;
+    file.write_all(row.join(",").as_bytes())?;
+    file.write_all(b"\n")?;
 
     // rows
     for (i, (input_variant, input_estimates)) in input_levels.iter().zip(estimates).enumerate() {
@@ -117,8 +117,8 @@ fn create_summary_csv<E: Experiment>(
                 .map(|x| format!("{x:.0}"))
                 .unwrap_or("NA".to_string());
             row.push(estimate);
-            file.write(row.join(",").as_bytes())?;
-            file.write(b"\n")?;
+            file.write_all(row.join(",").as_bytes())?;
+            file.write_all(b"\n")?;
         }
     }
     Ok(())
@@ -164,11 +164,11 @@ fn print_summary_table<E: Experiment>(
         let rank_of = |estimate: &Option<f64>| match estimate {
             Some(x) => {
                 if (min - x).abs() < 1e-5 {
-                    return Rank::Best;
+                    Rank::Best
                 } else if (max - x).abs() < 1e-5 {
-                    return Rank::Worst;
+                    Rank::Worst
                 } else {
-                    return Rank::Intermediate;
+                    Rank::Intermediate
                 }
             }
             None => Rank::Missing,
@@ -255,6 +255,6 @@ Please analyze the output of the experiment and provide insights.
     "
     );
 
-    file.write(prompt.as_bytes())?;
+    file.write_all(prompt.as_bytes())?;
     Ok(())
 }
