@@ -5,23 +5,37 @@ use criterion::Criterion;
 use std::fmt::Debug;
 use std::path::PathBuf;
 
+/// An experiment to analyze the impact of algorithm factors, or parameter settings, on solution time
+/// over different data sets defined by input factors.
 pub trait Experiment: Sized {
+    /// Input factors of the experiment.
+    /// Each instance of this type allows to create a particular input for the problem.
     type InputFactors: InputFactors;
 
+    /// Algorithm factors to evaluate.
+    /// Each instance of this type represents a variant of the algorithm.
     type AlgFactors: AlgFactors;
 
+    /// Input of the problem.
     type Input;
 
+    /// Output of the problem.
     type Output: PartialEq + Debug;
 
+    /// Long key of the treatment, or run, for the input defined by the `input_variant` and algorithm
+    /// defined by the `algorithm_variant`.
     fn run_key_long(input_variant: &Self::InputFactors, alg_variant: &Self::AlgFactors) -> String {
         format!("{}/{}", input_variant.key_long(), alg_variant.key_long())
     }
 
+    /// Short key of the treatment, or run, for the input defined by the `input_variant` and algorithm
+    /// defined by the `algorithm_variant`.
     fn run_key_short(input_variant: &Self::InputFactors, alg_variant: &Self::AlgFactors) -> String {
         format!("{}/{}", input_variant.key_short(), alg_variant.key_short())
     }
 
+    /// Path of the "estimates.json" file that criterion will create when the benchmark is created,
+    /// for the particular treatment defined by the given `input_variant` and `alg_variant`.
     fn run_estimates_path(
         bench_name: &str,
         input_variant: &Self::InputFactors,
@@ -42,10 +56,13 @@ pub trait Experiment: Sized {
         .collect()
     }
 
+    /// Path of the benchmark file including this experiment.
     fn benchmark_file_path(bench_name: &str) -> PathBuf {
         ["benches", &format!("{bench_name}.rs")].iter().collect()
     }
 
+    /// Path of the csv file containing the summary table that will be created at the end of the
+    /// benchmark execution.
     fn summary_csv_path(bench_name: &str) -> PathBuf {
         [
             "target",
@@ -57,6 +74,8 @@ pub trait Experiment: Sized {
         .collect()
     }
 
+    /// Path of the markdown file containing a draft AI prompt to analyze the summary file which
+    /// will also be created at the end of the benchmark execution.
     fn ai_prompt_path(bench_name: &str) -> PathBuf {
         [
             "target",
@@ -68,7 +87,8 @@ pub trait Experiment: Sized {
         .collect()
     }
 
-    fn input(data: &Self::InputFactors) -> Self::Input;
+    /// Creates the input of the problem defined by the given `input_variant`.
+    fn input(input_variant: &Self::InputFactors) -> Self::Input;
 
     fn expected_output(_: &Self::InputFactors, _: &Self::Input) -> Option<Self::Output> {
         None
