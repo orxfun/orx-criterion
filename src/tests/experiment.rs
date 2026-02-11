@@ -57,11 +57,11 @@ impl Experiment for MyExperiment {
 
     type Output = Vec<usize>;
 
-    fn input(data: &Self::InputFactors) -> Self::Input {
+    fn input(&mut self, data: &Self::InputFactors) -> Self::Input {
         (0..data.0).collect()
     }
 
-    fn execute(variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
+    fn execute(&mut self, variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
         let mut output = input.clone();
         if variant.sort {
             for _ in 0..variant.len {
@@ -76,6 +76,7 @@ impl Experiment for MyExperiment {
 
 #[test]
 fn basic_experiment() {
+    let mut exp = MyExperiment;
     let data = [MyData(2), MyData(5)];
     let variants = [
         MyVariant {
@@ -92,11 +93,11 @@ fn basic_experiment() {
     let mut names = vec![];
     let mut names_short = vec![];
     for datum in &data {
-        let input = MyExperiment::input(datum);
+        let input = exp.input(datum);
         for variant in &variants {
-            names.push(MyExperiment::run_key_long(datum, variant));
-            names_short.push(MyExperiment::run_key_short(datum, variant));
-            outputs.push(MyExperiment::execute(variant, &input));
+            names.push(exp.run_key_long(datum, variant));
+            names_short.push(exp.run_key_short(datum, variant));
+            outputs.push(exp.execute(variant, &input));
         }
     }
 

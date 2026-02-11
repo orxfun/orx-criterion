@@ -1,5 +1,5 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use orx_criterion::{AlgFactors, InputFactors, Experiment};
+use orx_criterion::{AlgFactors, Experiment, InputFactors};
 
 struct SortData(usize, usize);
 
@@ -60,18 +60,18 @@ impl Experiment for SearchExperiment {
 
     type Output = Option<usize>;
 
-    fn input(datum: &Self::InputFactors) -> Self::Input {
+    fn input(&mut self, datum: &Self::InputFactors) -> Self::Input {
         let vec: Vec<_> = (0..(100 * datum.0)).collect();
         let value = *vec.get(100 * datum.1).unwrap_or(&usize::MAX);
         (vec, value)
     }
 
-    fn expected_output(_: &Self::InputFactors, input: &Self::Input) -> Option<Self::Output> {
+    fn expected_output(&self, _: &Self::InputFactors, input: &Self::Input) -> Option<Self::Output> {
         let (vec, value) = input;
         Some(vec.iter().position(|x| x == value))
     }
 
-    fn execute(variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
+    fn execute(&mut self, variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
         let (vec, value) = input;
         match variant {
             SearchMethod::Linear => vec.iter().position(|x| x == value),
@@ -97,7 +97,7 @@ fn run(c: &mut Criterion) {
         SearchMethod::Binary,
     ];
 
-    SearchExperiment::bench(c, "my_test_bench", &data, &variants);
+    SearchExperiment.bench(c, "my_test_bench", &data, &variants);
 }
 
 criterion_group!(benches, run);

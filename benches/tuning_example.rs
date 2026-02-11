@@ -109,7 +109,7 @@ impl Experiment for SearchExp {
 
     type Output = Option<usize>;
 
-    fn input(input_levels: &Self::InputFactors) -> Self::Input {
+    fn input(&mut self, input_levels: &Self::InputFactors) -> Self::Input {
         // we create an array with the given length, without the search value
         let mut array: Vec<_> = (0..input_levels.len).map(|i| i.to_string()).collect();
 
@@ -131,7 +131,7 @@ impl Experiment for SearchExp {
         Input { array, position }
     }
 
-    fn execute(alg_variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
+    fn execute(&mut self, alg_variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
         // notice that how we compute the output is determined by
         // values of `alg_variant` fields.
 
@@ -168,6 +168,7 @@ impl Experiment for SearchExp {
     }
 
     fn expected_output(
+        &self,
         _settings: &Self::InputFactors,
         input: &Self::Input,
     ) -> Option<Self::Output> {
@@ -175,7 +176,12 @@ impl Experiment for SearchExp {
         Some(input.position)
     }
 
-    fn validate_output(_settings: &Self::InputFactors, input: &Self::Input, output: &Self::Output) {
+    fn validate_output(
+        &self,
+        _settings: &Self::InputFactors,
+        input: &Self::Input,
+        output: &Self::Output,
+    ) {
         // additional validation logic just to make sure
         // the linear search below does not affect results
         match *output {
@@ -213,7 +219,7 @@ fn run(c: &mut Criterion) {
         .collect();
 
     // execute a full-factorial experiment over the union of input and algorithm factors
-    SearchExp::bench(c, "tuning_example", &input_levels, &alg_levels);
+    SearchExp.bench(c, "tuning_example", &input_levels, &alg_levels);
 }
 
 criterion_group!(benches, run);

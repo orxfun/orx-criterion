@@ -137,7 +137,7 @@ impl Experiment for TwoSumExp {
 
     type Output = Option<[usize; 2]>;
 
-    fn input(data: &Self::InputFactors) -> Self::Input {
+    fn input(&mut self, data: &Self::InputFactors) -> Self::Input {
         let mut rng = ChaCha8Rng::seed_from_u64(42);
         let n = data.0;
         let mut array: Vec<_> = (0..data.0).map(|_| rng.random_range(3..n as i64)).collect();
@@ -149,7 +149,7 @@ impl Experiment for TwoSumExp {
         Input { array, indices }
     }
 
-    fn execute(variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
+    fn execute(&mut self, variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
         let array = &input.array;
         match variant.0 {
             StoreType::None => algorithm::<&[i64]>(array, 3),
@@ -159,7 +159,7 @@ impl Experiment for TwoSumExp {
         }
     }
 
-    fn validate_output(_: &Self::InputFactors, input: &Self::Input, output: &Self::Output) {
+    fn validate_output(&self, _: &Self::InputFactors, input: &Self::Input, output: &Self::Output) {
         assert_eq!(input.indices, *output);
         assert_eq!(
             output.map(|[i, j]| input.array[i] + input.array[j]),
@@ -181,7 +181,7 @@ fn run(c: &mut Criterion) {
         SearchMethod(StoreType::BTreeMap),
     ];
 
-    TwoSumExp::bench(c, "two_sum", &data, &variants);
+    TwoSumExp.bench(c, "two_sum", &data, &variants);
 }
 
 criterion_group!(benches, run);

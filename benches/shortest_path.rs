@@ -1,5 +1,5 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use orx_criterion::{AlgFactors, InputFactors, Experiment};
+use orx_criterion::{AlgFactors, Experiment, InputFactors};
 use orx_priority_queue::{DaryHeapOfIndices, PriorityQueue, PriorityQueueDecKey};
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
@@ -110,11 +110,11 @@ impl Experiment for ShortestPathExp {
 
     type Output = Option<usize>;
 
-    fn input(data: &Self::InputFactors) -> Self::Input {
+    fn input(&mut self, data: &Self::InputFactors) -> Self::Input {
         new_graph(data.num_nodes, data.connectivity_perc)
     }
 
-    fn execute(variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
+    fn execute(&mut self, variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
         let (s, t) = (0, input.len() - 1);
         match variant.0 {
             2 => shortest_path::<2>(input, s, t),
@@ -129,7 +129,7 @@ impl Experiment for ShortestPathExp {
         }
     }
 
-    fn expected_output(_: &Self::InputFactors, input: &Self::Input) -> Option<Self::Output> {
+    fn expected_output(&self, _: &Self::InputFactors, input: &Self::Input) -> Option<Self::Output> {
         let (s, t) = (0, input.len() - 1);
         Some(shortest_path::<2>(input, s, t))
     }
@@ -151,7 +151,7 @@ fn run(c: &mut Criterion) {
 
     let variants = [HeapWidth(2), HeapWidth(4), HeapWidth(512)];
 
-    ShortestPathExp::bench(c, "shortest_path", &data, &variants);
+    ShortestPathExp.bench(c, "shortest_path", &data, &variants);
 }
 
 criterion_group!(benches, run);

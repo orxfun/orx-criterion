@@ -44,18 +44,18 @@ impl Experiment for SearchExperiment {
 
     type Output = Option<usize>;
 
-    fn input(datum: &Self::InputFactors) -> Self::Input {
+    fn input(&mut self, datum: &Self::InputFactors) -> Self::Input {
         let vec: Vec<_> = (0..datum.0).collect();
         let value = *vec.get(datum.1).unwrap_or(&usize::MAX);
         (vec, value)
     }
 
-    fn expected_output(_: &Self::InputFactors, input: &Self::Input) -> Option<Self::Output> {
+    fn expected_output(&self, _: &Self::InputFactors, input: &Self::Input) -> Option<Self::Output> {
         let (vec, value) = input;
         Some(vec.iter().position(|x| x == value))
     }
 
-    fn execute(variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
+    fn execute(&mut self, variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
         let (vec, value) = input;
         match variant {
             SearchMethod::Linear => vec.iter().position(|x| x == value),
@@ -66,17 +66,18 @@ impl Experiment for SearchExperiment {
 
 #[test]
 fn basic_experiment_with_expected_output() {
+    let mut exp = SearchExperiment;
     let data = [MyData(4, 2), MyData(4, 5)];
     let variants = [SearchMethod::Linear, SearchMethod::Binary];
 
     let mut outputs = vec![];
     let mut names = vec![];
     for datum in &data {
-        let input = SearchExperiment::input(datum);
+        let input = exp.input(datum);
         for variant in &variants {
-            names.push(SearchExperiment::run_key_long(datum, variant));
-            let output = SearchExperiment::execute(variant, &input);
-            if let Some(expected_output) = SearchExperiment::expected_output(datum, &input) {
+            names.push(exp.run_key_long(datum, variant));
+            let output = exp.execute(variant, &input);
+            if let Some(expected_output) = exp.expected_output(datum, &input) {
                 assert_eq!(output, expected_output);
             }
             outputs.push(output);

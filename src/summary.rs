@@ -6,6 +6,7 @@ use std::io::{Read, Write};
 use std::{cmp::Ordering, path::PathBuf};
 
 fn collect_point_estimates<E: Experiment>(
+    exp: &E,
     name: &str,
     input_levels: &[E::InputFactors],
     alg_levels: &[E::AlgFactors],
@@ -16,7 +17,7 @@ fn collect_point_estimates<E: Experiment>(
             alg_levels
                 .iter()
                 .map(|alg_variant| {
-                    let execution_path = E::run_estimates_path(name, input_variant, alg_variant);
+                    let execution_path = exp.run_estimates_path(name, input_variant, alg_variant);
                     get_slope_point_estimate(&execution_path)
                 })
                 .collect()
@@ -53,39 +54,41 @@ fn get_slope_point_estimate(path: &PathBuf) -> Option<f64> {
 }
 
 pub fn summarize<E: Experiment>(
+    exp: &E,
     name: &str,
     input_levels: &[E::InputFactors],
     alg_levels: &[E::AlgFactors],
 ) {
-    let estimates = collect_point_estimates::<E>(name, input_levels, alg_levels);
+    let estimates = collect_point_estimates(exp, name, input_levels, alg_levels);
 
-    create_summary_csv::<E>(name, input_levels, alg_levels, &estimates)
+    create_summary_csv(exp, name, input_levels, alg_levels, &estimates)
         .expect("Failed to create csv summary");
 
     let log = format!(
         "\nSummary table created at:\n{}\n",
-        E::summary_csv_path(name).to_str().unwrap()
+        exp.summary_csv_path(name).to_str().unwrap()
     );
     println!("{}", log.italic());
 
-    print_summary_table::<E>(name, input_levels, alg_levels, &estimates);
+    print_summary_table(exp, name, input_levels, alg_levels, &estimates);
 
-    create_ai_prompt_to_analyze::<E>(name, input_levels, alg_levels)
+    create_ai_prompt_to_analyze(exp, name, input_levels, alg_levels)
         .expect("Failed to create ai prompt");
     let log = format!(
         "\nA draft AI prompt to analyze the summary table is created at:\n{}\n",
-        E::ai_prompt_path(name).to_str().unwrap()
+        exp.ai_prompt_path(name).to_str().unwrap()
     );
     println!("{}", log.italic());
 }
 
 fn create_summary_csv<E: Experiment>(
+    exp: &E,
     name: &str,
     input_levels: &[E::InputFactors],
     alg_levels: &[E::AlgFactors],
     estimates: &[Vec<Option<f64>>],
 ) -> std::io::Result<()> {
-    let path = E::summary_csv_path(name);
+    let path = exp.summary_csv_path(name);
     let mut file = File::create(path)?;
 
     // title
@@ -121,6 +124,7 @@ fn create_summary_csv<E: Experiment>(
 }
 
 fn print_summary_table<E: Experiment>(
+    exp: &E,
     name: &str,
     input_levels: &[E::InputFactors],
     alg_levels: &[E::AlgFactors],
@@ -206,15 +210,16 @@ fn print_summary_table<E: Experiment>(
 }
 
 pub fn create_ai_prompt_to_analyze<E: Experiment>(
+    exp: &E,
     name: &str,
     data: &[E::InputFactors],
     variants: &[E::AlgFactors],
 ) -> std::io::Result<()> {
-    let path = E::ai_prompt_path(name);
+    let path = exp.ai_prompt_path(name);
     let mut file = File::create(path)?;
 
-    let summary_path = E::summary_csv_path(name);
-    let benchmark_path = E::benchmark_file_path(name);
+    let summary_path = exp.summary_csv_path(name);
+    let benchmark_path = exp.benchmark_file_path(name);
     let num_inputs = data.len();
     let input_factor_names = <E::InputFactors as InputFactors>::factor_names().join(", ");
     let num_variants = variants.len();
