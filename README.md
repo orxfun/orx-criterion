@@ -357,3 +357,11 @@ target/criterion/tuning_example/summary_tuning_example.csv
 Also a draft AI prompt to summarize the results will be created at `target/criterion/{bench_name}/prompt_{bench_name}.md`, in case you find it helpful for a quick overview. The following is a response to the prompt created for this example.
 
 ![summary-table-console](docs/img/readme_ai_summary.jpg)
+
+## Contributing
+
+Contributions are welcome! If you notice an error, have a question or think something could be added or improved, please open an [issue](https://github.com/orxfun/orx-tree/issues/new) or create a PR.
+
+## License
+
+Dual-licensed under [Apache 2.0](LICENSE-APACHE) or [MIT](LICENSE-MIT).
