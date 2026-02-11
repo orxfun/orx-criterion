@@ -344,3 +344,12 @@ The following table is the result of the run of the benchmark defined in this ex
 ![summary-table-console](docs/img/readme_summary_table_console.jpg)
 
 ## Summary Table - CSV
+
+As it will be noted in the logs, a csv version of the summary table will also be created in the directory of the benchmark: `target/criterion/{bench_name}/summary_{bench_name}.csv`.
+
+```shell
+Summary table created at:
+target/criterion/tuning_example/summary_tuning_example.csv
+```
+
+## Summary Table - CSV
