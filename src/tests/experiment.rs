@@ -1,3 +1,4 @@
+use crate::experiment_sealed::ExperimentSealed;
 use crate::{AlgFactors, Experiment, InputFactors};
 
 pub struct MyData(usize);
