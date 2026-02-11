@@ -41,15 +41,20 @@
 /// ```
 /// use orx_criterion::*;
 ///
-/// #[derive(Debug)]
+/// /// Position of the target value in the input array.
+/// #[derive(Debug, Clone, Copy)]
 /// enum ValuePosition {
-///     Beg,
+///     /// The target value is located in the middle of the array.
 ///     Mid,
-///     End,
+///     /// The target value does not exist in the array.
+///     None,
 /// }
 ///
+/// /// Settings to define input of the search problem.
 /// struct Settings {
+///     /// Length of the input array.
 ///     len: usize,
+///     /// Position of the target value inside the input array.
 ///     position: ValuePosition,
 /// }
 ///
@@ -63,10 +68,7 @@
 ///     }
 /// }
 ///
-/// let settings = Settings {
-///     len: 1024,
-///     position: ValuePosition::Mid,
-/// };
+/// let settings = Settings { len: 1024, position: ValuePosition::Mid };
 ///
 /// assert_eq!(settings.key_long(), "len:1024_position:Mid");
 /// assert_eq!(settings.key_short(), "len:1024_position:Mid");
@@ -85,15 +87,20 @@
 /// ```
 /// use orx_criterion::*;
 ///
-/// #[derive(Debug)]
+/// /// Position of the target value in the input array.
+/// #[derive(Debug, Clone, Copy)]
 /// enum ValuePosition {
-///     Beg,
+///     /// The target value is located in the middle of the array.
 ///     Mid,
-///     End,
+///     /// The target value does not exist in the array.
+///     None,
 /// }
 ///
+/// /// Settings to define input of the search problem.
 /// struct Settings {
+///     /// Length of the input array.
 ///     len: usize,
+///     /// Position of the target value inside the input array.
 ///     position: ValuePosition,
 /// }
 ///
@@ -112,18 +119,14 @@
 ///
 ///     fn factor_levels_short(&self) -> Vec<String> {
 ///         let position = match self.position {
-///             ValuePosition::Beg => "B",
 ///             ValuePosition::Mid => "M",
-///             ValuePosition::End => "E",
+///             ValuePosition::None => "X",
 ///         };
 ///         vec![self.len.to_string(), position.to_string()]
 ///     }
 /// }
 ///
-/// let settings = Settings {
-///     len: 1024,
-///     position: ValuePosition::Mid,
-/// };
+/// let settings = Settings { len: 1024, position: ValuePosition::Mid };
 ///
 /// assert_eq!(settings.key_long(), "len:1024_position:Mid");
 /// assert_eq!(settings.key_short(), "l:1024_p:M");
