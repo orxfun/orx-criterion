@@ -340,7 +340,9 @@ Rows of the <span style="color:green">best</span> and the <span style="color:red
 
 The following table is the result of the run of the benchmark defined in this example.
 
-![summary-table-console](docs/img/readme_summary_table_console.jpg)
+<img src="https://github.com/orxfun/orx-docs-img/blob/main/orx-criterion/readme_summary_table_console.jpg"/>
+
+![summary-table-console](https://github.com/orxfun/orx-docs-img/blob/main/orx-criterion/readme_summary_table_console.jpg)
 
 ## Summary Table - CSV
 
