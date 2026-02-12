@@ -35,7 +35,7 @@ Input to this problem might differ in two ways:
 - length of the array,
 - position of the value that we search for.
 
-In order to represent these input variants, we define [`Factors`](https://docs.rs/orx-criterion/latest/orx_criterion/trait.Factors.html) named as `Settings`. Each unique setting instance can create a unique input for our experimentation. We will later add to experiment the settings that are interesting for our use case.
+In order to represent these input variants, we define [`Factors`](https://docs.rs/orx-criterion/latest/orx_criterion/trait.Factors.html) named as `Settings`. Each unique instance of the `Settings` can create a unique input for our experimentation. We will later add to experiment the settings that are interesting for our use case.
 
 ```rust
 use orx_criterion::*;
@@ -88,7 +88,7 @@ Treatment keys are also used as directory names by "criterion" to store the resu
 
 We want to solve this problem by a linear search. Additionally, we want to consider the parallelized variants.
 
-In order to represent these algorithm variants, we define [`Factors`](https://docs.rs/orx-criterion/latest/orx_criterion/trait.Factors.html) named as `Params`. Each unique setting parameters determines the way that our algorithm will execute. We will later add to experiment the algorithm variants that we want to evaluate.
+In order to represent these algorithm variants, we define [`Factors`](https://docs.rs/orx-criterion/latest/orx_criterion/trait.Factors.html) named as `Params`. Values of parameter levels determine the way that our algorithm will execute. We will later add to experiment the algorithm variants that we want to evaluate.
 
 ```rust
 use orx_criterion::*;
@@ -177,9 +177,9 @@ struct Input {
 struct SearchExp;
 
 impl Experiment for SearchExp {
-    type Factors = Settings;
+    type InputFactors = Settings;
 
-    type Factors = Params;
+    type AlgFactors = Params;
 
     type Input = Input;
 
@@ -207,7 +207,7 @@ impl Experiment for SearchExp {
         Input { array, position }
     }
 
-    fn execute(&mut self, alg_variant: &Self::Factors, input: &Self::Input) -> Self::Output {
+    fn execute(&mut self, alg_variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
         // notice that how we compute the output is determined by
         // values of `alg_variant` fields.
 
@@ -240,7 +240,7 @@ impl Experiment for SearchExp {
 
     fn expected_output(
         &self,
-        _settings: &Self::Factors,
+        _settings: &Self::InputFactors,
         input: &Self::Input,
     ) -> Option<Self::Output> {
         // we simply return the expected output cached in the input
@@ -249,7 +249,7 @@ impl Experiment for SearchExp {
 
     fn validate_output(
         &self,
-        _settings: &Self::Factors,
+        _settings: &Self::InputFactors,
         input: &Self::Input,
         output: &Self::Output,
     ) {
