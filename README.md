@@ -372,6 +372,8 @@ Also a draft AI prompt to summarize the results will be created at `target/crite
 
 Contributions are welcome! If you notice an error, have a question or think something could be added or improved, please open an [issue](https://github.com/orxfun/orx-tree/issues/new) or create a PR.
 
+If you are interested in these particular topics, there are two open issues ([17](https://github.com/orxfun/orx-criterion/issues/17) & [19](https://github.com/orxfun/orx-criterion/issues/19)), which I believe, could make the library much more useful.
+
 ## License
 
 Dual-licensed under [Apache 2.0](LICENSE-APACHE) or [MIT](LICENSE-MIT).
