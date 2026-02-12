@@ -324,7 +324,7 @@ Notice that the experimentation is run by having data points (inputs) as the out
 
 This crate will add some additional logs to default "criterion" logs containing information about the experimentation.
 
-![logs](docs/img/readme_criterion_logs.png)
+![logs](docs/img/readme_criterion_logs.jpg)
 
 ## Summary Table - Console
 
@@ -340,7 +340,7 @@ Rows of the <span style="color:green">best</span> and the <span style="color:red
 
 The following table is the result of the run of the benchmark defined in this example.
 
-![summary-table-console](docs/img/readme_summary_table_console.png)
+![summary-table-console](docs/img/readme_summary_table_console.jpg)
 
 ## Summary Table - CSV
 
@@ -355,7 +355,7 @@ target/criterion/tuning_example/summary_tuning_example.csv
 
 Also a draft AI prompt to summarize the results will be created at `target/criterion/{bench_name}/prompt_{bench_name}.md`, in case you find it helpful for a quick overview. The following is a response to the prompt created for this example.
 
-![summary-table-console](docs/img/readme_ai_summary.png)
+![summary-table-console](docs/img/readme_ai_summary.jpg)
 
 ## Contributing
 
