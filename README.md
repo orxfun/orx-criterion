@@ -324,7 +324,7 @@ Notice that the experimentation is run by having data points (inputs) as the out
 
 This crate will add some additional logs to default "criterion" logs containing information about the experimentation.
 
-![logs](docs/img/readme_criterion_logs.jpg)
+![logs](https://github.com/orxfun/orx-docs-img/blob/main/orx-criterion/readme_criterion_logs.jpg?raw=true)
 
 ## Summary Table - Console
 
@@ -355,7 +355,7 @@ target/criterion/tuning_example/summary_tuning_example.csv
 
 Also a draft AI prompt to summarize the results will be created at `target/criterion/{bench_name}/prompt_{bench_name}.md`, in case you find it helpful for a quick overview. The following is a response to the prompt created for this example.
 
-![summary-table-console](docs/img/readme_ai_summary.jpg)
+![summary-table-console](https://raw.githubusercontent.com/orxfun/orx-docs-img/refs/heads/main/orx-criterion/readme_ai_summary.jpg)
 
 ## Contributing
 
