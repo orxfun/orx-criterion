@@ -84,7 +84,7 @@ Factor names and levels are used to create unique key of each input. For instanc
 
 Treatment keys are also used as directory names by "criterion" to store the results. In order to keep the directory names sufficiently short (within 64 characters), we can optionally implement the short versions of names and levels. The short key to be used as directory name for the above example would then be `l:1024_p:M`.
 
-## Algorithm Factors
+### Algorithm Factors
 
 We want to solve this problem by a linear search. Additionally, we want to consider the parallelized variants.
 
@@ -136,7 +136,7 @@ impl Factors for Params {
 }
 ```
 
-## Experiment
+### Experiment
 
 Finally, we define the experiment.
 
@@ -263,13 +263,13 @@ impl Experiment for SearchExp {
 }
 ```
 
-## Run the Experiment (Benchmark)
+### Run the Experiment (Benchmark)
 
 We defined everything we need to run the experiment.
 
 Finally, we will run it using the [criterion](https://crates.io/crates/criterion) crate.
 
-### Define the Experiment as a Criterion Benchmark
+#### Define the Experiment as a Criterion Benchmark
 
 We create the benchmark file under the **benches** folder, say `benches/tuning_example.rs`. We add all the code above to this file.
 
@@ -315,7 +315,7 @@ criterion_group!(benches, run);
 criterion_main!(benches);
 ```
 
-### Configure Cargo.toml
+#### Configure Cargo.toml
 
 In order to run this file as a benchmark, we need to add the following lines to `Cargo.toml`:
 
@@ -325,19 +325,19 @@ name = "tuning_example"
 harness = false
 ```
 
-### Running the Benchmark
+#### Running the Benchmark
 
 Then, we can run the benchmark & experiment with `cargo bench` command.
 
 Notice that the experimentation is run by having data points (inputs) as the outer loop and algorithm variants in the inner loop. This allows to create each input only once.
 
-## Logs
+### Logs
 
 This crate will add some additional logs to default "criterion" logs containing information about the experimentation.
 
 ![logs](https://github.com/orxfun/orx-docs-img/blob/main/orx-criterion/readme_criterion_logs.jpg?raw=true)
 
-## Summary Table - Console
+### Summary Table - Console
 
 Once all benchmark runs are completed, a summary table will be printed to the console, thanks to [cli-table](https://crates.io/crates/cli-table) and [colorize](https://crates.io/crates/colorize) crates.
 
@@ -353,7 +353,7 @@ The following table is the result of the run of the benchmark defined in this ex
 
 ![summary-table-console](https://raw.githubusercontent.com/orxfun/orx-docs-img/refs/heads/main/orx-criterion/readme_summary_table_console.jpg)
 
-## Summary Table - CSV
+### Summary Table - CSV
 
 As it will be noted in the logs, a csv version of the summary table will also be created in the directory of the benchmark: `target/criterion/{bench_name}/summary_{bench_name}.csv`.
 
@@ -362,7 +362,7 @@ Summary table created at:
 target/criterion/tuning_example/summary_tuning_example.csv
 ```
 
-## AI Prompt
+### AI Prompt
 
 Also a draft AI prompt to summarize the results will be created at `target/criterion/{bench_name}/prompt_{bench_name}.md`, in case you find it helpful for a quick overview. The following is a response to the prompt created for this example.
 
@@ -371,6 +371,8 @@ Also a draft AI prompt to summarize the results will be created at `target/crite
 ## Contributing
 
 Contributions are welcome! If you notice an error, have a question or think something could be added or improved, please open an [issue](https://github.com/orxfun/orx-tree/issues/new) or create a PR.
+
+If you are interested in these particular topics, there are two open issues ([17](https://github.com/orxfun/orx-criterion/issues/17) & [19](https://github.com/orxfun/orx-criterion/issues/19)), which I believe, could make the library much more useful.
 
 ## License
 
