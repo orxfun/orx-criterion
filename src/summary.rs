@@ -228,7 +228,7 @@ pub fn create_ai_prompt_to_analyze<E: Experiment>(
 
     let prompt = format!(
         r"
-The file at '{summary_path:?}' is the output of a full-factorial experiment for the '{name}' benchmark.
+The file at '{summary_path:?}' is the output of a factorial experiment for the '{name}' benchmark.
 
 The experiment is applied on {num_inputs} data sets.
 Each data set is defined by combination of values of factors '{input_factor_names}'.

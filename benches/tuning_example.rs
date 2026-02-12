@@ -213,7 +213,7 @@ fn run(c: &mut Criterion) {
         })
         .collect();
 
-    // execute a full-factorial experiment over the union of input and algorithm factors
+    // execute a factorial experiment over the union of input and algorithm factors
     SearchExp.bench(c, "tuning_example", &input_levels, &alg_levels);
 }
 
