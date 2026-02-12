@@ -6,6 +6,17 @@
 
 Experimentation library using [criterion](https://crates.io/crates/criterion) benchmarks for parameter tuning.
 
+This crate targets to solve the following problem:
+
+- We have a problem or a task that we want to speed up.
+- We have different ways to solve this problem. Throughout the documentation, we call these algorithm variants.
+- We have different shapes of inputs to the problem that might impact the speed. The simplest example is having a small or large input.
+- We want to find the best algorithm variant with respect to some goal, for instance:
+  - best variant for specific inputs,
+  - the variant that has the best overall performance,
+  - the variant that has a good balance of speed and predictability,
+  - etc.
+
 Please see the example below for demonstration.
 
 ## Tuning Example
