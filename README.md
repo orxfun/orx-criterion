@@ -6,6 +6,17 @@
 
 Experimentation library using [criterion](https://crates.io/crates/criterion) benchmarks for parameter tuning.
 
+This crate targets to solve the following problem:
+
+- We have a problem or a task that we want to speed up.
+- We have different ways to solve this problem. Throughout the documentation, we call these algorithm variants.
+- We have different shapes of inputs to the problem that might impact the speed. The simplest example is having a small or large input.
+- We want to find the best algorithm variant with respect to some goal, for instance:
+  - best variant for specific inputs,
+  - the variant that has the best overall performance,
+  - the variant that has a good balance of speed and predictability,
+  - etc.
+
 Please see the example below for demonstration.
 
 ## Tuning Example
@@ -24,7 +35,7 @@ Input to this problem might differ in two ways:
 - length of the array,
 - position of the value that we search for.
 
-In order to represent these input variants, we define [`InputFactors`](https://docs.rs/orx-criterion/latest/orx_criterion/trait.InputFactors.html) named as `Settings`. Each unique setting instance can create a unique input for our experimentation. We will later add to experiment the settings that are interesting for our use case.
+In order to represent these input variants, we define [`Factors`](https://docs.rs/orx-criterion/latest/orx_criterion/trait.Factors.html) named as `Settings`. Each unique instance of the `Settings` can create a unique input for our experimentation. We will later add to experiment the settings that are interesting for our use case.
 
 ```rust
 use orx_criterion::*;
@@ -46,7 +57,7 @@ struct Settings {
     position: ValuePosition,
 }
 
-impl InputFactors for Settings {
+impl Factors for Settings {
     fn factor_names() -> Vec<&'static str> {
         vec!["len", "position"]
     }
@@ -77,7 +88,7 @@ Treatment keys are also used as directory names by "criterion" to store the resu
 
 We want to solve this problem by a linear search. Additionally, we want to consider the parallelized variants.
 
-In order to represent these algorithm variants, we define [`AlgFactors`](https://docs.rs/orx-criterion/latest/orx_criterion/trait.AlgFactors.html) named as `Params`. Each unique setting parameters determines the way that our algorithm will execute. We will later add to experiment the algorithm variants that we want to evaluate.
+In order to represent these algorithm variants, we define [`Factors`](https://docs.rs/orx-criterion/latest/orx_criterion/trait.Factors.html) named as `Params`. Values of parameter levels determine the way that our algorithm will execute. We will later add to experiment the algorithm variants that we want to evaluate.
 
 ```rust
 use orx_criterion::*;
@@ -99,7 +110,7 @@ struct Params {
     direction: Direction,
 }
 
-impl AlgFactors for Params {
+impl Factors for Params {
     fn factor_names() -> Vec<&'static str> {
         vec!["num_threads", "direction"]
     }

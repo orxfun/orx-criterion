@@ -1,5 +1,5 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use orx_criterion::{AlgFactors, Experiment, InputFactors};
+use orx_criterion::{Experiment, Factors};
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
 use std::collections::{BTreeMap, HashMap};
@@ -10,7 +10,7 @@ use std::collections::{BTreeMap, HashMap};
 
 struct DataSettings(usize);
 
-impl InputFactors for DataSettings {
+impl Factors for DataSettings {
     fn factor_names() -> Vec<&'static str> {
         vec!["len"]
     }
@@ -32,7 +32,7 @@ enum StoreType {
 
 struct SearchMethod(StoreType);
 
-impl AlgFactors for SearchMethod {
+impl Factors for SearchMethod {
     fn factor_names() -> Vec<&'static str> {
         vec!["store-type"]
     }

@@ -1,9 +1,9 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use orx_criterion::{AlgFactors, Experiment, InputFactors};
+use orx_criterion::{Experiment, Factors};
 
 struct SortData(usize, usize);
 
-impl InputFactors for SortData {
+impl Factors for SortData {
     fn factor_names() -> Vec<&'static str> {
         vec!["len", "position"]
     }
@@ -24,7 +24,7 @@ enum SearchMethod {
     Binary,
 }
 
-impl AlgFactors for SearchMethod {
+impl Factors for SearchMethod {
     fn factor_names() -> Vec<&'static str> {
         vec!["search"]
     }

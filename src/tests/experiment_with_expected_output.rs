@@ -1,9 +1,9 @@
 use crate::experiment_sealed::ExperimentSealed;
-use crate::{AlgFactors, Experiment, InputFactors};
+use crate::{Experiment, Factors};
 
 struct MyData(usize, usize);
 
-impl InputFactors for MyData {
+impl Factors for MyData {
     fn factor_names() -> Vec<&'static str> {
         vec!["len", "position"]
     }
@@ -18,7 +18,7 @@ enum SearchMethod {
     Binary,
 }
 
-impl AlgFactors for SearchMethod {
+impl Factors for SearchMethod {
     fn factor_names() -> Vec<&'static str> {
         vec!["search"]
     }

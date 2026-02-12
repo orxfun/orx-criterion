@@ -1,5 +1,5 @@
 use crate::experiment_sealed::ExperimentSealed;
-use crate::{AlgFactors, Experiment, InputFactors};
+use crate::{Experiment, Factors};
 use cli_table::{Cell, CellStruct, Color, Style, Table, format::Justify, print_stdout};
 use colorize::AnsiColor;
 use std::fs::File;
@@ -94,8 +94,8 @@ fn create_summary_csv<E: Experiment>(
 
     // title
     let mut row = vec!["t", "i", "a"];
-    row.extend_from_slice(&<E::InputFactors as InputFactors>::factor_names());
-    row.extend_from_slice(&<E::AlgFactors as AlgFactors>::factor_names());
+    row.extend_from_slice(&<E::InputFactors as Factors>::factor_names());
+    row.extend_from_slice(&<E::AlgFactors as Factors>::factor_names());
     row.push("Time (ns)");
     file.write_all(row.join(",").as_bytes())?;
     file.write_all(b"\n")?;
@@ -147,10 +147,10 @@ fn print_summary_table<E: Experiment>(
         "i".cell().bold(true),
         "a".cell().bold(true),
     ];
-    for factor in <E::InputFactors as InputFactors>::factor_names() {
+    for factor in <E::InputFactors as Factors>::factor_names() {
         title.push(factor.cell().bold(true));
     }
-    for param in <E::AlgFactors as AlgFactors>::factor_names() {
+    for param in <E::AlgFactors as Factors>::factor_names() {
         title.push(param.cell().bold(true));
     }
     title.push("Time (ns)".cell().bold(true).justify(Justify::Right));
@@ -221,9 +221,9 @@ pub fn create_ai_prompt_to_analyze<E: Experiment>(
     let summary_path = exp.summary_csv_path(name);
     let benchmark_path = exp.benchmark_file_path(name);
     let num_inputs = data.len();
-    let input_factor_names = <E::InputFactors as InputFactors>::factor_names().join(", ");
+    let input_factor_names = <E::InputFactors as Factors>::factor_names().join(", ");
     let num_variants = variants.len();
-    let alg_factor_names = <E::AlgFactors as AlgFactors>::factor_names().join(", ");
+    let alg_factor_names = <E::AlgFactors as Factors>::factor_names().join(", ");
     let num_treatments = num_inputs * num_variants;
 
     let prompt = format!(
@@ -248,8 +248,9 @@ The objective is to solve the problem as fast as possible.
 In other words, we want to minimize elapsed time.
 We are searching the best values of the parameters, or best variant, that would perform the best across different data sets.
 
-The benchmark file is located at {benchmark_path:?}, where you may find types that implement `InputFactors` and `AlgFactors` traits.
-Please see the documentation of fields of these types for explanation of the factors.
+The benchmark file is located at {benchmark_path:?}, where you may find two types that implement `Factors` traits;
+one for input factors and one for algorithm factors.
+Please see the documentation of fields of these types for explanation of the factors and levels.
 
 Please analyze the output of the experiment and provide insights.
     "

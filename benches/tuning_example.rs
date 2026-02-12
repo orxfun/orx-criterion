@@ -1,5 +1,5 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use orx_criterion::{AlgFactors, Experiment, InputFactors};
+use orx_criterion::{Experiment, Factors};
 
 // Input Factors
 
@@ -20,7 +20,7 @@ struct Settings {
     position: ValuePosition,
 }
 
-impl InputFactors for Settings {
+impl Factors for Settings {
     fn factor_names() -> Vec<&'static str> {
         vec!["len", "position"]
     }
@@ -61,7 +61,7 @@ struct Params {
     direction: Direction,
 }
 
-impl AlgFactors for Params {
+impl Factors for Params {
     fn factor_names() -> Vec<&'static str> {
         vec!["num_threads", "direction"]
     }
