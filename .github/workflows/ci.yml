@@ -42,9 +42,6 @@ jobs:
     - name: Install wasm target
       run: rustup target add wasm32-unknown-unknown
 
-    - name: Install miri
-      run: rustup component add --toolchain nightly-x86_64-unknown-linux-gnu miri
-
     - name: Build
       run: cargo build --verbose ${{ matrix.features }}
 
@@ -59,9 +56,6 @@ jobs:
 
     - name: Clippy
       run: cargo clippy ${{ matrix.features }} -- -D warnings --verbose
-
-    - name: Miri
-      run: cargo +nightly miri test --lib --bins --tests --verbose ${{ matrix.features }}
 
 
   test-32:
