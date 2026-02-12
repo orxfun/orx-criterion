@@ -22,10 +22,10 @@
 ///
 /// For demonstration benchmarks, please see the [benches](https://github.com/orxfun/orx-parallel/blob/main/benches) folder.
 ///
-/// [`factor_names`]: InputFactors::factor_names
-/// [`factor_names_short`]: InputFactors::factor_names_short
-/// [`factor_levels`]: InputFactors::factor_levels
-/// [`factor_levels_short`]: InputFactors::factor_levels_short
+/// [`factor_names`]: Factors::factor_names
+/// [`factor_names_short`]: Factors::factor_names_short
+/// [`factor_levels`]: Factors::factor_levels
+/// [`factor_levels_short`]: Factors::factor_levels_short
 ///
 /// # Examples
 ///
@@ -58,7 +58,7 @@
 ///     position: ValuePosition,
 /// }
 ///
-/// impl InputFactors for Settings {
+/// impl Factors for Settings {
 ///     fn factor_names() -> Vec<&'static str> {
 ///         vec!["len", "position"]
 ///     }
@@ -104,7 +104,7 @@
 ///     position: ValuePosition,
 /// }
 ///
-/// impl InputFactors for Settings {
+/// impl Factors for Settings {
 ///     fn factor_names() -> Vec<&'static str> {
 ///         vec!["len", "position"]
 ///     }
@@ -142,7 +142,7 @@ pub trait Factors {
     /// Further, unless [`factor_names_short`] is explicitly implemented,
     /// they are used to create the unique keys of inputs.
     ///
-    /// [`factor_names_short`]: InputFactors::factor_names_short
+    /// [`factor_names_short`]: Factors::factor_names_short
     fn factor_names() -> Vec<&'static str>;
 
     /// String representation of values (long) of setting values (levels) of the
@@ -156,7 +156,7 @@ pub trait Factors {
     /// The short versions are implemented to shorten the keys which is necessary
     /// when working with very long keys (exceeding 64 characters).
     ///
-    /// [`factor_names`]: InputFactors::factor_names
+    /// [`factor_names`]: Factors::factor_names
     fn factor_names_short() -> Vec<&'static str> {
         Self::factor_names()
     }

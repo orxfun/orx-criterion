@@ -248,7 +248,7 @@ The objective is to solve the problem as fast as possible.
 In other words, we want to minimize elapsed time.
 We are searching the best values of the parameters, or best variant, that would perform the best across different data sets.
 
-The benchmark file is located at {benchmark_path:?}, where you may find types that implement `InputFactors` and `Factors` traits.
+The benchmark file is located at {benchmark_path:?}, where you may find types that implement `Factors` and `Factors` traits.
 Please see the documentation of fields of these types for explanation of the factors.
 
 Please analyze the output of the experiment and provide insights.

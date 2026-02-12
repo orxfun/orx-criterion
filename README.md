@@ -24,7 +24,7 @@ Input to this problem might differ in two ways:
 - length of the array,
 - position of the value that we search for.
 
-In order to represent these input variants, we define [`InputFactors`](https://docs.rs/orx-criterion/latest/orx_criterion/trait.InputFactors.html) named as `Settings`. Each unique setting instance can create a unique input for our experimentation. We will later add to experiment the settings that are interesting for our use case.
+In order to represent these input variants, we define [`Factors`](https://docs.rs/orx-criterion/latest/orx_criterion/trait.Factors.html) named as `Settings`. Each unique setting instance can create a unique input for our experimentation. We will later add to experiment the settings that are interesting for our use case.
 
 ```rust
 use orx_criterion::*;
@@ -46,7 +46,7 @@ struct Settings {
     position: ValuePosition,
 }
 
-impl InputFactors for Settings {
+impl Factors for Settings {
     fn factor_names() -> Vec<&'static str> {
         vec!["len", "position"]
     }
@@ -166,7 +166,7 @@ struct Input {
 struct SearchExp;
 
 impl Experiment for SearchExp {
-    type InputFactors = Settings;
+    type Factors = Settings;
 
     type Factors = Params;
 
@@ -229,7 +229,7 @@ impl Experiment for SearchExp {
 
     fn expected_output(
         &self,
-        _settings: &Self::InputFactors,
+        _settings: &Self::Factors,
         input: &Self::Input,
     ) -> Option<Self::Output> {
         // we simply return the expected output cached in the input
@@ -238,7 +238,7 @@ impl Experiment for SearchExp {
 
     fn validate_output(
         &self,
-        _settings: &Self::InputFactors,
+        _settings: &Self::Factors,
         input: &Self::Input,
         output: &Self::Output,
     ) {

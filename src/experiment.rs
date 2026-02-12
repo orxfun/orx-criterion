@@ -11,7 +11,7 @@ use std::fmt::Debug;
 /// # Examples
 ///
 /// Consider the example algorithm defined in [`Factors`] to find an element on an array, where we
-/// want to experiment over inputs defined by the example in [`InputFactors`].
+/// want to experiment over inputs defined by the example in [`Factors`].
 ///
 /// We can finally define our experiment using these input and algorithm factors.
 ///
@@ -37,7 +37,7 @@ use std::fmt::Debug;
 ///     position: ValuePosition,
 /// }
 ///
-/// impl InputFactors for Settings {
+/// impl Factors for Settings {
 ///     fn factor_names() -> Vec<&'static str> {
 ///         vec!["len", "position"]
 ///     }
@@ -120,7 +120,7 @@ use std::fmt::Debug;
 /// impl Experiment for SearchExp {
 ///     type InputFactors = Settings;
 ///
-///     type Factors = Params;
+///     type AlgFactors = Params;
 ///
 ///     type Input = Input;
 ///
@@ -150,7 +150,7 @@ use std::fmt::Debug;
 ///
 ///     fn execute(
 ///         &mut self,
-///         alg_variant: &Self::Factors,
+///         alg_variant: &Self::AlgFactors,
 ///         input: &Self::Input,
 ///     ) -> Self::Output {
 ///         // notice that how we compute the output is determined by
