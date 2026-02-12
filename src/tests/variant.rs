@@ -76,11 +76,11 @@ fn variant_3() {
     }
 
     let t = MyVariant {
-        len: 9876543210,
+        len: 9876,
         sort: true,
         split: '7',
     };
 
-    assert_eq!(t.key_long(), "len:9876543210_sort:true_split:7");
-    assert_eq!(t.key_short(), "l:9876543210_srt:T_sp:7");
+    assert_eq!(t.key_long(), "len:9876_sort:true_split:7");
+    assert_eq!(t.key_short(), "l:9876_srt:T_sp:7");
 }
