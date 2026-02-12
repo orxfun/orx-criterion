@@ -131,7 +131,7 @@
 /// assert_eq!(settings.key_long(), "len:1024_position:Mid");
 /// assert_eq!(settings.key_short(), "l:1024_p:M");
 /// ```
-pub trait InputFactors {
+pub trait Factors {
     /// Names (long) of settings of the input.
     ///
     /// The long factor names are used:

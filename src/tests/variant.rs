@@ -1,10 +1,10 @@
-use crate::AlgFactors;
+use crate::Factors;
 
 #[test]
 fn variant_0() {
     pub struct MyVariant;
 
-    impl AlgFactors for MyVariant {
+    impl Factors for MyVariant {
         fn factor_names() -> Vec<&'static str> {
             vec![]
         }
@@ -23,7 +23,7 @@ fn variant_0() {
 fn variant_1() {
     pub struct MyVariant(usize);
 
-    impl AlgFactors for MyVariant {
+    impl Factors for MyVariant {
         fn factor_names() -> Vec<&'static str> {
             vec!["width"]
         }
@@ -46,7 +46,7 @@ fn variant_3() {
         split: char,
     }
 
-    impl AlgFactors for MyVariant {
+    impl Factors for MyVariant {
         fn factor_names() -> Vec<&'static str> {
             vec!["len", "sort", "split"]
         }

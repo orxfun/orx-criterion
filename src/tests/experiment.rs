@@ -1,9 +1,9 @@
 use crate::experiment_sealed::ExperimentSealed;
-use crate::{AlgFactors, Experiment, InputFactors};
+use crate::{Experiment, Factors};
 
 pub struct MyData(usize);
 
-impl InputFactors for MyData {
+impl Factors for MyData {
     fn factor_names() -> Vec<&'static str> {
         vec!["width"]
     }
@@ -22,7 +22,7 @@ pub struct MyVariant {
     sort: bool,
 }
 
-impl AlgFactors for MyVariant {
+impl Factors for MyVariant {
     fn factor_names() -> Vec<&'static str> {
         vec!["len", "sort"]
     }

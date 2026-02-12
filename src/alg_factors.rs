@@ -1,4 +1,4 @@
-use crate::input_factors::join;
+use crate::factors::join;
 
 /// Factors defining an algorithm variant.
 ///
@@ -24,10 +24,10 @@ use crate::input_factors::join;
 ///
 /// For demonstration benchmarks, please see the [benches](https://github.com/orxfun/orx-parallel/blob/main/benches) folder.
 ///
-/// [`factor_names`]: AlgFactors::factor_names
-/// [`factor_names_short`]: AlgFactors::factor_names_short
-/// [`factor_levels`]: AlgFactors::factor_levels
-/// [`factor_levels_short`]: AlgFactors::factor_levels_short
+/// [`factor_names`]: Factors::factor_names
+/// [`factor_names_short`]: Factors::factor_names_short
+/// [`factor_levels`]: Factors::factor_levels
+/// [`factor_levels_short`]: Factors::factor_levels_short
 ///
 /// # Examples
 ///
@@ -60,7 +60,7 @@ use crate::input_factors::join;
 ///     direction: Direction,
 /// }
 ///
-/// impl AlgFactors for Params {
+/// impl Factors for Params {
 ///     fn factor_names() -> Vec<&'static str> {
 ///         vec!["num_threads", "direction"]
 ///     }
@@ -90,8 +90,8 @@ use crate::input_factors::join;
 /// Further notice that [`key_long`] and [`key_short`] returns the same key since we have not
 /// implemented the optional shorter versions for this example.
 ///
-/// [`key_long`]: AlgFactors::key_long
-/// [`key_short`]: AlgFactors::key_short
+/// [`key_long`]: Factors::key_long
+/// [`key_short`]: Factors::key_short
 ///
 /// # Examples - Optional Short Names and Values
 ///
@@ -123,7 +123,7 @@ use crate::input_factors::join;
 ///     direction: Direction,
 /// }
 ///
-/// impl AlgFactors for Params {
+/// impl Factors for Params {
 ///     fn factor_names() -> Vec<&'static str> {
 ///         vec!["num_threads", "direction"]
 ///     }
@@ -156,7 +156,7 @@ use crate::input_factors::join;
 /// assert_eq!(alg_params.key_long(), "num_threads:4_direction:Backwards");
 /// assert_eq!(alg_params.key_short(), "n:4_d:B");
 /// ```
-pub trait AlgFactors {
+pub trait Factors {
     /// Names (long) of parameters of the algorithm variant.
     ///
     /// The long parameter names are used:
@@ -167,7 +167,7 @@ pub trait AlgFactors {
     /// Further, unless [`factor_names_short`] is explicitly implemented,
     /// they are used to create the unique keys of algorithm variants.
     ///
-    /// [`factor_names_short`]: AlgFactors::factor_names_short
+    /// [`factor_names_short`]: Factors::factor_names_short
     fn factor_names() -> Vec<&'static str>;
 
     /// String representation of values (long) of parameter values (levels) of the
@@ -181,7 +181,7 @@ pub trait AlgFactors {
     /// The short versions are implemented to shorten the keys which is necessary
     /// when working with very long keys (exceeding 64 characters).
     ///
-    /// [`factor_names`]: AlgFactors::factor_names
+    /// [`factor_names`]: Factors::factor_names
     fn factor_names_short() -> Vec<&'static str> {
         Self::factor_names()
     }

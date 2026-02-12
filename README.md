@@ -77,7 +77,7 @@ Treatment keys are also used as directory names by "criterion" to store the resu
 
 We want to solve this problem by a linear search. Additionally, we want to consider the parallelized variants.
 
-In order to represent these algorithm variants, we define [`AlgFactors`](https://docs.rs/orx-criterion/latest/orx_criterion/trait.AlgFactors.html) named as `Params`. Each unique setting parameters determines the way that our algorithm will execute. We will later add to experiment the algorithm variants that we want to evaluate.
+In order to represent these algorithm variants, we define [`Factors`](https://docs.rs/orx-criterion/latest/orx_criterion/trait.Factors.html) named as `Params`. Each unique setting parameters determines the way that our algorithm will execute. We will later add to experiment the algorithm variants that we want to evaluate.
 
 ```rust
 use orx_criterion::*;
@@ -99,7 +99,7 @@ struct Params {
     direction: Direction,
 }
 
-impl AlgFactors for Params {
+impl Factors for Params {
     fn factor_names() -> Vec<&'static str> {
         vec!["num_threads", "direction"]
     }
@@ -168,7 +168,7 @@ struct SearchExp;
 impl Experiment for SearchExp {
     type InputFactors = Settings;
 
-    type AlgFactors = Params;
+    type Factors = Params;
 
     type Input = Input;
 
@@ -196,7 +196,7 @@ impl Experiment for SearchExp {
         Input { array, position }
     }
 
-    fn execute(&mut self, alg_variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
+    fn execute(&mut self, alg_variant: &Self::Factors, input: &Self::Input) -> Self::Output {
         // notice that how we compute the output is determined by
         // values of `alg_variant` fields.
 

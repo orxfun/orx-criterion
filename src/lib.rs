@@ -14,12 +14,10 @@
 #[cfg(test)]
 mod tests;
 
-mod alg_factors;
 mod experiment;
 mod experiment_sealed;
-mod input_factors;
+mod factors;
 mod summary;
 
-pub use alg_factors::AlgFactors;
 pub use experiment::Experiment;
-pub use input_factors::InputFactors;
+pub use factors::Factors;

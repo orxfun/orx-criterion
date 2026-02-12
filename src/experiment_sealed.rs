@@ -1,4 +1,4 @@
-use crate::{AlgFactors, Experiment, InputFactors};
+use crate::{Experiment, Factors};
 use std::path::PathBuf;
 
 pub trait ExperimentSealed: Experiment {

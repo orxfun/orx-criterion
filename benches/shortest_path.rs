@@ -1,5 +1,5 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use orx_criterion::{AlgFactors, Experiment, InputFactors};
+use orx_criterion::{Experiment, Factors};
 use orx_priority_queue::{DaryHeapOfIndices, PriorityQueue, PriorityQueueDecKey};
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
@@ -70,7 +70,7 @@ struct GraphSettings {
     connectivity_perc: usize,
 }
 
-impl InputFactors for GraphSettings {
+impl Factors for GraphSettings {
     fn factor_names() -> Vec<&'static str> {
         vec!["num_nodes", "connectivity"]
     }
@@ -87,7 +87,7 @@ impl InputFactors for GraphSettings {
 
 struct HeapWidth(usize);
 
-impl AlgFactors for HeapWidth {
+impl Factors for HeapWidth {
     fn factor_names() -> Vec<&'static str> {
         vec!["heap-width"]
     }

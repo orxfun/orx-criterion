@@ -1,6 +1,6 @@
+use crate::Factors;
 use crate::experiment_sealed::ExperimentSealed;
 use crate::summary::summarize;
-use crate::{AlgFactors, InputFactors};
 use colorize::AnsiColor;
 use criterion::Criterion;
 use std::fmt::Debug;
@@ -10,7 +10,7 @@ use std::fmt::Debug;
 ///
 /// # Examples
 ///
-/// Consider the example algorithm defined in [`AlgFactors`] to find an element on an array, where we
+/// Consider the example algorithm defined in [`Factors`] to find an element on an array, where we
 /// want to experiment over inputs defined by the example in [`InputFactors`].
 ///
 /// We can finally define our experiment using these input and algorithm factors.
@@ -78,7 +78,7 @@ use std::fmt::Debug;
 ///     direction: Direction,
 /// }
 ///
-/// impl AlgFactors for Params {
+/// impl Factors for Params {
 ///     fn factor_names() -> Vec<&'static str> {
 ///         vec!["num_threads", "direction"]
 ///     }
@@ -120,7 +120,7 @@ use std::fmt::Debug;
 /// impl Experiment for SearchExp {
 ///     type InputFactors = Settings;
 ///
-///     type AlgFactors = Params;
+///     type Factors = Params;
 ///
 ///     type Input = Input;
 ///
@@ -150,7 +150,7 @@ use std::fmt::Debug;
 ///
 ///     fn execute(
 ///         &mut self,
-///         alg_variant: &Self::AlgFactors,
+///         alg_variant: &Self::Factors,
 ///         input: &Self::Input,
 ///     ) -> Self::Output {
 ///         // notice that how we compute the output is determined by
@@ -277,11 +277,11 @@ use std::fmt::Debug;
 pub trait Experiment: Sized {
     /// Input factors of the experiment.
     /// Each instance of this type allows to create a particular input for the problem.
-    type InputFactors: InputFactors;
+    type InputFactors: Factors;
 
     /// Algorithm factors to evaluate.
     /// Each instance of this type represents a variant of the algorithm.
-    type AlgFactors: AlgFactors;
+    type AlgFactors: Factors;
 
     /// Input of the problem.
     type Input;
