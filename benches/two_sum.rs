@@ -149,9 +149,14 @@ impl Experiment for TwoSumExp {
         Input { array, indices }
     }
 
-    fn execute(&mut self, variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
+    fn execute(
+        &mut self,
+        _: &Self::InputFactors,
+        alg_variant: &Self::AlgFactors,
+        input: &Self::Input,
+    ) -> Self::Output {
         let array = &input.array;
-        match variant.0 {
+        match alg_variant.0 {
             StoreType::None => algorithm::<&[i64]>(array, 3),
             StoreType::SortedVec => algorithm::<SortedVec>(array, 3),
             StoreType::HashMap => algorithm::<HashMap<_, _>>(array, 3),

@@ -62,10 +62,15 @@ impl Experiment for MyExperiment {
         (0..data.0).collect()
     }
 
-    fn execute(&mut self, variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
+    fn execute(
+        &mut self,
+        _: &Self::InputFactors,
+        alg_variant: &Self::AlgFactors,
+        input: &Self::Input,
+    ) -> Self::Output {
         let mut output = input.clone();
-        if variant.sort {
-            for _ in 0..variant.len {
+        if alg_variant.sort {
+            for _ in 0..alg_variant.len {
                 for i in 1..output.len() {
                     output.swap(i, i - 1);
                 }
@@ -98,7 +103,7 @@ fn basic_experiment() {
         for variant in &variants {
             names.push(exp.run_key_long(datum, variant));
             names_short.push(exp.run_key_short(datum, variant));
-            outputs.push(exp.execute(variant, &input));
+            outputs.push(exp.execute(datum, variant, &input));
         }
     }
 

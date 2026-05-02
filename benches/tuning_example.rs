@@ -131,7 +131,12 @@ impl Experiment for SearchExp {
         Input { array, position }
     }
 
-    fn execute(&mut self, alg_variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
+    fn execute(
+        &mut self,
+        _: &Self::InputFactors,
+        alg_variant: &Self::AlgFactors,
+        input: &Self::Input,
+    ) -> Self::Output {
         // notice that how we compute the output is determined by
         // values of `alg_variant` fields.
 
