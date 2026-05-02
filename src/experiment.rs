@@ -150,6 +150,7 @@ use std::fmt::Debug;
 ///
 ///     fn execute(
 ///         &mut self,
+///         _input_variant: &Self::InputFactors,
 ///         alg_variant: &Self::AlgFactors,
 ///         input: &Self::Input,
 ///     ) -> Self::Output {
@@ -232,7 +233,7 @@ use std::fmt::Debug;
 /// let expected_output = exp.expected_output(&input_variant, &input);
 /// assert_eq!(expected_output, Some(Some(2)));
 ///
-/// let output = exp.execute(&alg_variant, &input);
+/// let output = exp.execute(&input_variant, &alg_variant, &input);
 /// assert_eq!(output, Some(2));
 /// exp.validate_output(&input_variant, &input, &output);
 /// ```
@@ -305,7 +306,12 @@ pub trait Experiment: Sized {
     /// output.
     ///
     /// This is the method that is being analyzed in this experiment.
-    fn execute(&mut self, alg_variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output;
+    fn execute(
+        &mut self,
+        input_variant: &Self::InputFactors,
+        alg_variant: &Self::AlgFactors,
+        input: &Self::Input,
+    ) -> Self::Output;
 
     /// Returns the expected output that the `execute` must produce for the given input factor levels and input
     /// created for these factor levels.
@@ -378,7 +384,7 @@ pub trait Experiment: Sized {
                 let execution_name = self.run_key_short(input_variant, alg_variant);
 
                 group.bench_with_input(&execution_name, &input, |b, input| {
-                    let output = self.execute(alg_variant, input);
+                    let output = self.execute(input_variant, alg_variant, input);
                     self.validate_output(input_variant, input, &output);
                     if let Some(expected_output) = self.expected_output(input_variant, input) {
                         assert_eq!(
@@ -387,7 +393,7 @@ pub trait Experiment: Sized {
                         );
                     }
 
-                    b.iter(|| self.execute(alg_variant, input));
+                    b.iter(|| self.execute(input_variant, alg_variant, input));
                 });
             }
         }

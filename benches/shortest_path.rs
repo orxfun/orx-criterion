@@ -114,9 +114,14 @@ impl Experiment for ShortestPathExp {
         new_graph(data.num_nodes, data.connectivity_perc)
     }
 
-    fn execute(&mut self, variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
+    fn execute(
+        &mut self,
+        _: &Self::InputFactors,
+        alg_variant: &Self::AlgFactors,
+        input: &Self::Input,
+    ) -> Self::Output {
         let (s, t) = (0, input.len() - 1);
-        match variant.0 {
+        match alg_variant.0 {
             2 => shortest_path::<2>(input, s, t),
             3 => shortest_path::<3>(input, s, t),
             4 => shortest_path::<4>(input, s, t),

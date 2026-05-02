@@ -71,9 +71,14 @@ impl Experiment for SearchExperiment {
         Some(vec.iter().position(|x| x == value))
     }
 
-    fn execute(&mut self, variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
+    fn execute(
+        &mut self,
+        _: &Self::InputFactors,
+        alg_variant: &Self::AlgFactors,
+        input: &Self::Input,
+    ) -> Self::Output {
         let (vec, value) = input;
-        match variant {
+        match alg_variant {
             SearchMethod::Linear => vec.iter().position(|x| x == value),
             SearchMethod::LinearBackwards => vec
                 .iter()

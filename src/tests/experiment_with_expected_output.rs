@@ -56,9 +56,14 @@ impl Experiment for SearchExperiment {
         Some(vec.iter().position(|x| x == value))
     }
 
-    fn execute(&mut self, variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
+    fn execute(
+        &mut self,
+        _: &Self::InputFactors,
+        alg_variant: &Self::AlgFactors,
+        input: &Self::Input,
+    ) -> Self::Output {
         let (vec, value) = input;
-        match variant {
+        match alg_variant {
             SearchMethod::Linear => vec.iter().position(|x| x == value),
             SearchMethod::Binary => vec.as_slice().binary_search(value).ok(),
         }
@@ -77,7 +82,7 @@ fn basic_experiment_with_expected_output() {
         let input = exp.input(datum);
         for variant in &variants {
             names.push(exp.run_key_long(datum, variant));
-            let output = exp.execute(variant, &input);
+            let output = exp.execute(datum, variant, &input);
             if let Some(expected_output) = exp.expected_output(datum, &input) {
                 assert_eq!(output, expected_output);
             }
