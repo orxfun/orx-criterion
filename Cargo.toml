@@ -21,6 +21,20 @@ orx-priority-queue = { version = "1.8.0", default-features = false }
 rand = { version = "0.9.2", default-features = false }
 rand_chacha = { version = "0.9", default-features = false }
 
+# Benchmarks
+
+[[bench]]
+name = "my_test_bench"
+harness = false
+
+[[bench]]
+name = "shortest_path"
+harness = false
+
 [[bench]]
 name = "tuning_example"
+harness = false
+
+[[bench]]
+name = "two_sum"
 harness = false
