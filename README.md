@@ -4,7 +4,7 @@
 [![orx-criterion crate](https://img.shields.io/crates/d/orx-criterion.svg)](https://crates.io/crates/orx-criterion)
 [![orx-criterion documentation](https://docs.rs/orx-criterion/badge.svg)](https://docs.rs/orx-criterion)
 
-Experimentation library using [criterion](https://crates.io/crates/criterion) benchmarks for analyzing alternatives or parameter tuning.
+Experimentation library extending [criterion](https://crates.io/crates/criterion) benchmarks for analyzing alternative methods or parameter tuning.
 
 This crate is useful in the following case:
 
