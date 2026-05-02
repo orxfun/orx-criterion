@@ -4,13 +4,13 @@
 [![orx-criterion crate](https://img.shields.io/crates/d/orx-criterion.svg)](https://crates.io/crates/orx-criterion)
 [![orx-criterion documentation](https://docs.rs/orx-criterion/badge.svg)](https://docs.rs/orx-criterion)
 
-Experimentation library using [criterion](https://crates.io/crates/criterion) benchmarks for parameter tuning.
+Experimentation library using [criterion](https://crates.io/crates/criterion) benchmarks for analyzing alternatives or parameter tuning.
 
 This crate targets to solve the following problem:
 
-- We have a problem or a task that we want to speed up.
-- We have different ways to solve this problem. Throughout the documentation, we call these algorithm variants.
-- We have different shapes of inputs to the problem that might impact the speed. The simplest example is having a small or large input.
+- We have a problem or a task.
+- We have different ways to solve this problem, so called algorithm variants.
+- We have different shapes of inputs to the problem that might impact the speed.
 - We want to find the best algorithm variant with respect to some goal, for instance:
   - best variant for specific inputs,
   - the variant that has the best overall performance,
@@ -35,7 +35,7 @@ Input to this problem might differ in two ways:
 - length of the array,
 - position of the value that we search for.
 
-In order to represent these input variants, we define [`Factors`](https://docs.rs/orx-criterion/latest/orx_criterion/trait.Factors.html) named as `Settings`. Each unique instance of the `Settings` can create a unique input for our experimentation. We will later add to experiment the settings that are interesting for our use case.
+In order to represent these input variants, we define [`Factors`](https://docs.rs/orx-criterion/latest/orx_criterion/trait.Factors.html) named as `Settings`. Each unique instance of the `Settings` can create a unique input for our experimentation.
 
 ```rust
 use orx_criterion::*;
@@ -88,7 +88,7 @@ Treatment keys are also used as directory names by "criterion" to store the resu
 
 We want to solve this problem by a linear search. Additionally, we want to consider the parallelized variants.
 
-In order to represent these algorithm variants, we define [`Factors`](https://docs.rs/orx-criterion/latest/orx_criterion/trait.Factors.html) named as `Params`. Values of parameter levels determine the way that our algorithm will execute. We will later add to experiment the algorithm variants that we want to evaluate.
+In order to represent these algorithm variants, we define [`Factors`](https://docs.rs/orx-criterion/latest/orx_criterion/trait.Factors.html) named as `Params`. Values of parameter levels determine the way that our algorithm will execute.
 
 ```rust
 use orx_criterion::*;
@@ -153,7 +153,7 @@ Optionally, we can implement validation methods:
   - all algorithm variants must produce exactly the same output for the same input, and
   - an algorithm variant must always produce the same output for the same input.
 
-  We can still investigate randomized algorithms. In such cases; however, we cannot use the `expected_output` validation. We can then simply return `None`, or not implement the method at all since the default implementation returns none.
+  We can still investigate outputs of randomized algorithms. In such cases; however, we cannot use the `expected_output` validation; we can instead use `validate_output` method explained below. When we want to omit equality test against the expected output, we can return `None` or not implement `expected_output` at all.
 
   In the example below, we return the expected output that is cached inside the input while creating it. Another common way is to execute a well-tested method to compute the expected output, which will then be compared against new variants that are being evaluated.
 
@@ -254,7 +254,6 @@ impl Experiment for SearchExp {
         output: &Self::Output,
     ) {
         // additional validation logic just to make sure
-        // the linear search below does not affect results
         match *output {
             Some(position) => assert_eq!(input.array[position], SEARCH_VALUE),
             None => assert!(!input.array.iter().any(|x| x.as_str() == SEARCH_VALUE)),
@@ -327,7 +326,7 @@ harness = false
 
 #### Running the Benchmark
 
-Then, we can run the benchmark & experiment with `cargo bench` command.
+Then, we can run the benchmark & experiment with `cargo bench --bench tuning_example` command.
 
 Notice that the experimentation is run by having data points (inputs) as the outer loop and algorithm variants in the inner loop. This allows to create each input only once.
 
@@ -341,7 +340,7 @@ This crate will add some additional logs to default "criterion" logs containing 
 
 Once all benchmark runs are completed, a summary table will be printed to the console, thanks to [cli-table](https://crates.io/crates/cli-table) and [colorize](https://crates.io/crates/colorize) crates.
 
-In addition to factor levels, the table include three index columns:
+In addition to factor levels, the table includes three index columns:
 
 - **t** is the index of the treatment, each row will have a unique index.
 - **i** is the index of the input, each input will have its unique index.
