@@ -30,63 +30,37 @@ impl Factors for Settings {
     fn factor_levels(&self) -> Vec<String> {
         vec![self.len.to_string(), format!("{:?}", self.distribution)]
     }
-
-    fn factor_names_short() -> Vec<&'static str> {
-        vec!["l", "d"]
-    }
-
-    fn factor_levels_short(&self) -> Vec<String> {
-        let distribution = match self.distribution {
-            Distribution::Random => "R",
-            Distribution::NearlySorted => "N",
-            Distribution::Descending => "D",
-        };
-        vec![self.len.to_string(), distribution.to_string()]
-    }
 }
 
 // Algorithm Factors
 
-/// Base-case sorting algorithm applied to small sub-arrays.
+/// Sorting algorithm to benchmark.
 #[derive(Debug, Clone, Copy)]
-enum BaseSort {
+enum Algorithm {
     /// Insertion sort: fast for small or nearly-sorted slices.
     Insertion,
     /// Selection sort: fixed number of writes regardless of input order.
     Selection,
 }
 
-/// Parameters defining the merge sort algorithm.
-struct Params {
-    /// When sub-array length falls at or below this value, switch to `base_sort`.
-    cutoff: usize,
-    /// Base-case algorithm used for small sub-arrays.
-    base_sort: BaseSort,
-}
-
-impl Factors for Params {
+impl Factors for Algorithm {
     fn factor_names() -> Vec<&'static str> {
-        vec!["cutoff", "base_sort"]
+        vec!["algorithm"]
     }
 
     fn factor_levels(&self) -> Vec<String> {
-        vec![self.cutoff.to_string(), format!("{:?}", self.base_sort)]
-    }
-
-    fn factor_names_short() -> Vec<&'static str> {
-        vec!["c", "b"]
-    }
-
-    fn factor_levels_short(&self) -> Vec<String> {
-        let base_sort = match self.base_sort {
-            BaseSort::Insertion => "I",
-            BaseSort::Selection => "S",
-        };
-        vec![self.cutoff.to_string(), base_sort.to_string()]
+        vec![format!("{:?}", self)]
     }
 }
 
 // Helpers
+
+fn shuffle(data: &mut [u32]) {
+    let n = data.len();
+    for i in 0..n {
+        data.swap(i, (i * 7 + 13) % n);
+    }
+}
 
 fn insertion_sort(arr: &mut [u32]) {
     for i in 1..arr.len() {
@@ -107,63 +81,18 @@ fn selection_sort(arr: &mut [u32]) {
     }
 }
 
-fn merge_sort(arr: &mut [u32], cutoff: usize, base_sort: BaseSort) {
-    if arr.len() <= cutoff {
-        match base_sort {
-            BaseSort::Insertion => insertion_sort(arr),
-            BaseSort::Selection => selection_sort(arr),
-        }
-        return;
-    }
-    let mid = arr.len() / 2;
-    merge_sort(&mut arr[..mid], cutoff, base_sort);
-    merge_sort(&mut arr[mid..], cutoff, base_sort);
-    // merge the two sorted halves via a temporary buffer
-    let buf: Vec<u32> = arr.to_vec();
-    let (left, right) = buf.split_at(mid);
-    let mut i = 0;
-    let mut j = 0;
-    for k in 0..arr.len() {
-        arr[k] = if j >= right.len() || (i < left.len() && left[i] <= right[j]) {
-            let v = left[i];
-            i += 1;
-            v
-        } else {
-            let v = right[j];
-            j += 1;
-            v
-        };
-    }
-}
-
-/// Simple deterministic Fisher-Yates shuffle (LCG-based, seeded by length).
-fn shuffle(data: &mut [u32]) {
-    let mut state = data.len() as u64;
-    for i in (1..data.len()).rev() {
-        state = state
-            .wrapping_mul(6364136223846793005)
-            .wrapping_add(1442695040888963407);
-        let j = (state >> 33) as usize % (i + 1);
-        data.swap(i, j);
-    }
-}
-
 // Experiment
 
-struct Input {
-    data: Vec<u32>,
-}
-
-/// Experiment to tune a merge sort implementation over arrays with different
-/// distributions by varying the cutoff threshold and base-case algorithm.
+/// Experiment to compare insertion sort and selection sort over arrays with
+/// different lengths and value distributions.
 struct SortExp;
 
 impl Experiment for SortExp {
     type InputFactors = Settings;
 
-    type AlgFactors = Params;
+    type AlgFactors = Algorithm;
 
-    type Input = Input;
+    type Input = Vec<u32>;
 
     type Output = Vec<u32>;
 
@@ -173,25 +102,16 @@ impl Experiment for SortExp {
         match input_levels.distribution {
             Distribution::Random => shuffle(&mut data),
             Distribution::NearlySorted => {
-                // apply a small number of random swaps to an otherwise sorted array
+                // swap a small number of adjacent pairs
                 let swaps = (input_levels.len as f64).sqrt() as usize;
-                let mut state = input_levels.len as u64;
-                for _ in 0..swaps {
-                    state = state
-                        .wrapping_mul(6364136223846793005)
-                        .wrapping_add(1442695040888963407);
-                    let i = (state >> 33) as usize % input_levels.len;
-                    state = state
-                        .wrapping_mul(6364136223846793005)
-                        .wrapping_add(1442695040888963407);
-                    let j = (state >> 33) as usize % input_levels.len;
-                    data.swap(i, j);
+                for i in (0..swaps).filter(|i| i + 1 < input_levels.len) {
+                    data.swap(i, i + 1);
                 }
             }
             Distribution::Descending => data.reverse(),
         }
 
-        Input { data }
+        data
     }
 
     fn execute(
@@ -200,28 +120,24 @@ impl Experiment for SortExp {
         alg_variant: &Self::AlgFactors,
         input: &Self::Input,
     ) -> Self::Output {
-        // the output is determined by `alg_variant` cutoff and base_sort fields
-        let mut data = input.data.clone();
-        merge_sort(&mut data, alg_variant.cutoff, alg_variant.base_sort);
+        let mut data = input.clone();
+        match alg_variant {
+            Algorithm::Insertion => insertion_sort(&mut data),
+            Algorithm::Selection => selection_sort(&mut data),
+        }
         data
     }
 
     fn expected_output(&self, _: &Self::InputFactors, input: &Self::Input) -> Option<Self::Output> {
-        // compute a reference sorted array to validate against
-        let mut sorted = input.data.clone();
+        let mut sorted = input.clone();
         sorted.sort();
         Some(sorted)
-    }
-
-    fn validate_output(&self, _: &Self::InputFactors, _input: &Self::Input, output: &Self::Output) {
-        // verify the output is non-decreasing
-        assert!(output.windows(2).all(|w| w[0] <= w[1]));
     }
 }
 
 fn run(c: &mut Criterion) {
     // input levels that we are interested in
-    let lengths = [1 << 10, 1 << 16];
+    let lengths = [1 << 6, 1 << 10];
     let distributions = [
         Distribution::Random,
         Distribution::NearlySorted,
@@ -238,17 +154,7 @@ fn run(c: &mut Criterion) {
         .collect();
 
     // algorithm variants that we want to evaluate
-    let cutoffs = [1, 8, 32, 128];
-    let base_sorts = [BaseSort::Insertion, BaseSort::Selection];
-    let alg_levels: Vec<_> = cutoffs
-        .into_iter()
-        .flat_map(|cutoff| {
-            base_sorts
-                .iter()
-                .copied()
-                .map(move |base_sort| Params { cutoff, base_sort })
-        })
-        .collect();
+    let alg_levels = [Algorithm::Insertion, Algorithm::Selection];
 
     // execute a factorial experiment over the union of input and algorithm factors
     SortExp.bench(c, "sorting_alg", &input_levels, &alg_levels);

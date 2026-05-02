@@ -6,132 +6,94 @@
 
 Experimentation library using [criterion](https://crates.io/crates/criterion) benchmarks for analyzing alternatives or parameter tuning.
 
-This crate targets to solve the following problem:
+This crate is useful in the following case:
 
 - We have a problem or a task.
-- We have different ways to solve this problem, so called algorithm variants.
-- We have different shapes of inputs to the problem that might impact the speed.
+- We have different ways to solve this problem, so called _algorithm variants_.
+- We have different shapes of inputs to the problem that might impact the speed, so called _input variants_.
 - We want to find the best algorithm variant with respect to some goal, for instance:
   - best variant for specific inputs,
   - the variant that has the best overall performance,
-  - the variant that has a good balance of speed and predictability,
-  - etc.
-
-Please see the example below for demonstration.
+  - the variant that has a good balance of speed and predictability, etc.
 
 ## Tuning Example
 
-Consider a very simple algorithm that we want to tune:
+Consider a simple algorithm comparison problem:
 
-- we are given an input array and a target value to search,
-- we are expected to locate its position within the array if it exists.
+- we are given an array of integers to sort,
+- we want to know which sorting algorithm performs best across different data sets.
 
-We want to tune our algorithm so that we locate the element as fast as possible across different data sets.
+We compare two O(n²) algorithms — insertion sort and selection sort — across arrays of different lengths and value distributions.
 
 ### Input Factors
 
 Input to this problem might differ in two ways:
 
 - length of the array,
-- position of the value that we search for.
+- distribution of values (random, nearly-sorted, or descending).
 
-In order to represent these input variants, we define [`Factors`](https://docs.rs/orx-criterion/latest/orx_criterion/trait.Factors.html) named as `Settings`. Each unique instance of the `Settings` can create a unique input for our experimentation.
+In order to represent these input variants, we define [`Factors`](https://docs.rs/orx-criterion/latest/orx_criterion/trait.Factors.html) named as `Settings`. Each unique instance of `Settings` can create a unique input for our experimentation.
 
 ```rust
 use orx_criterion::*;
 
-/// Position of the target value in the input array.
+/// Distribution of values in the input array.
 #[derive(Debug, Clone, Copy)]
-enum ValuePosition {
-    /// The target value is located in the middle of the array.
-    Mid,
-    /// The target value does not exist in the array.
-    None,
+enum Distribution {
+    /// Randomly shuffled integers.
+    Random,
+    /// Array is sorted with a small number of random swaps applied.
+    NearlySorted,
+    /// Array is sorted in descending order.
+    Descending,
 }
 
-/// Settings to define input of the search problem.
+/// Settings to define the input of the sorting problem.
 struct Settings {
     /// Length of the input array.
     len: usize,
-    /// Position of the target value inside the input array.
-    position: ValuePosition,
+    /// Distribution of values in the array.
+    distribution: Distribution,
 }
 
 impl Factors for Settings {
     fn factor_names() -> Vec<&'static str> {
-        vec!["len", "position"]
+        vec!["len", "distribution"]
     }
 
     fn factor_levels(&self) -> Vec<String> {
-        vec![self.len.to_string(), format!("{:?}", self.position)]
-    }
-
-    fn factor_names_short() -> Vec<&'static str> {
-        vec!["l", "p"]
-    }
-
-    fn factor_levels_short(&self) -> Vec<String> {
-        let position = match self.position {
-            ValuePosition::Mid => "M",
-            ValuePosition::None => "X",
-        };
-        vec![self.len.to_string(), position.to_string()]
+        vec![self.len.to_string(), format!("{:?}", self.distribution)]
     }
 }
 ```
 
-Factor names and levels are used to create unique key of each input. For instance, the input created by `Settings { len: 1024, position: ValuePosition::Mid }` will have the key `len:1024_position:Mid`. Further, the factor names will be used as column headers of summary tables.
+Factor names and levels are used to create the unique key for each input. For instance, `Settings { len: 1024, distribution: Distribution::Random }` will have the key `len:1024_distribution:Random`. The factor names are also used as column headers of the summary tables.
 
-Treatment keys are also used as directory names by "criterion" to store the results. In order to keep the directory names sufficiently short (within 64 characters), we can optionally implement the short versions of names and levels. The short key to be used as directory name for the above example would then be `l:1024_p:M`.
+Note that `factor_names_short` and `factor_levels_short` are optional. When omitted, the long key is used as the criterion directory name; this is fine as long as it stays within 64 characters.
 
 ### Algorithm Factors
 
-We want to solve this problem by a linear search. Additionally, we want to consider the parallelized variants.
-
-In order to represent these algorithm variants, we define [`Factors`](https://docs.rs/orx-criterion/latest/orx_criterion/trait.Factors.html) named as `Params`. Values of parameter levels determine the way that our algorithm will execute.
+The algorithm variants are the two sorting algorithms we want to compare. Because there is only one axis of variation, we can implement [`Factors`](https://docs.rs/orx-criterion/latest/orx_criterion/trait.Factors.html) directly on the algorithm enum — no wrapper struct is needed.
 
 ```rust
 use orx_criterion::*;
 
-/// Defines the direction of the search for the target value.
+/// Sorting algorithm to benchmark.
 #[derive(Debug, Clone, Copy)]
-enum Direction {
-    /// The array will be search from beginning to the end.
-    Forwards,
-    /// The array will be search from end to the beginning.
-    Backwards,
+enum Algorithm {
+    /// Insertion sort: fast for small or nearly-sorted slices.
+    Insertion,
+    /// Selection sort: fixed number of writes regardless of input order.
+    Selection,
 }
 
-/// Parameters defining the search algorithm.
-struct Params {
-    /// Number of threads to use for the search.
-    num_threads: usize,
-    /// Direction of search by each thread.
-    direction: Direction,
-}
-
-impl Factors for Params {
+impl Factors for Algorithm {
     fn factor_names() -> Vec<&'static str> {
-        vec!["num_threads", "direction"]
+        vec!["algorithm"]
     }
 
     fn factor_levels(&self) -> Vec<String> {
-        vec![
-            self.num_threads.to_string(),
-            format!("{:?}", self.direction),
-        ]
-    }
-
-    fn factor_names_short() -> Vec<&'static str> {
-        vec!["n", "d"]
-    }
-
-    fn factor_levels_short(&self) -> Vec<String> {
-        let direction = match self.direction {
-            Direction::Forwards => "F",
-            Direction::Backwards => "B",
-        };
-        vec![self.num_threads.to_string(), direction.to_string()]
+        vec![format!("{:?}", self)]
     }
 }
 ```
@@ -145,119 +107,90 @@ We need to implement two required methods.
 - `input` takes levels of input factors and produces the input to be solved by all algorithm variants of the experiment.
 - `execute` takes an algorithm variant and an input, and solves the problem on the input with the given algorithm variant. The method produces and returns the output.
 
-The experimentation will study how much time is spent by the `execute`. Time of the `input` creation is not important for the experimentation. We aim to find the best algorithm factor levels to minimize the execution time.
+The experimentation will study how much time is spent by `execute`. The time spent in `input` is not measured and does not affect the results.
 
-Optionally, we can implement validation methods:
-
-- `expected_output` takes input levels and created input and returns the expected output. This value will be compared to the value that the `execute` method generates, and panics if they do not match. Importantly note that:
-  - all algorithm variants must produce exactly the same output for the same input, and
-  - an algorithm variant must always produce the same output for the same input.
-
-  We can still investigate outputs of randomized algorithms. In such cases; however, we cannot use the `expected_output` validation; we can instead use `validate_output` method explained below. When we want to omit equality test against the expected output, we can return `None` or not implement `expected_output` at all.
-
-  In the example below, we return the expected output that is cached inside the input while creating it. Another common way is to execute a well-tested method to compute the expected output, which will then be compared against new variants that are being evaluated.
-
-- `validate_output` takes input levels, created input together with the produced output, and performs custom validation logic on them. Similarly, the default implementation is an empty function which does nothing.
-
-Note that both of the validation methods are executed **only once** per (input, algorithm) combination and the time spent for validation is **not included** in the results. Therefore, it is okay to implement detailed, long-running validation methods when we need them to make sure of correctness of the results.
+Optionally, we can implement `expected_output`, which returns the correct answer for a given input. The library checks that every algorithm variant produces this output and panics if they do not match. Another optional method is `validate_output`, which allows us to implement custom validation logic. This validation methods run **only once** per (input, algorithm) combination and its time is **not included** in the results.
 
 ```rust ignore
 use orx_criterion::*;
 
-/// Value to search for
-const SEARCH_VALUE: &str = "criterion";
-
-struct Input {
-    array: Vec<String>,
-    position: Option<usize>, // to be used for validation
+fn shuffle(data: &mut [u32]) {
+    let n = data.len();
+    for i in 0..n {
+        data.swap(i, (i * 7 + 13) % n);
+    }
 }
 
-/// Experiment to carry out factorial analysis for searching a target value
-/// within an array.
-struct SearchExp;
+fn insertion_sort(arr: &mut [u32]) {
+    for i in 1..arr.len() {
+        let key = arr[i];
+        let mut j = i;
+        while j > 0 && arr[j - 1] > key {
+            arr[j] = arr[j - 1];
+            j -= 1;
+        }
+        arr[j] = key;
+    }
+}
 
-impl Experiment for SearchExp {
+fn selection_sort(arr: &mut [u32]) {
+    for i in 0..arr.len() {
+        let min_idx = (i..arr.len()).min_by_key(|&k| arr[k]).unwrap();
+        arr.swap(i, min_idx);
+    }
+}
+
+// Experiment
+
+/// Experiment to compare insertion sort and selection sort over arrays with
+/// different lengths and value distributions.
+struct SortExp;
+
+impl Experiment for SortExp {
     type InputFactors = Settings;
 
-    type AlgFactors = Params;
+    type AlgFactors = Algorithm;
 
-    type Input = Input;
+    type Input = Vec<u32>;
 
-    type Output = Option<usize>;
+    type Output = Vec<u32>;
 
     fn input(&mut self, input_levels: &Self::InputFactors) -> Self::Input {
-        // we create an array with the given length, without the search value
-        let mut array: Vec<_> = (0..input_levels.len).map(|i| i.to_string()).collect();
+        let mut data: Vec<u32> = (0..input_levels.len as u32).collect();
 
-        // we decide on index of the search value depending on the position setting
-        let index = match input_levels.position {
-            ValuePosition::Mid => input_levels.len / 2,
-            ValuePosition::None => input_levels.len,
-        };
-
-        // we place the search value at the index
-        let position = match array.get_mut(index) {
-            Some(element) => {
-                *element = SEARCH_VALUE.to_string();
-                Some(index)
+        match input_levels.distribution {
+            Distribution::Random => shuffle(&mut data),
+            Distribution::NearlySorted => {
+                // swap a small number of adjacent pairs
+                let swaps = (input_levels.len as f64).sqrt() as usize;
+                for i in (0..swaps).filter(|i| i + 1 < input_levels.len) {
+                    data.swap(i, i + 1);
+                }
             }
-            None => None,
-        };
-
-        Input { array, position }
-    }
-
-    fn execute(&mut self, alg_variant: &Self::AlgFactors, input: &Self::Input) -> Self::Output {
-        // notice that how we compute the output is determined by
-        // values of `alg_variant` fields.
-
-        let chunk_size = input.array.len() / alg_variant.num_threads;
-        let chunks: Vec<_> = input.array.chunks(chunk_size).collect();
-
-        std::thread::scope(|s| {
-            let mut handles = vec![];
-            let mut begin = 0;
-            for chunk in chunks {
-                handles.push(s.spawn(move || {
-                    let mut iter = chunk.iter();
-                    match alg_variant.direction {
-                        Direction::Forwards => iter
-                            .position(|x| x.as_str() == SEARCH_VALUE)
-                            .map(|x| begin + x),
-                        Direction::Backwards => iter
-                            .rev()
-                            .position(|x| x.as_str() == SEARCH_VALUE)
-                            .map(|x| begin + (chunk.len() - 1 - x)),
-                    }
-                }));
-                begin += chunk.len();
-            }
-
-            // get the result from threads in the form of Some(position), if any
-            handles.into_iter().filter_map(|h| h.join().unwrap()).next()
-        })
-    }
-
-    fn expected_output(
-        &self,
-        _settings: &Self::InputFactors,
-        input: &Self::Input,
-    ) -> Option<Self::Output> {
-        // we simply return the expected output cached in the input
-        Some(input.position)
-    }
-
-    fn validate_output(
-        &self,
-        _settings: &Self::InputFactors,
-        input: &Self::Input,
-        output: &Self::Output,
-    ) {
-        // additional validation logic just to make sure
-        match *output {
-            Some(position) => assert_eq!(input.array[position], SEARCH_VALUE),
-            None => assert!(!input.array.iter().any(|x| x.as_str() == SEARCH_VALUE)),
+            Distribution::Descending => data.reverse(),
         }
+
+        data
+    }
+
+    fn execute(
+        &mut self,
+        _: &Self::InputFactors,
+        alg_variant: &Self::AlgFactors,
+        input: &Self::Input,
+    ) -> Self::Output {
+        let mut data = input.clone();
+        match alg_variant {
+            Algorithm::Insertion => insertion_sort(&mut data),
+            Algorithm::Selection => selection_sort(&mut data),
+        }
+        data
+    }
+
+    fn expected_output(&self, _: &Self::InputFactors, input: &Self::Input) -> Option<Self::Output> {
+        let mut sorted = input.clone();
+        sorted.sort();
+        Some(sorted)
     }
 }
 ```
@@ -270,44 +203,34 @@ Finally, we will run it using the [criterion](https://crates.io/crates/criterion
 
 #### Define the Experiment as a Criterion Benchmark
 
-We create the benchmark file under the **benches** folder, say `benches/tuning_example.rs`. We add all the code above to this file.
-
-Finally, we add the following lines that will allow us to start the benchmark run.
-
-We can start our benchmark with `SearchExp::bench(c, "tuning_example", &input_levels, &alg_levels)` call, which will create a benchmark run for each (input, algorithm) combination.
+We create the benchmark file under the **benches** folder, say `benches/sorting_alg.rs`. We add all the code above to this file, then append the following lines to start the benchmark run.
 
 ```rust ignore
 use criterion::{Criterion, criterion_group, criterion_main};
 
 fn run(c: &mut Criterion) {
     // input levels that we are interested in
-    let lengths = [1 << 10, 1 << 24];
-    let positions = [ValuePosition::Mid, ValuePosition::None];
+    let lengths = [1 << 6, 1 << 10];
+    let distributions = [
+        Distribution::Random,
+        Distribution::NearlySorted,
+        Distribution::Descending,
+    ];
     let input_levels: Vec<_> = lengths
         .into_iter()
         .flat_map(|len| {
-            positions
+            distributions
                 .iter()
                 .copied()
-                .map(move |position| Settings { len, position })
+                .map(move |distribution| Settings { len, distribution })
         })
         .collect();
 
     // algorithm variants that we want to evaluate
-    let num_threads = [1, 16];
-    let directions = [Direction::Forwards, Direction::Backwards];
-    let alg_levels: Vec<_> = num_threads
-        .into_iter()
-        .flat_map(|num_threads| {
-            directions.iter().copied().map(move |direction| Params {
-                num_threads,
-                direction,
-            })
-        })
-        .collect();
+    let alg_levels = [Algorithm::Insertion, Algorithm::Selection];
 
     // execute a factorial experiment over the union of input and algorithm factors
-    SearchExp.bench(c, "tuning_example", &input_levels, &alg_levels);
+    SortExp.bench(c, "sorting_alg", &input_levels, &alg_levels);
 }
 
 criterion_group!(benches, run);
@@ -320,13 +243,13 @@ In order to run this file as a benchmark, we need to add the following lines to 
 
 ```yaml
 [[bench]]
-name = "tuning_example"
+name = "sorting_alg"
 harness = false
 ```
 
 #### Running the Benchmark
 
-Then, we can run the benchmark & experiment with `cargo bench --bench tuning_example` command.
+Then, we can run the benchmark & experiment with `cargo bench --bench sorting_alg` command.
 
 Notice that the experimentation is run by having data points (inputs) as the outer loop and algorithm variants in the inner loop. This allows to create each input only once.
 
@@ -358,7 +281,7 @@ As it will be noted in the logs, a csv version of the summary table will also be
 
 ```shell
 Summary table created at:
-target/criterion/tuning_example/summary_tuning_example.csv
+target/criterion/sorting_alg/summary_sorting_alg.csv
 ```
 
 ### AI Prompt

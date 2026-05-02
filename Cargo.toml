@@ -32,7 +32,7 @@ name = "shortest_path"
 harness = false
 
 [[bench]]
-name = "tuning_example"
+name = "sorting_alg"
 harness = false
 
 [[bench]]
