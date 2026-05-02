@@ -18,6 +18,8 @@ This crate is useful in the following case:
 
 ## Tuning Example
 
+_You may find more examples in [benches](https://github.com/orxfun/orx-criterion/tree/main/benches) folder._
+
 Consider a simple algorithm comparison problem:
 
 - we are given an array of integers to sort,
