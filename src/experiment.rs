@@ -150,6 +150,7 @@ use std::fmt::Debug;
 ///
 ///     fn execute(
 ///         &mut self,
+///         _input_variant: &Self::InputFactors,
 ///         alg_variant: &Self::AlgFactors,
 ///         input: &Self::Input,
 ///     ) -> Self::Output {
@@ -232,7 +233,7 @@ use std::fmt::Debug;
 /// let expected_output = exp.expected_output(&input_variant, &input);
 /// assert_eq!(expected_output, Some(Some(2)));
 ///
-/// let output = exp.execute(&alg_variant, &input);
+/// let output = exp.execute(&input_variant, &alg_variant, &input);
 /// assert_eq!(output, Some(2));
 /// exp.validate_output(&input_variant, &input, &output);
 /// ```
