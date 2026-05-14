@@ -4,7 +4,7 @@ version = "1.0.0"
 edition = "2024"
 authors = ["orxfun <orx.ugur.arikan@gmail.com>"]
 readme = "README.md"
-description = "Experimentation library extending criterion benchmarks for analyzing alternative methods or parameter tuning."
+description = "orx-criterion extends criterion with an experimentation model so you can compare algorithm variants and parameter choices across many input shapes, then get a summary."
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/orxfun/orx-criterion/"
 keywords = ["criterion", "benchmark", "tuning"]
@@ -22,6 +22,10 @@ rand = { version = "0.9.2", default-features = false }
 rand_chacha = { version = "0.9", default-features = false }
 
 # Benchmarks
+
+[[bench]]
+name = "sorting_minimal"
+harness = false
 
 [[bench]]
 name = "my_test_bench"
