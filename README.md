@@ -215,8 +215,8 @@ Example screenshots:
 
 ## API Docs
 
-- `Experiment`: https://docs.rs/orx-criterion/latest/orx_criterion/trait.Experiment.html
-- `Factors`: https://docs.rs/orx-criterion/latest/orx_criterion/trait.Factors.html
+- [`Experiment`](https://docs.rs/orx-criterion/latest/orx_criterion/trait.Experiment.html)
+- [`Factors`](https://docs.rs/orx-criterion/latest/orx_criterion/trait.Factors.html)
 
 ## Contributing
 
