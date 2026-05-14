@@ -33,7 +33,7 @@ criterion = { version = "0.8", default-features = false }
 
 3. Keep standard Criterion wiring:
 
-```rust
+```rust ignore
 criterion_group!(benches, run);
 criterion_main!(benches);
 ```
