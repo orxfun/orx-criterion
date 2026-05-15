@@ -197,8 +197,8 @@ fn print_summary_table<E: Experiment>(
                         .justify(justify)
                 };
                 let mut columns: Vec<_> = (0..3).map(|_| dash(1, Justify::Left)).collect(); // t i a
-                columns.extend((0..(num_columns - 3 - 2 - 1)).map(|_| dash(3, Justify::Left))); // factors
-                columns.push(dash(3, Justify::Right)); // time (ns)
+                columns.extend((0..(num_columns - 3 - 2 - 1)).map(|_| dash(5, Justify::Left))); // factors
+                columns.push(dash(5, Justify::Right)); // time (ns)
                 columns.extend((0..2).map(|_| dash(MAX_PROGRESS_BAR_WIDTH, Justify::Left))); // bars
                 columns
             });
