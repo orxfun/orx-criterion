@@ -7,17 +7,19 @@ use std::io::{Read, Write};
 use std::{cmp::Ordering, path::PathBuf};
 use thousands::Separable;
 
-fn time_progress_bar(estimate: Option<f64>, max_estimate: f64) -> String {
-    const MAX_BAR_WIDTH: usize = 20;
+const MAX_PROGRESS_BAR_WIDTH: usize = 20;
+const PROGRESS_BAR_CHAR: &'static str = "█";
+const INPUT_SEPRATOR_CHAR: &'static str = "━";
 
+fn time_progress_bar(estimate: Option<f64>, max_estimate: f64) -> String {
     match estimate {
         Some(value) if max_estimate > 0.0 => {
             let ratio = (value / max_estimate).clamp(0.0, 1.0);
-            let mut width = (ratio * MAX_BAR_WIDTH as f64).round() as usize;
+            let mut width = (ratio * MAX_PROGRESS_BAR_WIDTH as f64).round() as usize;
             if value > 0.0 && width == 0 {
                 width = 1;
             }
-            "█".repeat(width)
+            PROGRESS_BAR_CHAR.repeat(width)
         }
         _ => String::new(),
     }
@@ -158,21 +160,22 @@ fn print_summary_table<E: Experiment>(
         Missing,
     }
 
-    // title
-    let mut title = vec![
+    // header
+    let mut header = vec![
         "t".cell().bold(true),
         "i".cell().bold(true),
         "a".cell().bold(true),
     ];
     for factor in <E::InputFactors as Factors>::factor_names() {
-        title.push(factor.cell().bold(true));
+        header.push(factor.cell().bold(true));
     }
     for param in <E::AlgFactors as Factors>::factor_names() {
-        title.push(param.cell().bold(true));
+        header.push(param.cell().bold(true));
     }
-    title.push("time (ns)".cell().bold(true).justify(Justify::Right));
-    title.push("time per input".cell().bold(true));
-    title.push("time overall".cell().bold(true));
+    header.push("time (ns)".cell().bold(true).justify(Justify::Right));
+    header.push("time per input".cell().bold(true));
+    header.push("time overall".cell().bold(true));
+    let num_columns = header.len();
 
     // cells
     let mut rows = vec![];
@@ -184,6 +187,23 @@ fn print_summary_table<E: Experiment>(
         .max_by(cmp)
         .unwrap_or(0.0);
     for (i, (input_variant, input_estimates)) in input_levels.iter().zip(estimates).enumerate() {
+        if i > 0 {
+            rows.push({
+                let dash = |len: usize, justify: Justify| {
+                    INPUT_SEPRATOR_CHAR
+                        .repeat(len)
+                        .cell()
+                        .foreground_color(Some(Color::Rgb(255, 255, 102)))
+                        .justify(justify)
+                };
+                let mut columns: Vec<_> = (0..3).map(|_| dash(1, Justify::Left)).collect(); // t i a
+                columns.extend((0..(num_columns - 3 - 2 - 1)).map(|_| dash(3, Justify::Left))); // factors
+                columns.push(dash(3, Justify::Right)); // time (ns)
+                columns.extend((0..2).map(|_| dash(MAX_PROGRESS_BAR_WIDTH, Justify::Left))); // bars
+                columns
+            });
+        }
+
         let values = || input_estimates.iter().map(|x| x.unwrap_or(f64::MAX));
         let min = values().min_by(cmp).unwrap_or(f64::MAX);
         let max = values().max_by(cmp).unwrap_or(f64::MIN);
@@ -239,7 +259,7 @@ fn print_summary_table<E: Experiment>(
         }
     }
 
-    let table = rows.table().title(title);
+    let table = rows.table().title(header);
     let log = format!("\n# {name}");
     println!("{}", log.bold().yellow());
     print_stdout(table).expect("Failed to print the summary table");
