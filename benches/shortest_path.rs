@@ -154,7 +154,7 @@ fn run(c: &mut Criterion) {
         })
         .collect();
 
-    let variants = [HeapWidth(2), HeapWidth(4), HeapWidth(512)];
+    let variants = [HeapWidth(2), HeapWidth(4), HeapWidth(8), HeapWidth(512)];
 
     ShortestPathExp.bench(c, "shortest_path", &data, &variants);
 }
