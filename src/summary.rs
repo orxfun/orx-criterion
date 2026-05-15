@@ -264,31 +264,31 @@ pub fn create_ai_prompt_to_analyze<E: Experiment>(
 
     let prompt = format!(
         r"
-The file at '{summary_path:?}' is the output of a factorial experiment for the '{name}' benchmark.
+The file at '{summary_path:?}' contains the summary CSV for the '{name}' benchmark.
 
-The experiment is applied on {num_inputs} data sets.
-Each data set is defined by combination of values of factors '{input_factor_names}'.
-Each data set, or combination, gets a unique index specified in column 'i'.
+Each row is one treatment and includes:
+- 't': treatment index
+- 'i': input-data combination index
+- 'a': algorithm-variant index
+- input factor columns: {input_factor_names}
+- algorithm factor columns: {alg_factor_names}
+- 'time (ns)': execution time in nanoseconds (lower is better)
 
-Problem of each data set is solved by {num_variants} algorithm variants.
-Each variant is defined by combination of values of parameters '{alg_factor_names}'.
-Each algorithm variant gets a unique index specified in column 'a'.
+There are {num_inputs} input-data combinations, {num_variants} algorithm variants, and {num_treatments} total treatments.
 
-In total, there exist {num_treatments} treatments as unique combinations of input data settings and algorithm variant parameters.
-Each treatment gets a unique index specified in column 't'.
+Times are criterion point estimates, so treat them as benchmark summaries (not single raw run noise).
 
-The response variable is the time.
-Although we have a single value per treatment, these values are obtained by the 'criterion' crate which runs sufficiently large number of repetitions to obtain these point estimates.
+The benchmark source is at '{benchmark_path:?}'. It defines the input/algorithm factor types that explain the meaning of factor names and levels.
 
-The objective is to solve the problem as fast as possible.
-In other words, we want to minimize elapsed time.
-We are searching the best values of the parameters, or best variant, that would perform the best across different data sets.
+Provide a quick user-facing summary with:
+1. the best overall algorithm variant or parameter setting,
+2. whether the best choice is consistent across different inputs or depends on input characteristics,
+3. the most important factor effects or tradeoffs,
+4. notable interactions between input factors and algorithm factors,
+5. a concise practical recommendation.
 
-The benchmark file is located at {benchmark_path:?}, where you may find two types that implement `Factors` trait;
-one for input factors and one for algorithm factors.
-Please see the documentation of fields of these types for explanation of the factors and levels.
-
-Please analyze the output of the experiment and provide insights.
+Keep the response concise and evidence-based. Prefer 4-8 bullet points.
+Avoid unsupported causal claims; if confidence is low, state assumptions explicitly.
     "
     );
 
