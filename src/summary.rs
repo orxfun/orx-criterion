@@ -5,6 +5,23 @@ use colorize::AnsiColor;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::{cmp::Ordering, path::PathBuf};
+use thousands::Separable;
+
+fn time_progress_bar(estimate: Option<f64>, max_estimate: f64) -> String {
+    const MAX_BAR_WIDTH: usize = 20;
+
+    match estimate {
+        Some(value) if max_estimate > 0.0 => {
+            let ratio = (value / max_estimate).clamp(0.0, 1.0);
+            let mut width = (ratio * MAX_BAR_WIDTH as f64).round() as usize;
+            if value > 0.0 && width == 0 {
+                width = 1;
+            }
+            "█".repeat(width)
+        }
+        _ => String::new(),
+    }
+}
 
 fn collect_point_estimates<E: Experiment>(
     exp: &E,
@@ -96,7 +113,7 @@ fn create_summary_csv<E: Experiment>(
     let mut row = vec!["t", "i", "a"];
     row.extend_from_slice(&<E::InputFactors as Factors>::factor_names());
     row.extend_from_slice(&<E::AlgFactors as Factors>::factor_names());
-    row.push("Time (ns)");
+    row.push("time (ns)");
     file.write_all(row.join(",").as_bytes())?;
     file.write_all(b"\n")?;
 
@@ -130,9 +147,9 @@ fn print_summary_table<E: Experiment>(
     alg_levels: &[E::AlgFactors],
     estimates: &[Vec<Option<f64>>],
 ) {
-    let cmp = |a: &f64, b: &f64| match a < b {
-        true => Ordering::Less,
-        false => Ordering::Greater,
+    let cmp = |a: &f64, b: &f64| match a.total_cmp(b) {
+        Ordering::Equal => Ordering::Equal,
+        ordering => ordering,
     };
     enum Rank {
         Best,
@@ -153,14 +170,29 @@ fn print_summary_table<E: Experiment>(
     for param in <E::AlgFactors as Factors>::factor_names() {
         title.push(param.cell().bold(true));
     }
-    title.push("Time (ns)".cell().bold(true).justify(Justify::Right));
+    title.push("time (ns)".cell().bold(true).justify(Justify::Right));
+    title.push("time per input".cell().bold(true));
+    title.push("time overall".cell().bold(true));
 
     // cells
     let mut rows = vec![];
+    let max_time_overall = estimates
+        .iter()
+        .flat_map(|input_estimates| input_estimates.iter())
+        .flatten()
+        .copied()
+        .max_by(cmp)
+        .unwrap_or(0.0);
     for (i, (input_variant, input_estimates)) in input_levels.iter().zip(estimates).enumerate() {
         let values = || input_estimates.iter().map(|x| x.unwrap_or(f64::MAX));
         let min = values().min_by(cmp).unwrap_or(f64::MAX);
         let max = values().max_by(cmp).unwrap_or(f64::MIN);
+        let max_time_per_input = input_estimates
+            .iter()
+            .flatten()
+            .copied()
+            .max_by(cmp)
+            .unwrap_or(0.0);
         let rank_of = |estimate: &Option<f64>| match estimate {
             Some(x) => {
                 if (min - x).abs() < 1e-5 {
@@ -185,8 +217,10 @@ fn print_summary_table<E: Experiment>(
             let t = i * alg_levels.len() + a;
             let alg_factor_levels = alg_variant.factor_levels();
             let rank = rank_of(estimate);
+            let time_bar_per_input = time_progress_bar(*estimate, max_time_per_input);
+            let time_bar_overall = time_progress_bar(*estimate, max_time_overall);
             let estimate = estimate
-                .map(|x| format!("{x:.0}"))
+                .map(|x| (x.round() as i128).separate_with_commas())
                 .unwrap_or("NA".to_string());
             let mut columns = vec![
                 cell_of(&rank, (t + 1).cell()),
@@ -198,6 +232,8 @@ fn print_summary_table<E: Experiment>(
                 columns.push(cell_of(&rank, x.cell()));
             }
             columns.push(cell_of(&rank, estimate.cell().justify(Justify::Right)));
+            columns.push(cell_of(&rank, time_bar_per_input.cell()));
+            columns.push(cell_of(&rank, time_bar_overall.cell()));
 
             rows.push(columns);
         }
@@ -228,31 +264,31 @@ pub fn create_ai_prompt_to_analyze<E: Experiment>(
 
     let prompt = format!(
         r"
-The file at '{summary_path:?}' is the output of a factorial experiment for the '{name}' benchmark.
+The file at '{summary_path:?}' contains the summary CSV for the '{name}' benchmark.
 
-The experiment is applied on {num_inputs} data sets.
-Each data set is defined by combination of values of factors '{input_factor_names}'.
-Each data set, or combination, gets a unique index specified in column 'i'.
+Each row is one treatment and includes:
+- 't': treatment index
+- 'i': input-data combination index
+- 'a': algorithm-variant index
+- input factor columns: {input_factor_names}
+- algorithm factor columns: {alg_factor_names}
+- 'time (ns)': execution time in nanoseconds (lower is better)
 
-Problem of each data set is solved by {num_variants} algorithm variants.
-Each variant is defined by combination of values of parameters '{alg_factor_names}'.
-Each algorithm variant gets a unique index specified in column 'a'.
+There are {num_inputs} input-data combinations, {num_variants} algorithm variants, and {num_treatments} total treatments.
 
-In total, there exist {num_treatments} treatments as unique combinations of input data settings and algorithm variant parameters.
-Each treatment gets a unique index specified in column 't'.
+Times are criterion point estimates, so treat them as benchmark summaries (not single raw run noise).
 
-The response variable is the time.
-Although we have a single value per treatment, these values are obtained by the 'criterion' crate which runs sufficiently large number of repetitions to obtain these point estimates.
+The benchmark source is at '{benchmark_path:?}'. It defines the input/algorithm factor types that explain the meaning of factor names and levels.
 
-The objective is to solve the problem as fast as possible.
-In other words, we want to minimize elapsed time.
-We are searching the best values of the parameters, or best variant, that would perform the best across different data sets.
+Provide a quick user-facing summary with:
+1. the best overall algorithm variant or parameter setting,
+2. whether the best choice is consistent across different inputs or depends on input characteristics,
+3. the most important factor effects or tradeoffs,
+4. notable interactions between input factors and algorithm factors,
+5. a concise practical recommendation.
 
-The benchmark file is located at {benchmark_path:?}, where you may find two types that implement `Factors` trait;
-one for input factors and one for algorithm factors.
-Please see the documentation of fields of these types for explanation of the factors and levels.
-
-Please analyze the output of the experiment and provide insights.
+Keep the response concise and evidence-based. Prefer 4-8 bullet points.
+Avoid unsupported causal claims; if confidence is low, state assumptions explicitly.
     "
     );
 

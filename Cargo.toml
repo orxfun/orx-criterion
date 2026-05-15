@@ -14,6 +14,7 @@ categories = ["development-tools::profiling"]
 cli-table = { version = "0.5.0", default-features = false }
 colorize = { version = "0.1.0", default-features = false }
 criterion = { version = "0.8.2", default-features = false }
+thousands = { version = "0.2", default-features = false }
 
 [dev-dependencies]
 orx-parallel = { version = "3.4.0", default-features = false }
