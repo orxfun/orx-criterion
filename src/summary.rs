@@ -214,15 +214,11 @@ fn print_summary_table<E: Experiment>(
             .max_by(cmp)
             .unwrap_or(0.0);
         let rank_of = |estimate: &Option<f64>| match estimate {
-            Some(x) => {
-                if (min - x).abs() < 1e-5 {
-                    Rank::Best
-                } else if (max - x).abs() < 1e-5 {
-                    Rank::Worst
-                } else {
-                    Rank::Intermediate
-                }
-            }
+            Some(x) => match ((min - x).abs(), (max - x).abs()) {
+                (dif_min, _) if dif_min < 1e-5 => Rank::Best,
+                (_, dif_max) if dif_max < 1e-5 => Rank::Worst,
+                (_, _) => Rank::Intermediate,
+            },
             None => Rank::Missing,
         };
         let cell_of = |rank: &Rank, cell: CellStruct| match rank {
