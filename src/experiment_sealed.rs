@@ -1,6 +1,7 @@
 use crate::{Experiment, Factors};
 use std::path::PathBuf;
 
+#[doc(hidden)]
 pub trait ExperimentSealed: Experiment {
     /// Long key of the treatment, or run, for the input defined by the `input_variant` and algorithm
     /// defined by the `algorithm_variant`.

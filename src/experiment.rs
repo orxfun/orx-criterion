@@ -8,272 +8,148 @@ use std::fmt::Debug;
 /// An experiment to analyze the impact of algorithm factors, or parameter settings, on solution time
 /// over different data sets defined by input factors.
 ///
+/// While defining an experiment, you need to:
+///
+/// * provide associated types of input factors, algorithm variants, input and output of a run,
+/// * implement [`input`] method which defines how to create the inputs of runs, and
+/// * implement [`execute`] method which defines how to compute the output depending on the algorithm variant.
+///
+/// This is sufficient to run the experiment.
+///
+/// You may optionally implement [`expected_output`] and [`validate_output`] methods to validate the outputs
+/// of experimental runs per each input. The default implementations of these methods assume that outputs
+/// are always valid. Benchmarks do not aim to test behavior, but it might also be useful to add another
+/// validation when desired.
+///
+/// [`input`]: Experiment::input
+/// [`execute`]: Experiment::execute
+/// [`expected_output`]: Experiment::expected_output
+/// [`validate_output`]: Experiment::validate_output
+///
 /// # Examples
 ///
-/// Consider the example algorithm defined in [`Factors`] to find an element on an array, where we
-/// want to experiment over inputs defined by the example in [`Factors`].
-///
-/// We can finally define our experiment using these input and algorithm factors.
-///
-/// ```
-/// use orx_criterion::*;
-///
-/// // Input Factors
-///
-/// /// Position of the target value in the input array.
-/// #[derive(Debug, Clone, Copy)]
-/// enum ValuePosition {
-///     /// The target value is located in the middle of the array.
-///     Mid,
-///     /// The target value does not exist in the array.
-///     None,
-/// }
-///
-/// /// Settings to define input of the search problem.
-/// struct Settings {
-///     /// Length of the input array.
-///     len: usize,
-///     /// Position of the target value inside the input array.
-///     position: ValuePosition,
-/// }
-///
-/// impl Factors for Settings {
-///     fn factor_names() -> Vec<&'static str> {
-///         vec!["len", "position"]
-///     }
-///
-///     fn factor_levels(&self) -> Vec<String> {
-///         vec![self.len.to_string(), format!("{:?}", self.position)]
-///     }
-///
-///     fn factor_names_short() -> Vec<&'static str> {
-///         vec!["l", "p"]
-///     }
-///
-///     fn factor_levels_short(&self) -> Vec<String> {
-///         let position = match self.position {
-///             ValuePosition::Mid => "M",
-///             ValuePosition::None => "X",
-///         };
-///         vec![self.len.to_string(), position.to_string()]
-///     }
-/// }
-///
-/// // Algorithm Factors
-///
-/// /// Defines the direction of the search for the target value.
-/// #[derive(Debug, Clone, Copy)]
-/// enum Direction {
-///     /// The array will be search from beginning to the end.
-///     Forwards,
-///     /// The array will be search from end to the beginning.
-///     Backwards,
-/// }
-///
-/// /// Parameters defining the search algorithm.
-/// struct Params {
-///     /// Number of threads to use for the search.
-///     num_threads: usize,
-///     /// Direction of search by each thread.
-///     direction: Direction,
-/// }
-///
-/// impl Factors for Params {
-///     fn factor_names() -> Vec<&'static str> {
-///         vec!["num_threads", "direction"]
-///     }
-///
-///     fn factor_levels(&self) -> Vec<String> {
-///         vec![
-///             self.num_threads.to_string(),
-///             format!("{:?}", self.direction),
-///         ]
-///     }
-///
-///     fn factor_names_short() -> Vec<&'static str> {
-///         vec!["n", "d"]
-///     }
-///
-///     fn factor_levels_short(&self) -> Vec<String> {
-///         let direction = match self.direction {
-///             Direction::Forwards => "F",
-///             Direction::Backwards => "B",
-///         };
-///         vec![self.num_threads.to_string(), direction.to_string()]
-///     }
-/// }
-///
-/// // Experiment
-///
-/// /// Value to search for.
-/// const SEARCH_VALUE: &str = "criterion";
-///
-/// struct Input {
-///     array: Vec<String>,
-///     position: Option<usize>, // to be used for validation
-/// }
-///
-/// /// Experiment to carry out factorial analysis for searching a target value
-/// /// within an array.
-/// struct SearchExp;
-///
-/// impl Experiment for SearchExp {
-///     type InputFactors = Settings;
-///
-///     type AlgFactors = Params;
-///
-///     type Input = Input;
-///
-///     type Output = Option<usize>;
-///
-///     fn input(&mut self, input_levels: &Self::InputFactors) -> Self::Input {
-///         // we create an array with the given length, without the search value
-///         let mut array: Vec<_> = (0..input_levels.len).map(|i| i.to_string()).collect();
-///
-///         // we decide on index of the search value depending on the position setting
-///         let index = match input_levels.position {
-///             ValuePosition::Mid => input_levels.len / 2,
-///             ValuePosition::None => input_levels.len,
-///         };
-///
-///         // we place the search value at the index
-///         let position = match array.get_mut(index) {
-///             Some(element) => {
-///                 *element = SEARCH_VALUE.to_string();
-///                 Some(index)
-///             }
-///             None => None,
-///         };
-///
-///         Input { array, position }
-///     }
-///
-///     fn execute(
-///         &mut self,
-///         _input_variant: &Self::InputFactors,
-///         alg_variant: &Self::AlgFactors,
-///         input: &Self::Input,
-///     ) -> Self::Output {
-///         // notice that how we compute the output is determined by
-///         // values of `alg_variant` fields.
-///
-///         let chunk_size = input.array.len() / alg_variant.num_threads;
-///         let chunks: Vec<_> = input.array.chunks(chunk_size).collect();
-///
-///         std::thread::scope(|s| {
-///             let mut handles = vec![];
-///             let mut begin = 0;
-///             for chunk in chunks {
-///                 handles.push(s.spawn(move || {
-///                     let mut iter = chunk.iter();
-///
-///                     match alg_variant.direction {
-///                         Direction::Forwards => iter
-///                             .position(|x| x.as_str() == SEARCH_VALUE)
-///                             .map(|x| begin + x),
-///                         Direction::Backwards => iter
-///                             .rev()
-///                             .position(|x| x.as_str() == SEARCH_VALUE)
-///                             .map(|x| begin + (chunk.len() - 1 - x)),
-///                     }
-///                 }));
-///                 begin += chunk.len();
-///             }
-///
-///             // get the result from threads in the form of Some(position), if any
-///             handles
-///                 .into_iter()
-///                 .map(|h| h.join().unwrap())
-///                 .filter_map(|x| x)
-///                 .next()
-///         })
-///     }
-///
-///     fn expected_output(
-///         &self,
-///         _settings: &Self::InputFactors,
-///         input: &Self::Input,
-///     ) -> Option<Self::Output> {
-///         // we simply return the expected output cached in the input
-///         Some(input.position)
-///     }
-///
-///     fn validate_output(
-///         &self,
-///         _settings: &Self::InputFactors,
-///         input: &Self::Input,
-///         output: &Self::Output,
-///     ) {
-///         // additional validation logic just to make sure
-///         // the linear search below does not affect results
-///         match *output {
-///             Some(position) => assert_eq!(input.array[position], SEARCH_VALUE),
-///             None => assert!(!input.array.iter().any(|x| x.as_str() == SEARCH_VALUE)),
-///         }
-///     }
-/// }
-///
-/// // demonstration of experimentation methods
-///
-/// let mut exp = SearchExp;
-///
-/// let input_variant = Settings {
-///     len: 4,
-///     position: ValuePosition::Mid,
-/// };
-/// let alg_variant = Params {
-///     num_threads: 4,
-///     direction: Direction::Backwards,
-/// };
-///
-/// let input = exp.input(&input_variant);
-/// assert_eq!(input.array, ["0", "1", "criterion", "3"]);
-/// assert_eq!(input.position, Some(2));
-///
-/// let expected_output = exp.expected_output(&input_variant, &input);
-/// assert_eq!(expected_output, Some(Some(2)));
-///
-/// let output = exp.execute(&input_variant, &alg_variant, &input);
-/// assert_eq!(output, Some(2));
-/// exp.validate_output(&input_variant, &input, &output);
-/// ```
-///
-/// The example above demonstrates the behavior of the trait methods.
-/// However, we would actually only use the [`bench`] function which internally makes use of
-/// abovementioned methods.
-/// The usage of the experiment is demonstrated below.
-///
-/// [`bench`]: crate::Experiment::bench
+/// Consider the minimal sorting experiment from the README.
 ///
 /// ```ignore
-/// // input levels that we are interested in
-/// let lengths = [1 << 10, 1 << 24];
-/// let positions = [ValuePosition::Mid, ValuePosition::None];
-/// let input_levels: Vec<_> = lengths
-///     .into_iter()
-///     .flat_map(|len| {
-///         positions
-///             .iter()
-///             .copied()
-///             .map(move |position| Settings { len, position })
-///     })
-///     .collect();
+/// use orx_criterion::*;
+/// use criterion::{Criterion, criterion_group, criterion_main};
 ///
-/// // algorithm variants that we want to evaluate
-/// let num_threads = [1, 16];
-/// let directions = [Direction::Forwards, Direction::Backwards];
-/// let alg_levels: Vec<_> = num_threads
-///     .into_iter()
-///     .flat_map(|num_threads| {
-///         directions.iter().copied().map(move |direction| Params {
-///             num_threads,
-///             direction,
-///         })
-///     })
-///     .collect();
+/// #[derive(Debug, Clone, Copy)]
+/// enum Dist {
+///     Random,
+///     Desc,
+/// }
 ///
-/// // execute a factorial experiment over the union of input and algorithm factors
-/// SearchExp.bench(c, "tuning_example", &input_levels, &alg_levels);
+/// // these are our input variants
+/// struct InputCfg {
+///     len: usize,
+///     dist: Dist,
+/// }
+///
+/// impl Factors for InputCfg {
+///     fn factor_names() -> Vec<&'static str> {
+///         vec!["len", "dist"]
+///     }
+///
+///     fn factor_levels(&self) -> Vec<String> {
+///         vec![self.len.to_string(), format!("{:?}", self.dist)]
+///     }
+/// }
+///
+/// // these area our algorithm variants defining different ways to compute
+/// #[derive(Debug, Clone, Copy)]
+/// enum Alg {
+///     StdSort,
+///     StdSortUnstable,
+/// }
+///
+/// impl Factors for Alg {
+///     fn factor_names() -> Vec<&'static str> {
+///         vec!["alg"]
+///     }
+///
+///     fn factor_levels(&self) -> Vec<String> {
+///         vec![format!("{:?}", self)]
+///     }
+/// }
+///
+/// struct SortExp;
+///
+/// impl Experiment for SortExp {
+///     type InputFactors = InputCfg;   // input variants
+///     type AlgFactors = Alg;          // algorithm/computation variants
+///     type Input = Vec<u32>;          // we will provide an array
+///     type Output = Vec<u32>;         // we will receive a sorted array
+///
+///     // we define how to create the input of an experiment for the given input variant
+///     // this method is not timed / benchmarked!
+///     fn input(&mut self, levels: &Self::InputFactors) -> Self::Input {
+///         match levels.dist {
+///             Dist::Desc => (0..levels.len as u32).rev().collect(),
+///             Dist::Random => (0..levels.len as u32).collect(),
+///         }
+///     }
+///
+///     // we define how to compute output from the input with the given algorithm variant
+///     // this is the only method that is timed / benchmarked!
+///     fn execute(
+///         &mut self,
+///         _: &Self::InputFactors,
+///         alg: &Self::AlgFactors,
+///         input: &Self::Input,
+///     ) -> Self::Output {
+///         let mut v = input.clone();
+///         match alg {
+///             Alg::StdSort => v.sort(),
+///             Alg::StdSortUnstable => v.sort_unstable(),
+///         }
+///         v
+///     }
+///
+///     // just for additional validation, will be checked once per input & algorithm
+///     // also not timed / benchmarked!
+///     fn expected_output(
+///         &self,
+///         _: &Self::InputFactors,
+///         input: &Self::Input,
+///     ) -> Option<Self::Output> {
+///         let mut expected = input.clone();
+///         expected.sort();
+///         Some(expected)
+///     }
+/// }
+///
+/// // to run the experiment, we simply:
+/// // - define input variants we want to test
+/// // - algorithm variants to compare
+/// // - and call the `bench` method of our experiment.
+/// fn run(c: &mut Criterion) {
+///     let input_levels = vec![
+///         InputCfg {
+///             len: 64,
+///             dist: Dist::Random,
+///         },
+///         InputCfg {
+///             len: 64,
+///             dist: Dist::Desc,
+///         },
+///         InputCfg {
+///             len: 1024,
+///             dist: Dist::Random,
+///         },
+///         InputCfg {
+///             len: 1024,
+///             dist: Dist::Desc,
+///         },
+///     ];
+///
+///     let alg_variants = vec![Alg::StdSort, Alg::StdSortUnstable];
+///
+///     SortExp.bench(c, "sorting_minimal", &input_levels, &alg_variants);
+/// }
+///
+/// criterion_group!(benches, run);
+/// criterion_main!(benches);
 /// ```
 pub trait Experiment: Sized {
     /// Input factors of the experiment.
@@ -305,7 +181,7 @@ pub trait Experiment: Sized {
     /// Executes the algorithm or task defined by the given `alg_variant` on the `input`, and returns the
     /// output.
     ///
-    /// This is the method that is being analyzed in this experiment.
+    /// This is the method that is being timed, benchmarked and analyzed.
     fn execute(
         &mut self,
         input_variant: &Self::InputFactors,
@@ -325,14 +201,18 @@ pub trait Experiment: Sized {
     /// In other words, all algorithm variants must produce the same output for a given input.
     ///
     /// We can still analyze non-deterministic algorithms with this crate.
-    /// However, for such algorithms, we should not overwrite this method (it must return None).
-    /// On the other hand, we can still use more flexible [`validate_output`] method if needed.
+    /// However, for such algorithms, we should not overwrite this method (it must return None),
+    /// and we can use [`validate_output`] method instead.
     ///
     /// Finally note that, validation tests are executed only once per (input, algorithm) combination, the validation
     /// time is not included in the analysis, and hence, it does not impact the analysis.
     ///
     /// [`validate_output`]: crate::Experiment::validate_output
-    fn expected_output(&self, _: &Self::InputFactors, _: &Self::Input) -> Option<Self::Output> {
+    fn expected_output(
+        &self,
+        _input_factors: &Self::InputFactors,
+        _input: &Self::Input,
+    ) -> Option<Self::Output> {
         None
     }
 
@@ -343,7 +223,13 @@ pub trait Experiment: Sized {
     ///
     /// Note that, validation tests are executed only once per (input, algorithm) combination, the validation
     /// time is not included in the analysis, and hence, it does not impact the analysis.
-    fn validate_output(&self, _: &Self::InputFactors, _: &Self::Input, _: &Self::Output) {}
+    fn validate_output(
+        &self,
+        _input_factors: &Self::InputFactors,
+        _input: &Self::Input,
+        _output: &Self::Output,
+    ) {
+    }
 
     /// Executes the experiment using criterion (`c`) benchmarks.
     ///
