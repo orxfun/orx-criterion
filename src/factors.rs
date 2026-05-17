@@ -1,6 +1,6 @@
-/// Factors defining an experimentation input.
+/// Factors defining an input variant or algorithm variant.
 ///
-/// Each input setting can be uniquely determined by the combination of its factor values.
+/// Each variant setting can be uniquely determined by the combination of its factor values.
 ///
 /// These parameters might have categorical or ordinal values.
 ///
@@ -9,18 +9,18 @@
 /// We must implement two methods: [`factor_names`] and [`factor_levels`]:
 ///
 /// * `factor_names` contains the names of parameters.
-///   They will be used as column names of output table, or within logs.
+///   They will be used as in output table and within logs.
 ///   One can optionally implement [`factor_names_short`] to provide shorter versions of the names
-///   (please see the corresponding example below).
+///   (see the corresponding example below).
 ///
-/// * `factor_levels` contains the values of the parameters of an instance of the variant.
+/// * `factor_levels` contains values of the parameters of an instance of the variant.
 ///   They will be used to create the input that will be used in the experimentation.
 ///   Similarly, [`factor_levels_short`] can optionally be implemented.
 ///
 /// Note that four of the methods (`factor_names`, `factor_levels`, and short versions) must return vectors of the same
 /// length with elements matching in order.
 ///
-/// For demonstration benchmarks, please see the [benches](https://github.com/orxfun/orx-parallel/blob/main/benches) folder.
+/// For demonstration benchmarks, please see the [benches](https://github.com/orxfun/orx-criterion/blob/main/benches) folder.
 ///
 /// [`factor_names`]: Factors::factor_names
 /// [`factor_names_short`]: Factors::factor_names_short
