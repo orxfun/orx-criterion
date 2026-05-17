@@ -37,21 +37,23 @@ pub fn summarize<E: Experiment>(
     let estimates =
         read_from_criterion::collect_point_estimates(exp, name, input_levels, alg_levels);
 
+    // csv
     summary_csv::create_summary_csv(exp, name, input_levels, alg_levels, &estimates)
         .expect("Failed to create csv summary");
-
     let summary_csv_path = exp.summary_csv_path(name);
-    log(format!(
-        "\nSummary table created at:\n{summary_csv_path:?}\n"
-    ));
+    let msg = format!("\nSummary table created at:\n{summary_csv_path:?}\n");
+    log(msg);
 
+    // console
     print_summary_table::<E>(name, input_levels, alg_levels, &estimates);
 
+    // prompt
     summary_ai_prompt::create_ai_prompt_to_analyze(exp, name, input_levels, alg_levels)
         .expect("Failed to create ai prompt");
-    let log = format!(
+    let ai_prompt_path = exp.ai_prompt_path(name);
+    let msg = format!(
         "\nA draft AI prompt to analyze the summary table is created at:\n{:?}\n",
-        exp.ai_prompt_path(name)
+        ai_prompt_path
     );
-    println!("{}", log.italic());
+    log(msg);
 }
