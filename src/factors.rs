@@ -1,4 +1,4 @@
-/// Factors defining an input variant or algorithm variant.
+/// Factors that are used to define an input variant and an algorithm variant of the experiment.
 ///
 /// Each variant setting can be uniquely determined by the combination of its factor values.
 ///
@@ -14,7 +14,7 @@
 ///   (see the corresponding example below).
 ///
 /// * `factor_levels` contains values of the parameters of an instance of the variant.
-///   They will be used to create the input that will be used in the experimentation.
+///   They will be used to create the variant that will be used in the experimentation.
 ///   Similarly, [`factor_levels_short`] can optionally be implemented.
 ///
 /// Note that four of the methods (`factor_names`, `factor_levels`, and short versions) must return vectors of the same
@@ -29,49 +29,43 @@
 ///
 /// # Examples
 ///
-/// Consider for instance a problem where we will search an element within an array.
+/// Consider the sorting experiment from the README.
+/// The input to this problem is determined by the length of the array and the distribution
+/// used to generate it.
 ///
-/// The input to this problem is determined by the length of the array and position of the element
-/// that we will search for.
+/// In this case, `"len"` and `"dist"` are the factor names, and their combined values
+/// uniquely define an input variant.
 ///
-/// In this case, `"len"` and `"position"` would be the factor names.
-///
-/// And combination of values of these factor would determine the input to the experimentation.
+/// Notice that we also implement `Factors` for `Alg` to define algorithm variants.
 ///
 /// ```
 /// use orx_criterion::*;
 ///
-/// /// Position of the target value in the input array.
 /// #[derive(Debug, Clone, Copy)]
-/// enum ValuePosition {
-///     /// The target value is located in the middle of the array.
-///     Mid,
-///     /// The target value does not exist in the array.
-///     None,
+/// enum Dist {
+///     Random,
+///     Desc,
 /// }
 ///
-/// /// Settings to define input of the search problem.
-/// struct Settings {
-///     /// Length of the input array.
+/// struct InputCfg {
 ///     len: usize,
-///     /// Position of the target value inside the input array.
-///     position: ValuePosition,
+///     dist: Dist,
 /// }
 ///
-/// impl Factors for Settings {
+/// impl Factors for InputCfg {
 ///     fn factor_names() -> Vec<&'static str> {
-///         vec!["len", "position"]
+///         vec!["len", "dist"]
 ///     }
 ///
 ///     fn factor_levels(&self) -> Vec<String> {
-///         vec![self.len.to_string(), format!("{:?}", self.position)]
+///         vec![self.len.to_string(), format!("{:?}", self.dist)]
 ///     }
 /// }
 ///
-/// let settings = Settings { len: 1024, position: ValuePosition::Mid };
+/// let cfg = InputCfg { len: 64, dist: Dist::Random };
 ///
-/// assert_eq!(settings.key_long(), "len:1024_position:Mid");
-/// assert_eq!(settings.key_short(), "len:1024_position:Mid");
+/// assert_eq!(cfg.key_long(), "len:64_dist:Random");
+/// assert_eq!(cfg.key_short(), "len:64_dist:Random");
 /// ```
 ///
 /// # Examples - Optional Short Names and Values
@@ -87,52 +81,46 @@
 /// ```
 /// use orx_criterion::*;
 ///
-/// /// Position of the target value in the input array.
 /// #[derive(Debug, Clone, Copy)]
-/// enum ValuePosition {
-///     /// The target value is located in the middle of the array.
-///     Mid,
-///     /// The target value does not exist in the array.
-///     None,
+/// enum Dist {
+///     Random,
+///     Desc,
 /// }
 ///
-/// /// Settings to define input of the search problem.
-/// struct Settings {
-///     /// Length of the input array.
+/// struct InputCfg {
 ///     len: usize,
-///     /// Position of the target value inside the input array.
-///     position: ValuePosition,
+///     dist: Dist,
 /// }
 ///
-/// impl Factors for Settings {
+/// impl Factors for InputCfg {
 ///     fn factor_names() -> Vec<&'static str> {
-///         vec!["len", "position"]
+///         vec!["len", "dist"]
 ///     }
 ///
 ///     fn factor_levels(&self) -> Vec<String> {
-///         vec![self.len.to_string(), format!("{:?}", self.position)]
+///         vec![self.len.to_string(), format!("{:?}", self.dist)]
 ///     }
 ///
 ///     fn factor_names_short() -> Vec<&'static str> {
-///         vec!["l", "p"]
+///         vec!["l", "d"]
 ///     }
 ///
 ///     fn factor_levels_short(&self) -> Vec<String> {
-///         let position = match self.position {
-///             ValuePosition::Mid => "M",
-///             ValuePosition::None => "X",
+///         let dist = match self.dist {
+///             Dist::Random => "Rnd",
+///             Dist::Desc => "Dsc",
 ///         };
-///         vec![self.len.to_string(), position.to_string()]
+///         vec![self.len.to_string(), dist.to_string()]
 ///     }
 /// }
 ///
-/// let settings = Settings { len: 1024, position: ValuePosition::Mid };
+/// let cfg = InputCfg { len: 64, dist: Dist::Random };
 ///
-/// assert_eq!(settings.key_long(), "len:1024_position:Mid");
-/// assert_eq!(settings.key_short(), "l:1024_p:M");
+/// assert_eq!(cfg.key_long(), "len:64_dist:Random");
+/// assert_eq!(cfg.key_short(), "l:64_d:Rnd");
 /// ```
 pub trait Factors {
-    /// Names (long) of settings of the input.
+    /// Factor names.
     ///
     /// The long factor names are used:
     ///
@@ -140,16 +128,15 @@ pub trait Factors {
     /// * as column headers of summary tables.
     ///
     /// Further, unless [`factor_names_short`] is explicitly implemented,
-    /// they are used to create the unique keys of inputs.
+    /// they are used to create the unique keys of variants.
     ///
     /// [`factor_names_short`]: Factors::factor_names_short
     fn factor_names() -> Vec<&'static str>;
 
-    /// String representation of values (long) of setting values (levels) of the
-    /// input.
+    /// String representation of values of factors levels of the variant.
     fn factor_levels(&self) -> Vec<String>;
 
-    /// Short names of settings of the input.
+    /// Shortened versions of the factor names.
     ///
     /// Default implementation returns the result of [`factor_names`].
     ///
@@ -161,22 +148,21 @@ pub trait Factors {
         Self::factor_names()
     }
 
-    /// String representation of values (short) of setting values (levels) of the
-    /// input.
+    /// Shortened string representation of values of factors levels of the variant.
     fn factor_levels_short(&self) -> Vec<String> {
         self.factor_levels()
     }
 
-    /// Key of the input created by joining results of `factor_names` and `factor_levels`.
+    /// Key of the variant created by joining results of `factor_names` and `factor_levels`.
     ///
-    /// It uniquely identifies the input.
+    /// It uniquely identifies the variant.
     fn key_long(&self) -> String {
         join(&Self::factor_names(), &self.factor_levels())
     }
 
-    /// Short key of the input created by joining results of `factor_names_short` and `factor_levels_short`.
+    /// Short key of the variant created by joining results of `factor_names_short` and `factor_levels_short`.
     ///
-    /// It uniquely identifies the input.
+    /// It uniquely identifies the variant.
     fn key_short(&self) -> String {
         join(&Self::factor_names_short(), &self.factor_levels_short())
     }
