@@ -7,6 +7,27 @@ const MAX_PROGRESS_BAR_WIDTH: usize = 20;
 const PROGRESS_BAR_CHAR: &'static str = "█";
 const INPUT_SEPRATOR_CHAR: &'static str = "━";
 
+fn print_summary_table<E: Experiment>(
+    name: &str,
+    input_levels: &[E::InputFactors],
+    alg_levels: &[E::AlgFactors],
+    estimates: &[Vec<Option<f64>>],
+) {
+    summary_console::print_summary_table::<E>(
+        name,
+        input_levels,
+        alg_levels,
+        &estimates,
+        INPUT_SEPRATOR_CHAR,
+        MAX_PROGRESS_BAR_WIDTH,
+        PROGRESS_BAR_CHAR,
+    );
+}
+
+fn log(s: String) {
+    println!("{}", s.italic());
+}
+
 pub fn summarize<E: Experiment>(
     exp: &E,
     name: &str,
@@ -19,21 +40,12 @@ pub fn summarize<E: Experiment>(
     summary_csv::create_summary_csv(exp, name, input_levels, alg_levels, &estimates)
         .expect("Failed to create csv summary");
 
-    let log = format!(
-        "\nSummary table created at:\n{:?}\n",
-        exp.summary_csv_path(name)
-    );
-    println!("{}", log.italic());
+    let summary_csv_path = exp.summary_csv_path(name);
+    log(format!(
+        "\nSummary table created at:\n{summary_csv_path:?}\n"
+    ));
 
-    summary_console::print_summary_table::<E>(
-        name,
-        input_levels,
-        alg_levels,
-        &estimates,
-        INPUT_SEPRATOR_CHAR,
-        MAX_PROGRESS_BAR_WIDTH,
-        PROGRESS_BAR_CHAR,
-    );
+    print_summary_table::<E>(name, input_levels, alg_levels, &estimates);
 
     summary_ai_prompt::create_ai_prompt_to_analyze(exp, name, input_levels, alg_levels)
         .expect("Failed to create ai prompt");
