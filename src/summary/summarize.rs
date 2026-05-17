@@ -4,8 +4,8 @@ use crate::summary::{read_from_criterion, summary_ai_prompt, summary_console, su
 use colorize::AnsiColor;
 
 const MAX_PROGRESS_BAR_WIDTH: usize = 20;
-const PROGRESS_BAR_CHAR: &'static str = "█";
-const INPUT_SEPRATOR_CHAR: &'static str = "━";
+const PROGRESS_BAR_CHAR: &str = "█";
+const INPUT_SEPRATOR_CHAR: &str = "━";
 
 fn print_summary_table<E: Experiment>(
     name: &str,
@@ -17,7 +17,7 @@ fn print_summary_table<E: Experiment>(
         name,
         input_levels,
         alg_levels,
-        &estimates,
+        estimates,
         INPUT_SEPRATOR_CHAR,
         MAX_PROGRESS_BAR_WIDTH,
         PROGRESS_BAR_CHAR,
