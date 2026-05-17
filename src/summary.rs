@@ -149,10 +149,12 @@ fn print_summary_table<E: Experiment>(
     alg_levels: &[E::AlgFactors],
     estimates: &[Vec<Option<f64>>],
 ) {
+    let yellow = Some(Color::Rgb(255, 255, 102));
     let cmp = |a: &f64, b: &f64| match a.total_cmp(b) {
         Ordering::Equal => Ordering::Equal,
         ordering => ordering,
     };
+
     enum Rank {
         Best,
         Worst,
@@ -175,6 +177,10 @@ fn print_summary_table<E: Experiment>(
     header.push("time (ns)".cell().bold(true).justify(Justify::Right));
     header.push("time per input".cell().bold(true));
     header.push("time overall".cell().bold(true));
+    let header: Vec<_> = header
+        .into_iter()
+        .map(|x| x.foreground_color(yellow))
+        .collect();
     let num_columns = header.len();
 
     // cells
@@ -193,7 +199,7 @@ fn print_summary_table<E: Experiment>(
                     INPUT_SEPRATOR_CHAR
                         .repeat(len)
                         .cell()
-                        .foreground_color(Some(Color::Rgb(255, 255, 102)))
+                        .foreground_color(yellow)
                         .justify(justify)
                 };
                 let mut columns: Vec<_> = (0..3).map(|_| dash(1, Justify::Left)).collect(); // t i a
