@@ -181,7 +181,7 @@ pub trait Experiment: Sized {
     /// Executes the algorithm or task defined by the given `alg_variant` on the `input`, and returns the
     /// output.
     ///
-    /// This is the method that is being analyzed in this experiment.
+    /// This is the method that is being timed, benchmarked and analyzed.
     fn execute(
         &mut self,
         input_variant: &Self::InputFactors,
@@ -201,14 +201,18 @@ pub trait Experiment: Sized {
     /// In other words, all algorithm variants must produce the same output for a given input.
     ///
     /// We can still analyze non-deterministic algorithms with this crate.
-    /// However, for such algorithms, we should not overwrite this method (it must return None).
-    /// On the other hand, we can still use more flexible [`validate_output`] method if needed.
+    /// However, for such algorithms, we should not overwrite this method (it must return None),
+    /// and we can use [`validate_output`] method instead.
     ///
     /// Finally note that, validation tests are executed only once per (input, algorithm) combination, the validation
     /// time is not included in the analysis, and hence, it does not impact the analysis.
     ///
     /// [`validate_output`]: crate::Experiment::validate_output
-    fn expected_output(&self, _: &Self::InputFactors, _: &Self::Input) -> Option<Self::Output> {
+    fn expected_output(
+        &self,
+        _input_factors: &Self::InputFactors,
+        _input: &Self::Input,
+    ) -> Option<Self::Output> {
         None
     }
 
@@ -219,7 +223,13 @@ pub trait Experiment: Sized {
     ///
     /// Note that, validation tests are executed only once per (input, algorithm) combination, the validation
     /// time is not included in the analysis, and hence, it does not impact the analysis.
-    fn validate_output(&self, _: &Self::InputFactors, _: &Self::Input, _: &Self::Output) {}
+    fn validate_output(
+        &self,
+        _input_factors: &Self::InputFactors,
+        _input: &Self::Input,
+        _output: &Self::Output,
+    ) {
+    }
 
     /// Executes the experiment using criterion (`c`) benchmarks.
     ///
